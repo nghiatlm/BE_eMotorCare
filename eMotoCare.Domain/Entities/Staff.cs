@@ -1,9 +1,24 @@
 
 
+using eMotoCare.Domain.Common;
+using eMotoCare.Domain.Enums;
+
 namespace eMotoCare.Domain.Entities
 {
-    public class Staff
+    public class Staff : BaseEntity
     {
         public Guid Id { get; set; }
+        public string LastName { get; set; }
+        public string FirstName { get; set; }
+        public string Address { get; set; }
+        public string CitizenId { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public Gender Gender { get; set; }
+        public StaffPosition StaffPosition { get; set; }
+        public Guid BranchId { get; set; }
+        public string StaffCode { get; set; }
+        public string? Avatar { get; set; }
+
+        public virtual Branch? Branch { get; set; }
     }
 }
