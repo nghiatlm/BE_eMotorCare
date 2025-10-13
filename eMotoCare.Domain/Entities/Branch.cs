@@ -1,9 +1,9 @@
 
-using eMotoCare.Domain.Common;
-using eMotoCare.Domain.Enums;
+using eMotoCare.Common.Enums;
+
 using Microsoft.EntityFrameworkCore;
 
-namespace eMotoCare.Domain.Entities
+namespace eMotoCare.DAL.Entities
 {
     [Index(nameof(BranchName), IsUnique = true)]
     [Index(nameof(PhoneNumber), IsUnique = true)]

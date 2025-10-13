@@ -1,8 +1,8 @@
 
-using eMotoCare.Domain.Common;
-using eMotoCare.Domain.Enums;
+using eMotoCare.Common.Enums;
 
-namespace eMotoCare.Domain.Entities
+
+namespace eMotoCare.DAL.Entities
 {
     public class MaintenancePlan : BaseEntity
     {

@@ -1,8 +1,8 @@
 
-using eMotoCare.Domain.Common;
-using eMotoCare.Domain.Enums;
+using eMotoCare.Common.Enums;
+using eMotoCare.DAL.Entities;
 
-namespace eMotoCare.Domain.Entities
+namespace eMotoCare.DAL.Entities
 {
     public class VehicleStage : BaseEntity
     {

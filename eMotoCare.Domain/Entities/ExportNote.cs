@@ -1,8 +1,9 @@
 
-using eMotoCare.Domain.Common;
-using eMotoCare.Domain.Enums;
 
-namespace eMotoCare.Domain.Entities
+
+using eMotoCare.Common.Enums;
+
+namespace eMotoCare.DAL.Entities
 {
     public class ExportNote : BaseEntity
     {

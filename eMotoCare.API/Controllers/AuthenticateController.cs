@@ -1,7 +1,8 @@
-﻿using eMotoCare.Application.ApiResponse;
-using eMotoCare.Application.DTOs;
-using eMotoCare.Application.Exceptions;
-using eMotoCare.Application.Interfaces.IService;
+﻿
+using eMotoCare.BLL.Services.AuthenticateService;
+using eMotoCare.Common.Exceptions;
+using eMotoCare.Common.Models;
+using eMotoCare.Common.Models.ApiResponse;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eMotoCare.API.Controllers

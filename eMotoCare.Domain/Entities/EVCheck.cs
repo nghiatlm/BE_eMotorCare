@@ -1,9 +1,8 @@
 
-using eMotoCare.Domain.Common;
-using eMotoCare.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
+using eMotoCare.Common.Enums;
 
-namespace eMotoCare.Domain.Entities
+
+namespace eMotoCare.DAL.Entities
 {
     public class EVCheck : BaseEntity
     {

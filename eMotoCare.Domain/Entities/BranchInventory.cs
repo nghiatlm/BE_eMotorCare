@@ -1,5 +1,5 @@
 
-namespace eMotoCare.Domain.Entities
+namespace eMotoCare.DAL.Entities
 {
     public class BranchInventory
     {

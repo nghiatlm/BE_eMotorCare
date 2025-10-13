@@ -1,8 +1,7 @@
 using eMotoCare.API.Configurations;
-using eMotoCare.Application.Settings;
-using eMotoCare.Infrastructure.Context;
+using eMotoCare.Common.Models.Settings;
+using eMotoCare.DAL.Context;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +15,8 @@ builder.Services.AddMemoryCache();
 builder.Services.AddAppDI(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.MapperInjection();
+builder.Services.AddSMSConfiguration(builder.Configuration);
 
 
 var dbSection = builder.Configuration.GetSection("Database");

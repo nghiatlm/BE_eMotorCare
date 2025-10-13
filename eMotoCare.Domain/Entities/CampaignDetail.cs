@@ -1,7 +1,7 @@
 
-using eMotoCare.Domain.Common;
+using eMotoCare.DAL.Entities;
 
-namespace eMotoCare.Domain.Entities
+namespace eMotoCare.DAL.Entities
 {
     public class CampaignDetail : BaseEntity
     {

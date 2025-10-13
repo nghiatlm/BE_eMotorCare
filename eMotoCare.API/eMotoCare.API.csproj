@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\eMotoCare.Application\eMotoCare.Application.csproj" />
-    <ProjectReference Include="..\eMotoCare.Infrastructure\eMotoCare.Infrastructure.csproj" />
+    <ProjectReference Include="..\eMotoCare.Application\eMotoCare.BLL.csproj" />
+    <ProjectReference Include="..\eMotoCare.Infrastructure\eMotoCare.Common.csproj" />
   </ItemGroup>
 
 </Project>

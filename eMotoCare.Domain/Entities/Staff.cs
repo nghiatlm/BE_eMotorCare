@@ -1,10 +1,9 @@
 
 
-using eMotoCare.Domain.Common;
-using eMotoCare.Domain.Enums;
+using eMotoCare.Common.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace eMotoCare.Domain.Entities
+namespace eMotoCare.DAL.Entities
 {
     [Index(nameof(CitizenId), IsUnique = true)]
     [Index(nameof(StaffCode), IsUnique = true)]

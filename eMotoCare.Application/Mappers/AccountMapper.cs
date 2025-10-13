@@ -1,10 +1,10 @@
 ﻿
 
 using AutoMapper;
-using eMotoCare.Application.DTOs;
-using eMotoCare.Domain.Entities;
+using eMotoCare.Common.Models;
+using eMotoCare.DAL.Entities;
 
-namespace eMotoCare.Application.Mapper
+namespace eMotoCare.BLL.Mappers
 {
     public class AccountMapper : Profile
     {
