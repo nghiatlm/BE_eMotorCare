@@ -1,8 +1,7 @@
 ﻿using eMotoCare.Application.ApiResponse;
 using eMotoCare.Application.DTOs;
+using eMotoCare.Application.Exceptions;
 using eMotoCare.Application.Interfaces.IService;
-using eMotoCare.Application.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace eMotoCare.API.Controllers
@@ -30,5 +29,49 @@ namespace eMotoCare.API.Controllers
                 Data = null
             });
         }
+
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
+        {
+            try
+            {
+                var isValid = await _authenticateService.VerifyOtpAsync(request.PhoneNumber, request.Otp);
+                if (!isValid)
+                    return BadRequest(new ApiResponse
+                    {
+                        Code = StatusCodes.Status400BadRequest,
+                        Success = false,
+                        Message = "Invalid or expired OTP."
+                    });
+
+                return Ok(new ApiResponse
+                {
+                    Code = StatusCodes.Status200OK,
+                    Success = true,
+                    Message = "Phone number verified successfully."
+                });
+            } catch (AppException ex)
+            { return BadRequest(new ApiResponse
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Success = false,
+                    Message = ex.Message
+                });}
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            var result = await _authenticateService.Login(request.Phone, request.Password);
+            return Ok(new ApiResponse
+            {
+                Code = StatusCodes.Status200OK,
+                Success = true,
+                Message = "Login successful",
+                Data = result
+            });
+        }
+
+
     }
 }

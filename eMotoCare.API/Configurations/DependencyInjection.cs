@@ -1,7 +1,7 @@
 ﻿using eMotoCare.Application;
 using eMotoCare.Infrastructure;
 
-namespace eMotoCare.API
+namespace eMotoCare.API.Configurations
 {
     public static class DependencyInjection
     {

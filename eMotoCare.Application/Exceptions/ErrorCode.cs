@@ -27,6 +27,7 @@ namespace eMotoCare.Application.Exceptions
         HAS_INACTIVE,
         HAS_EXISTED,
         NOT_NULL,
-        PAYMENT_VERIFICATION_FAILED
+        PAYMENT_VERIFICATION_FAILED,
+        PHONE_DO_NOT_EXISTS,
     }
 }

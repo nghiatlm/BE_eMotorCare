@@ -1,8 +1,6 @@
-
-using eMotoCare.API;
-using eMotoCare.Application.Interfaces;
+using eMotoCare.API.Configurations;
+using eMotoCare.Application.Settings;
 using eMotoCare.Infrastructure.Context;
-using eMotoCare.Infrastructure.Sms;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -16,13 +14,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
 builder.Services.AddAppDI(builder.Configuration);
-builder
-    .Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
 
 var dbSection = builder.Configuration.GetSection("Database");
 var server = dbSection["Server"];
@@ -57,6 +51,8 @@ builder.Services.AddDbContext<DBContextMotoCare>(options =>
 
 
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -68,6 +64,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthorization();
 app.UseAuthorization();
 
 app.MapControllers();

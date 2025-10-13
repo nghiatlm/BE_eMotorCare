@@ -1,5 +1,6 @@
 ﻿
 using eMotoCare.Application.Interfaces.IService;
+using eMotoCare.Application.Mapper;
 using eMotoCare.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,6 +12,9 @@ namespace eMotoCare.Application
         {
             services.AddScoped<IAuthenticateService, AuthenticateService>();
             services.AddScoped<IOtpService, OtpService>();
+
+            services.AddAutoMapper(typeof(AccountMapper));
+
             return services;
         }
     }

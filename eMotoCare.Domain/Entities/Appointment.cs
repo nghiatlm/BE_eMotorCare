@@ -19,6 +19,7 @@ namespace eMotoCare.Domain.Entities
         public Status Status { get; set; }
         public ServiceType ServiceType { get; set; }
         public string? Note { get; set; }
+        public string CheckinQR { get; set; }
 
         public Customer? Customer { get; set; }
         public VehicleStage? VehicleStage { get; set; }

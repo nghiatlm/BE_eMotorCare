@@ -6,9 +6,9 @@ using eMotoCare.Application.Exceptions;
 using eMotoCare.Application.Interfaces;
 using eMotoCare.Application.Interfaces.IService;
 using eMotoCare.Domain.Entities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System.Data;
-using System.Numerics;
+
 
 namespace eMotoCare.Application.Services
 {
@@ -19,14 +19,18 @@ namespace eMotoCare.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<AuthenticateService> _logger;
         private readonly IOtpService _otpService;
+        private readonly IMemoryCache _cache;
+        private readonly IJwtService _jwtService;
 
-        public AuthenticateService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IMapper mapper, ILogger<AuthenticateService> logger, IOtpService otpService)
+        public AuthenticateService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher, IMapper mapper, ILogger<AuthenticateService> logger, IOtpService otpService, IMemoryCache cache, IJwtService jwtService)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _mapper = mapper;
             _logger = logger;
             _otpService = otpService;
+            _cache = cache;
+            _jwtService = jwtService;
         }
 
         public async Task<bool> Register(RegisterRequest request)
@@ -64,5 +68,56 @@ namespace eMotoCare.Application.Services
                 throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
             }
         }
+
+        public async Task<bool> VerifyOtpAsync(string phone, string code)
+        {
+            var cacheKey = $"otp_{phone}";
+            if (_cache.TryGetValue(cacheKey, out string? storedCode))
+            {
+                if (storedCode == code)
+                {
+                    _cache.Remove(cacheKey); // Xóa sau khi dùng
+                    return true;
+                }
+            }
+            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
+            if (account == null)
+                throw new AppException(ErrorCode.PHONE_DO_NOT_EXISTS);
+            account.AccountStatus = Domain.Enums.AccountStatus.ACTIVE;
+            _unitOfWork.Accounts.Update(account);
+            await _unitOfWork.SaveChangesWithTransactionAsync();
+            return false;
+        }
+
+        public async Task<AuthenticateResponse> Login(string email, string password)
+        {
+            try
+            {
+                Account? account = await _unitOfWork.Accounts.GetByPhoneAsync(email);
+                if (account == null) throw new AppException(ErrorCode.PHONE_DO_NOT_EXISTS);
+                bool checkPassword = _passwordHasher.VerifyPassword(password, account.Password);
+                if (!checkPassword) throw new AppException(ErrorCode.INVALID_PASSWORD);
+                var token = _jwtService.GenerateJwtToken(account);
+                if (string.IsNullOrEmpty(token)) throw new AppException(ErrorCode.TOKEN_NOT_NULL);
+                var expiredAt = _jwtService.GetExpire(token);
+                var authenticateResponse = new AuthenticateResponse
+                {
+                    Token = token,
+                    ExpiredAt = expiredAt
+                };
+                return authenticateResponse;
+            }
+            catch (AppException ex)
+            {
+                _logger.LogWarning(ex, "AppException occurred: {Message}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
+                throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+
     }
 }

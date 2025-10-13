@@ -32,7 +32,7 @@ namespace eMotoCare.Application.Services
             return code;
         }
 
-        public Task<bool> VerifyOtpAsync(string phone, string code)
+        public async Task<bool> VerifyOtpAsync(string phone, string code)
         {
             var cacheKey = $"otp_{phone}";
             if (_cache.TryGetValue(cacheKey, out string? storedCode))
@@ -40,11 +40,11 @@ namespace eMotoCare.Application.Services
                 if (storedCode == code)
                 {
                     _cache.Remove(cacheKey); // Xóa sau khi dùng
-                    return Task.FromResult(true);
+                    return true;
                 }
             }
 
-            return Task.FromResult(false);
+            return false;
         }
     }
 }
