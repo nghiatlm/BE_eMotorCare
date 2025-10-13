@@ -15,5 +15,10 @@ namespace eMotoCare.DAL.Repositories.AccountRepository
         {
             return await _context.Accounts.FirstOrDefaultAsync(a => a.Phone == phone);
         }
+
+        public async Task<Account> GetByEmailAsync(string email)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(a => a.Email == email);
+        }
     }
 }

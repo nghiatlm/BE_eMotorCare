@@ -1,6 +1,4 @@
-﻿
-
-namespace eMotoCare.Common.Models
+﻿namespace eMotoCare.Common.Models.Responses
 {
     public class AuthenticateResponse
     {

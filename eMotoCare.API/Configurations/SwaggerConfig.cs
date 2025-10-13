@@ -13,13 +13,13 @@ namespace eMotoCare.API.Configurations
                     new OpenApiInfo
                     {
                         Version = "v1",
-                        Title = "Modern Estate API",
-                        Description = "API for Modern Estate",
+                        Title = "eMotoCare API",
+                        Description = "API for eMotoCare",
                         TermsOfService = new Uri("https://example.com/terms"),
                         Contact = new OpenApiContact
                         {
-                            Name = "Mordern Estate",
-                            Email = "mordernestate@gmail.com",
+                            Name = "eMotoCare",
+                            Email = "tuannase172510@fpt.edu.vn",
                         },
                         License = new OpenApiLicense
                         {

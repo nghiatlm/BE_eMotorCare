@@ -1,7 +1,7 @@
 ﻿
 
 using AutoMapper;
-using eMotoCare.Common.Models;
+using eMotoCare.Common.Models.Requests;
 using eMotoCare.DAL.Entities;
 
 namespace eMotoCare.BLL.Mappers

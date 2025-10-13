@@ -2,6 +2,7 @@ using eMotoCare.API.Configurations;
 using eMotoCare.Common.Models.Settings;
 using eMotoCare.DAL.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,13 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 builder.Services.MapperInjection();
 builder.Services.AddSMSConfiguration(builder.Configuration);
 builder.Services.AddSwaggerDependencies();
-
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 
 var dbSection = builder.Configuration.GetSection("Database");

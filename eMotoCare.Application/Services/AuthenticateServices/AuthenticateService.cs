@@ -7,11 +7,14 @@ using eMotoCare.BLL.JwtServices;
 using eMotoCare.BLL.Services.OtpServices;
 using eMotoCare.Common.Enums;
 using eMotoCare.Common.Exceptions;
-using eMotoCare.Common.Models;
+using eMotoCare.Common.Models.ApiResponse;
+using eMotoCare.Common.Models.Requests;
+using eMotoCare.Common.Models.Responses;
 using eMotoCare.DAL;
 using eMotoCare.DAL.Entities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using static System.Net.WebRequestMethods;
 
 
 namespace eMotoCare.BLL.Services.AuthenticateService
@@ -75,22 +78,16 @@ namespace eMotoCare.BLL.Services.AuthenticateService
 
         public async Task<bool> VerifyOtpAsync(string phone, string code)
         {
-            var cacheKey = $"otp_{phone}";
-            if (_cache.TryGetValue(cacheKey, out string? storedCode))
-            {
-                if (storedCode == code)
-                {
-                    _cache.Remove(cacheKey); // Xóa sau khi dùng
-                    return true;
-                }
-            }
+            var verify = await _otpService.VerifyOtpAsync(phone, code);
+            if (!verify)
+                throw new AppException(ErrorCode.INVALID_OTP);
             var account = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
             if (account == null)
                 throw new AppException(ErrorCode.PHONE_DO_NOT_EXISTS);
             account.AccountStatus = AccountStatus.ACTIVE;
             _unitOfWork.Accounts.Update(account);
             await _unitOfWork.SaveChangesWithTransactionAsync();
-            return false;
+            return true;
         }
 
         public async Task<AuthenticateResponse> Login(string email, string password)
@@ -123,5 +120,61 @@ namespace eMotoCare.BLL.Services.AuthenticateService
             }
         }
 
+        public async Task<bool> ChangePassword(string oldPassword, string newPassword, string confirmPassword, Guid id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id.ToString())) throw new AppException(ErrorCode.UNAUTHORIZED);
+                var account = await _unitOfWork.Accounts.GetByIdAsync(id);
+                if (account == null) throw new AppException(ErrorCode.NOT_FOUND);
+                bool checkPassword = _passwordHasher.VerifyPassword(oldPassword, account.Password);
+                if (!checkPassword) throw new AppException(ErrorCode.INVALID_PASSWORD);
+                if (newPassword != confirmPassword) throw new AppException(ErrorCode.INVALID_PASSWORD);
+                account.Password = _passwordHasher.HashPassword(newPassword);
+                await _unitOfWork.Accounts.UpdateAsync(account);
+                await _unitOfWork.SaveChangesWithTransactionAsync();
+                return true;
+            }
+            catch (AppException ex)
+            {
+                _logger.LogWarning(ex, "AppException occurred: {Message}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
+                throw new AppException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        public async Task<ForgetPasswordResponse> ForgotPasswordAsync(string phone)
+        {
+            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
+            if (account == null)
+                return ForgetPasswordResponse.Fail("Phone number not found");
+
+            await _otpService.GenerateAndSendOtpAsync(phone);
+            return ForgetPasswordResponse.Ok("Password reset OTP has been sent to your phone number.");
+        }
+
+        public async Task<ForgetPasswordResponse> ResetPasswordAsync(string phoneNumber, string Otp, string newPassword, string confirmPassword)
+        {
+            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phoneNumber);
+
+            if (account == null) return ForgetPasswordResponse.Fail("Invalid phone number.");
+
+            var verify = await _otpService.VerifyOtpAsync(phoneNumber, Otp);
+            if (!verify)
+                return ForgetPasswordResponse.Fail("Invalid or expired OTP.");
+            if (newPassword != confirmPassword)
+                return ForgetPasswordResponse.Fail("New password and confirm password do not match.");
+            account.Password = _passwordHasher.HashPassword(newPassword);
+            
+
+            await _unitOfWork.Accounts.UpdateAsync(account);
+            await _unitOfWork.SaveChangesWithTransactionAsync();
+
+            return ForgetPasswordResponse.Ok("Password has been reset successfully.");
+        }
     }
 }

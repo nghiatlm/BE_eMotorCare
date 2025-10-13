@@ -4,6 +4,7 @@ namespace eMotoCare.Common.Exceptions
 {
     public enum ErrorCode
     {
+        INVALID_OTP,
         UNAUTHORIZED,
         FORBIDDEN,
         TOKEN_EXPIRED,

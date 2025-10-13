@@ -1,6 +1,4 @@
-﻿
-
-namespace eMotoCare.Common.Models
+﻿namespace eMotoCare.Common.Models.Requests
 {
     public class RegisterRequest
     {
