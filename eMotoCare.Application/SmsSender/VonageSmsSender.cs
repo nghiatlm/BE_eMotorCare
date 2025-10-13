@@ -23,7 +23,7 @@ namespace eMotoCare.BLL.SmsSender
             {
                 To = phoneNumber,
                 From = _fromNumber,
-                Text = $"Your OTP code is: {otp}"
+                Text = $"{otp}"
             });
 
             if (response.Messages[0].Status != "0")
