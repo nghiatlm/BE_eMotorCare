@@ -17,6 +17,8 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.MapperInjection();
 builder.Services.AddSMSConfiguration(builder.Configuration);
+builder.Services.AddSwaggerDependencies();
+
 
 
 var dbSection = builder.Configuration.GetSection("Database");
