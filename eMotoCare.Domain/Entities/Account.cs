@@ -1,12 +1,15 @@
 
 using eMotoCare.Domain.Common;
 using eMotoCare.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.Domain.Entities
 {
+    [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(Phone), IsUnique = true)]
     public class Account : BaseEntity
     {
-        public Guid Id { get; set; }
+        public Guid AccountId { get; set; }
         public string Phone { get; set; }
         public string Password { get; set; }
         public string Email { get; set; }
@@ -16,8 +19,8 @@ namespace eMotoCare.Domain.Entities
         public Guid? StaffId { get; set; }
 
 
-        public  virtual Customer? Customer { get; set; }
-        public  virtual Staff? Staff { get; set; }
+        public  Customer? Customer { get; set; }
+        public  Staff? Staff { get; set; }
 
     }
 }

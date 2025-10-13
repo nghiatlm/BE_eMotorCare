@@ -5,7 +5,7 @@ namespace eMotoCare.Domain.Entities
 {
     public class Payment : BaseEntity
     {
-        public Guid Id { get; set; }
+        public Guid PaymentId { get; set; }
         public Guid AppointmentId { get; set; }
         public Guid PayerId { get; set; }
         public DateTime PaymentDate { get; set; }

@@ -5,7 +5,7 @@ namespace eMotoCare.Domain.Entities
 {
     public class RMADetail : BaseEntity
     {
-        public Guid Id { get; set; }
+        public Guid RMADetailId { get; set; }
         public Guid EVCheckDetailId { get; set; }
         public Guid PartItemId { get; set; }
         public Guid RMAId { get; set; }
@@ -20,9 +20,9 @@ namespace eMotoCare.Domain.Entities
         public string Solution { get; set; }
         public Guid ReplacePartId { get; set; }
 
-        public virtual RMA? RMA { get; set; }
-        public virtual EVCheckDetail? EVCheckDetail { get; set; }
-        public virtual PartItem? PartItem { get; set; }
+        public RMA? RMA { get; set; }
+        public EVCheckDetail? EVCheckDetail { get; set; }
+        public PartItem? PartItem { get; set; }
 
 
     }

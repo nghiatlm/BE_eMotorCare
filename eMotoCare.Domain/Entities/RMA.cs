@@ -7,7 +7,7 @@ namespace eMotoCare.Domain.Entities
 {
     public class RMA : BaseEntity
     {
-        public Guid Id { get; set; }
+        public Guid RMAId { get; set; }
         public Guid CustomerId { get; set; }
         public Guid CreatedById { get; set; }
         public DateTime RMADate{ get; set; }
@@ -15,6 +15,6 @@ namespace eMotoCare.Domain.Entities
 
         public virtual Customer? Customer { get; set; }
         public virtual Staff? CreatedBy { get; set; }
-
+        public virtual ICollection<RMADetail>? RMADetails { get; set; }
     }
 }

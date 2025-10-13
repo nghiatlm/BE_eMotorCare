@@ -2,12 +2,13 @@
 
 using eMotoCare.Domain.Common;
 using eMotoCare.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.Domain.Entities
 {
     public class Appointment : BaseEntity
     {
-        public Guid Id { get; set; }
+        public Guid AppointmentId { get; set; }
         public Guid CustomerId { get; set; }
         public Guid VehicleStageId { get; set; }
         public Guid BranchId { get; set; }
@@ -19,10 +20,11 @@ namespace eMotoCare.Domain.Entities
         public ServiceType ServiceType { get; set; }
         public string? Note { get; set; }
 
-        public virtual Customer? Customer { get; set; }
-        public virtual VehicleStage? VehicleStage { get; set; }
-        public virtual Branch? Branch { get; set; }
-        public virtual Staff? ApproveBy { get; set; }
-        public virtual Campaign? Campaign { get; set; }
+        public Customer? Customer { get; set; }
+        public VehicleStage? VehicleStage { get; set; }
+        public Branch? Branch { get; set; }
+        public Staff? ApproveBy { get; set; }
+        public Campaign? Campaign { get; set; }
+        public virtual ICollection<Payment>? Payments { get; set; }
     }
 }

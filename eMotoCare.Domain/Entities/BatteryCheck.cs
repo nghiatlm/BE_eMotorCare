@@ -6,8 +6,9 @@ namespace eMotoCare.Domain.Entities
 {
     public class BatteryCheck
     {
-        public Guid Id { get; set; }
+        public Guid BatteryCheckId { get; set; }
         public Guid EVCheckDetailId{ get; set; }
+        public EVCheckDetail? EVCheckDetail { get; set; }
         public string BatteryLevel { get; set; }
         public string Voltage { get; set; }
         public Status Status { get; set; }

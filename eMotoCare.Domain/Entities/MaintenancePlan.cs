@@ -6,7 +6,7 @@ namespace eMotoCare.Domain.Entities
 {
     public class MaintenancePlan : BaseEntity
     {
-        public Guid Id { get; set; }
+        public Guid MaintenancePlanId { get; set; }
         public string PlanName { get; set; }
         public string PlanCode { get; set; }
         public string Description { get; set; }
@@ -14,6 +14,9 @@ namespace eMotoCare.Domain.Entities
         public int TotalStage { get; set; }
         public IntervalType IntervalType { get; set; }
         public IntervalUnit IntervalUnit { get; set; }
+
+        public virtual ICollection<MaintenaceStage>? MaintenaceStages { get; set; }
+        public virtual ICollection<Model>? Models { get; set; }
 
     }
 }
