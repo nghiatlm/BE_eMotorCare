@@ -1,6 +1,8 @@
 
 using eMotoCare.API;
+using eMotoCare.Application.Interfaces;
 using eMotoCare.Infrastructure.Context;
+using eMotoCare.Infrastructure.Sms;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -12,8 +14,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddAppDI();
+builder.Services.AddMemoryCache();
+builder.Services.AddAppDI(builder.Configuration);
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
@@ -51,7 +53,6 @@ builder.Services.AddDbContext<DBContextMotoCare>(options =>
             )
     );
 });
-
 
 
 

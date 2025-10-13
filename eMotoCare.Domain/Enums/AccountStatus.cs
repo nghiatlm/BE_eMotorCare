@@ -5,5 +5,6 @@ namespace eMotoCare.Domain.Enums
         ACTIVE,
         IN_ACTIVE,
         LOCK,
+        WAITING_FOR_CONFIRMATION
     }
 }

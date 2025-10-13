@@ -16,9 +16,4 @@
     <ProjectReference Include="..\eMotoCare.Domain\eMotoCare.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Mapper\" />
-  </ItemGroup>
-
 </Project>

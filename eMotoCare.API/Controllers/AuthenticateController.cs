@@ -1,4 +1,7 @@
-﻿using eMotoCare.Application.Interfaces.IService;
+﻿using eMotoCare.Application.ApiResponse;
+using eMotoCare.Application.DTOs;
+using eMotoCare.Application.Interfaces.IService;
+using eMotoCare.Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,11 +11,24 @@ namespace eMotoCare.API.Controllers
     [ApiController]
     public class AuthenticateController : ControllerBase
     {
-        private readonly IAuthenticateService authenticateService;
+        private readonly IAuthenticateService _authenticateService;
 
         public AuthenticateController(IAuthenticateService authenticateService)
         {
-            this.authenticateService = authenticateService;
+            _authenticateService = authenticateService;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var result = await _authenticateService.Register(request);
+            return Ok(new ApiResponse
+            {
+                Code = StatusCodes.Status200OK,
+                Success = true,
+                Message = "Register successful",
+                Data = null
+            });
         }
     }
 }
