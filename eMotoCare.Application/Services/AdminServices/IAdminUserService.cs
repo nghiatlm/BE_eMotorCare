@@ -19,8 +19,7 @@ namespace eMotoCare.BLL.Services.AdminServices
             string password,
             string fullName,
             RoleName role,
-            string? email,
-            string? avatarUrl
+            string? email
         );
         Task<bool> UpdateAsync(
             Guid id,
