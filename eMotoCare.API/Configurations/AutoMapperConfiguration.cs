@@ -8,6 +8,7 @@ namespace eMotoCare.API.Configurations
         {
             services.AddAutoMapper(typeof(AccountMapper));
             services.AddAutoMapper(typeof(BranchMapper));
+            services.AddAutoMapper(typeof(ServiceCenterMapper));
             return services;
         }
     }
