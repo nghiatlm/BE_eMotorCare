@@ -2,6 +2,7 @@
 
 using AutoMapper;
 using eMotoCare.Common.Models.Requests;
+using eMotoCare.Common.Models.Responses;
 using eMotoCare.DAL.Entities;
 
 namespace eMotoCare.BLL.Mappers
@@ -12,6 +13,7 @@ namespace eMotoCare.BLL.Mappers
         {
 
             CreateMap<RegisterRequest, Account>();
+            CreateMap<Account, AccountCurrent>();
 
         }
     }

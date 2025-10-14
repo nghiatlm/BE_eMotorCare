@@ -66,14 +66,35 @@ namespace eMotoCare.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var result = await _authenticateService.Login(request.Phone, request.Password);
-            return Ok(new ApiResponse
+            try
             {
-                Code = StatusCodes.Status200OK,
-                Success = true,
-                Message = "Login successful",
-                Data = result
-            });
+                var result = await _authenticateService.Login(request.Phone, request.Password);
+                return Ok(new ApiResponse
+                {
+                    Code = StatusCodes.Status200OK,
+                    Success = true,
+                    Message = "Login successful",
+                    Data = result
+                });
+            }
+            catch (AppException ex)
+            {
+                return BadRequest(new ApiResponse
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Success = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Success = false,
+                    Message = "An error occurred while processing the login."
+                });
+            }
         }
 
         [HttpPost("change-password/{id}")]
