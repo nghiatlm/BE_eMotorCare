@@ -1,7 +1,4 @@
-
-
 using eMotoCare.Common.Enums;
-
 
 namespace eMotoCare.DAL.Entities
 {
@@ -15,7 +12,7 @@ namespace eMotoCare.DAL.Entities
         public Guid CampaignId { get; set; }
         public DateTime AppointmentDate { get; set; }
         public string FullName { get; set; }
-        public Status Status { get; set; }
+        public AppointmentStatus Status { get; set; }
         public ServiceType ServiceType { get; set; }
         public string? Note { get; set; }
         public string CheckinQR { get; set; }

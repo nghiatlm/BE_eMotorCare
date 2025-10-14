@@ -2,6 +2,7 @@
 using eMotoCare.DAL.Repositories.AccountRepository;
 using eMotoCare.DAL.Repositories.BranchRepository;
 using eMotoCare.DAL.Repositories.ServiceCenterRepository;
+using eMotoCare.DAL.Repositories.StaffRepository;
 using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.DAL
@@ -12,6 +13,7 @@ namespace eMotoCare.DAL
         private IAccountRepository _accountRepository;
         private IBranchRepository _branchRepository;
         private IServiceCenterRepository _serviceCenterRepository;
+        private IStaffRepository _staffRepository;
 
         public UnitOfWork(DBContextMotoCare context)
         {
@@ -20,6 +22,8 @@ namespace eMotoCare.DAL
 
         public IAccountRepository Accounts =>
             _accountRepository ??= new AccountRepository(_unitOfWorkContext);
+        public IStaffRepository Staffs =>
+            _staffRepository ??= new StaffRepository(_unitOfWorkContext);
 
         public IBranchRepository Branches =>
             _branchRepository ??= new BranchRepository(_unitOfWorkContext);

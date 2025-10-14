@@ -1,4 +1,4 @@
-﻿using eMotoCare.BLL.Services.BranchServices;
+﻿using eMotoCare.BLL.Services.StaffService;
 using eMotoCare.Common.Enums;
 using eMotoCare.Common.Exceptions;
 using eMotoCare.Common.Models.ApiResponse;
@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/branches")]
-    //[Authorize(Roles = "ROLE_ADMIN")]
-    public class BranchManagementController : ControllerBase
+    [Route("api/v1/staffs")]
+    [Authorize(Roles = "ROLE_ADMIN")]
+    public class StaffManagementController : ControllerBase
     {
-        private readonly IBranchService _service;
+        private readonly IStaffService _service;
 
-        public BranchManagementController(IBranchService service)
+        public StaffManagementController(IStaffService service)
         {
             _service = service;
         }
@@ -23,12 +23,21 @@ namespace eMotoCare.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
-            [FromQuery] Status? status,
+            [FromQuery] Gender? gender,
+            [FromQuery] StaffPosition? position,
+            [FromQuery] Guid? branchId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(search, status, page, pageSize);
+            var data = await _service.GetPagedAsync(
+                search,
+                gender,
+                position,
+                branchId,
+                page,
+                pageSize
+            );
 
             if (
                 data == null
@@ -43,7 +52,7 @@ namespace eMotoCare.API.Controllers
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Get branches successfully",
+                    Message = "Get staffs successfully",
                     Data = data,
                 }
             );
@@ -52,8 +61,8 @@ namespace eMotoCare.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var branch = await _service.GetByIdAsync(id);
-            if (branch is null)
+            var staff = await _service.GetByIdAsync(id);
+            if (staff is null)
                 throw new AppException(ErrorCode.NOT_FOUND);
 
             return Ok(
@@ -61,39 +70,37 @@ namespace eMotoCare.API.Controllers
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Get branch successfully",
-                    Data = branch,
+                    Message = "Get staff successfully",
+                    Data = staff,
                 }
             );
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] BranchRequest req)
+        public async Task<IActionResult> Create([FromBody] StaffRequest req)
         {
             var id = await _service.CreateAsync(req);
-
             return Ok(
                 new ApiResponse
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Branch created",
+                    Message = "Staff created",
                     Data = new { id },
                 }
             );
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] BranchRequest req)
+        public async Task<IActionResult> Update(Guid id, [FromBody] StaffRequest req)
         {
             await _service.UpdateAsync(id, req);
-
             return Ok(
                 new ApiResponse
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Branch updated",
+                    Message = "Staff updated",
                 }
             );
         }
@@ -102,13 +109,12 @@ namespace eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _service.DeleteAsync(id);
-
             return Ok(
                 new ApiResponse
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Branch deleted",
+                    Message = "Staff deleted",
                 }
             );
         }

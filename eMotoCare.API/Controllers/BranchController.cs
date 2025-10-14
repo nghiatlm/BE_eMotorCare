@@ -1,4 +1,5 @@
-﻿using eMotoCare.BLL.Services.ServiceCenterServices;
+﻿using eMotoCare.BLL.Services.BranchServices;
+using eMotoCare.Common.Enums;
 using eMotoCare.Common.Exceptions;
 using eMotoCare.Common.Models.ApiResponse;
 using eMotoCare.Common.Models.Requests;
@@ -8,13 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/service-centers")]
-    //[Authorize(Roles = "ROLE_ADMIN")]
-    public class ServiceCenterManagementController : ControllerBase
+    [Route("api/v1/branches")]
+    [Authorize(Roles = "ROLE_ADMIN")]
+    public class BranchController : ControllerBase
     {
-        private readonly IServiceCenterService _service;
+        private readonly IBranchService _service;
 
-        public ServiceCenterManagementController(IServiceCenterService service)
+        public BranchController(IBranchService service)
         {
             _service = service;
         }
@@ -22,11 +23,12 @@ namespace eMotoCare.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
+            [FromQuery] Status? status,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(search, page, pageSize);
+            var data = await _service.GetPagedAsync(search, status, page, pageSize);
 
             if (
                 data == null
@@ -41,7 +43,7 @@ namespace eMotoCare.API.Controllers
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Get service centers successfully",
+                    Message = "Get branches successfully",
                     Data = data,
                 }
             );
@@ -50,8 +52,8 @@ namespace eMotoCare.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var sc = await _service.GetByIdAsync(id);
-            if (sc is null)
+            var branch = await _service.GetByIdAsync(id);
+            if (branch is null)
                 throw new AppException(ErrorCode.NOT_FOUND);
 
             return Ok(
@@ -59,37 +61,39 @@ namespace eMotoCare.API.Controllers
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Get service center successfully",
-                    Data = sc,
+                    Message = "Get branch successfully",
+                    Data = branch,
                 }
             );
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ServiceCenterRequest req)
+        public async Task<IActionResult> Create([FromBody] BranchRequest req)
         {
             var id = await _service.CreateAsync(req);
+
             return Ok(
                 new ApiResponse
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Service center created",
+                    Message = "Branch created",
                     Data = new { id },
                 }
             );
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] ServiceCenterRequest req)
+        public async Task<IActionResult> Update(Guid id, [FromBody] BranchRequest req)
         {
             await _service.UpdateAsync(id, req);
+
             return Ok(
                 new ApiResponse
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Service center updated",
+                    Message = "Branch updated",
                 }
             );
         }
@@ -98,12 +102,13 @@ namespace eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _service.DeleteAsync(id);
+
             return Ok(
                 new ApiResponse
                 {
                     Code = StatusCodes.Status200OK,
                     Success = true,
-                    Message = "Service center deleted",
+                    Message = "Branch deleted",
                 }
             );
         }

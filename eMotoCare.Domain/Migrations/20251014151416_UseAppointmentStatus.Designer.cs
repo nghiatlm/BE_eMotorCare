@@ -12,8 +12,8 @@ using eMotoCare.DAL.Context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(DBContextMotoCare))]
-    [Migration("20251014101133_MakeManageByIdNullable")]
-    partial class MakeManageByIdNullable
+    [Migration("20251014151416_UseAppointmentStatus")]
+    partial class UseAppointmentStatus
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/users")]
+    [Route("api/v1/users")]
     [Authorize(Roles = "ROLE_ADMIN")]
-    public class AccountManagementController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly IAdminUserService _adminUserService;
 
-        public AccountManagementController(IAdminUserService adminUserService)
+        public AccountController(IAdminUserService adminUserService)
         {
             _adminUserService = adminUserService;
         }
