@@ -9,7 +9,6 @@ namespace eMotoCare.DAL.Entities
         public DateTime LastUpdated { get; set; }
 
         public virtual ICollection<PartItem>? PartItems { get; set; }
-        public virtual ICollection<BranchInventoryExport>? BranchInventoryExports { get; set; }
 
     }
 }

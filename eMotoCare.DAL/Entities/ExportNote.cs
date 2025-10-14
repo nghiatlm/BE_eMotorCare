@@ -16,7 +16,6 @@ namespace eMotoCare.DAL.Entities
         public Status Status { get; set; }
         public string? Note { get; set; }
 
-        public virtual ICollection<BranchInventoryExport>? BranchInventoryExports { get; set; }
         public virtual ICollection<PartItem>? PartItems { get; set; }
 
 
