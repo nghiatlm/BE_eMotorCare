@@ -15,7 +15,6 @@ namespace eMotoCare.DAL.Context
         public DbSet<BatteryCheck> BatteryChecks { get; set; }
         public DbSet<Branch> Branches { get; set; }
         public DbSet<BranchInventory> BranchInventories { get; set; }
-        public DbSet<BranchInventoryExport> BranchInventoryExports { get; set; }
         public DbSet<Campaign> Campaigns { get; set; }
         public DbSet<CampaignDetail> CampaignDetails { get; set; }
         public DbSet<Customer> Customers { get; set; }

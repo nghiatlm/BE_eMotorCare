@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.Context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.Context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(DBContextMotoCare))]
-    partial class DBContextMotoCareModelSnapshot : ModelSnapshot
+    [Migration("20251014101035_EntityV1")]
+    partial class EntityV1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
