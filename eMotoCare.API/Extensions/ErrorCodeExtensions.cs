@@ -46,7 +46,7 @@ namespace eMotoCare.API.Extensions
                     ErrorCode.EMAIL_ALREADY_EXISTS,
                     new(HttpStatusCode.BadRequest, "Email already exists.")
                 },
-                { ErrorCode.LIST_EMPTY, new(HttpStatusCode.NotFound, "No users found.") },
+                { ErrorCode.LIST_EMPTY, new(HttpStatusCode.NotFound, "Not found.") },
                 {
                     ErrorCode.EMAIL_DO_NOT_EXISTS,
                     new(HttpStatusCode.BadRequest, "Email do not exist.")

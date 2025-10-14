@@ -1,5 +1,4 @@
-﻿
-using eMotoCare.BLL.Mappers;
+﻿using eMotoCare.BLL.Mappers;
 
 namespace eMotoCare.API.Configurations
 {
@@ -7,9 +6,8 @@ namespace eMotoCare.API.Configurations
     {
         public static IServiceCollection MapperInjection(this IServiceCollection services)
         {
-
             services.AddAutoMapper(typeof(AccountMapper));
-
+            services.AddAutoMapper(typeof(BranchMapper));
             return services;
         }
     }

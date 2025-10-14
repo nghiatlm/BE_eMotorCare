@@ -7,9 +7,9 @@ namespace eMotoCare.DAL.Context
     {
         public DBContextMotoCare() { }
 
-        public DBContextMotoCare(DbContextOptions<DBContextMotoCare> options) : base(options)
-        {
-        }
+        public DBContextMotoCare(DbContextOptions<DBContextMotoCare> options)
+            : base(options) { }
+
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<BatteryCheck> BatteryChecks { get; set; }
@@ -33,22 +33,24 @@ namespace eMotoCare.DAL.Context
         public DbSet<PartType> PartTypes { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<PriceService> PriceServices { get; set; }
-        public DbSet<RMA> RMAs { get; set; }    
+        public DbSet<RMA> RMAs { get; set; }
         public DbSet<RMADetail> RMADetails { get; set; }
         public DbSet<ServiceCenter> ServiceCenters { get; set; }
         public DbSet<Staff> Staffs { get; set; }
-        public DbSet<Vehicle> Vehicles { get; set; }    
+        public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<VehiclePartItem> VehiclePartItems { get; set; }
         public DbSet<VehicleStage> VehicleStages { get; set; }
 
-        private static readonly TimeZoneInfo _vnZone =
-        TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        private static readonly TimeZoneInfo _vnZone = TimeZoneInfo.FindSystemTimeZoneById(
+            "SE Asia Standard Time"
+        );
 
         // Trả về DateTime ở múi VN
         private DateTime GetCurrentVnTime()
         {
             return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _vnZone);
         }
+
         public override int SaveChanges()
         {
             ApplyTimestamps();
@@ -57,7 +59,8 @@ namespace eMotoCare.DAL.Context
 
         public override Task<int> SaveChangesAsync(
             bool acceptAllChangesOnSuccess,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             ApplyTimestamps();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -86,29 +89,36 @@ namespace eMotoCare.DAL.Context
         {
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                var properties = entityType.ClrType.GetProperties()
+                var properties = entityType
+                    .ClrType.GetProperties()
                     .Where(p => p.PropertyType.IsEnum);
 
                 foreach (var property in properties)
                 {
-                    modelBuilder.Entity(entityType.Name)
+                    modelBuilder
+                        .Entity(entityType.Name)
                         .Property(property.Name)
                         .HasConversion<string>();
                 }
             }
 
-            modelBuilder.Entity<Branch>()
+            modelBuilder
+                .Entity<Branch>()
                 .HasOne(b => b.ManageBy)
                 .WithOne()
-                .HasForeignKey<Branch>(b => b.ManageById);
+                .HasForeignKey<Branch>(b => b.ManageById)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<VehiclePartItem>()
+            modelBuilder
+                .Entity<VehiclePartItem>()
                 .HasOne(vpi => vpi.PartItem)
                 .WithMany(pi => pi.VehiclePartItems)
                 .HasForeignKey(vpi => vpi.PartItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<VehiclePartItem>()
+            modelBuilder
+                .Entity<VehiclePartItem>()
                 .HasOne(vpi => vpi.ReplaceFor)
                 .WithMany()
                 .HasForeignKey(vpi => vpi.ReplaceForId)
@@ -116,6 +126,5 @@ namespace eMotoCare.DAL.Context
 
             base.OnModelCreating(modelBuilder);
         }
-
     }
 }

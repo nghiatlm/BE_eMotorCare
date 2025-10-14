@@ -1,6 +1,6 @@
-﻿
-using eMotoCare.DAL.Context;
+﻿using eMotoCare.DAL.Context;
 using eMotoCare.DAL.Repositories.AccountRepository;
+using eMotoCare.DAL.Repositories.BranchRepository;
 using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.DAL
@@ -9,6 +9,7 @@ namespace eMotoCare.DAL
     {
         private readonly DBContextMotoCare _unitOfWorkContext;
         private IAccountRepository _accountRepository;
+        private IBranchRepository _branchRepository;
 
         public UnitOfWork(DBContextMotoCare context)
         {
@@ -18,7 +19,8 @@ namespace eMotoCare.DAL
         public IAccountRepository Accounts =>
             _accountRepository ??= new AccountRepository(_unitOfWorkContext);
 
-
+        public IBranchRepository Branches =>
+            _branchRepository ??= new BranchRepository(_unitOfWorkContext);
 
         // SaveChangesWithTransaction đồng bộ
         public async Task<int> SaveChangesAsync()

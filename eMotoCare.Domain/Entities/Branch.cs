@@ -1,6 +1,4 @@
-
 using eMotoCare.Common.Enums;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.DAL.Entities
@@ -12,7 +10,7 @@ namespace eMotoCare.DAL.Entities
     public class Branch : BaseEntity
     {
         public Guid BranchId { get; set; }
-        public Guid ManageById { get; set; }
+        public Guid? ManageById { get; set; }
         public Staff? ManageBy { get; set; }
         public Guid ServiceCenterId { get; set; }
         public virtual ServiceCenter? ServiceCenter { get; set; }
@@ -27,6 +25,5 @@ namespace eMotoCare.DAL.Entities
         public virtual ICollection<ExportNote>? ExportNotes { get; set; }
         public virtual ICollection<ImportNote>? ImportNotes { get; set; }
         public virtual ICollection<BranchInventory>? BranchInventories { get; set; }
-
     }
 }
