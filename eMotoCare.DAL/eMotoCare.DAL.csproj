@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\eMotoCare.Infrastructure\eMotoCare.Common.csproj" />
+    <ProjectReference Include="..\eMotoCare.Common\eMotoCare.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
