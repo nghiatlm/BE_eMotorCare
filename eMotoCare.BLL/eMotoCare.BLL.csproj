@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\eMotoCare.Domain\eMotoCare.DAL.csproj" />
-    <ProjectReference Include="..\eMotoCare.Infrastructure\eMotoCare.Common.csproj" />
+    <ProjectReference Include="..\eMotoCare.DAL\eMotoCare.DAL.csproj" />
+    <ProjectReference Include="..\eMotoCare.Common\eMotoCare.Common.csproj" />
   </ItemGroup>
 
 </Project>
