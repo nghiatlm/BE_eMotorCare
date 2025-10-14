@@ -404,3 +404,5 @@ FodyWeavers.xsd
 .env
 eMotoCare.API/Properties/launchSettings.json
 eMotoCare.API/appsettings.json
+appsettings*.json
+/eMotoCare.API/appsettings.json

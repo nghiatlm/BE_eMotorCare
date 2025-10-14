@@ -1,0 +1,29 @@
+
+using eMotoCare.DAL.Entities;
+
+namespace eMotoCare.DAL.Entities
+{
+    public class RMADetail : BaseEntity
+    {
+        public Guid RMADetailId { get; set; }
+        public Guid EVCheckDetailId { get; set; }
+        public Guid PartItemId { get; set; }
+        public Guid RMAId { get; set; }
+        public int Quantity { get; set; }
+        public string Reason { get; set; }
+        public string RMANumber { get; set; }
+        public DateTime ReleaseDateRMA { get; set; }
+        public DateTime ExpirationDateRMA { get; set; }
+        public string ReturnAddress { get; set; }
+        public string Inspector { get; set; }
+        public string CheckResult { get; set; }
+        public string Solution { get; set; }
+        public Guid ReplacePartId { get; set; }
+
+        public RMA? RMA { get; set; }
+        public EVCheckDetail? EVCheckDetail { get; set; }
+        public PartItem? PartItem { get; set; }
+
+
+    }
+}
