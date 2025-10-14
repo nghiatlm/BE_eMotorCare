@@ -1,6 +1,6 @@
-﻿
-using eMotoCare.BLL.HashPassword;
+﻿using eMotoCare.BLL.HashPassword;
 using eMotoCare.BLL.JwtServices;
+using eMotoCare.BLL.Services.AdminServices;
 using eMotoCare.BLL.Services.AuthenticateService;
 using eMotoCare.BLL.Services.OtpServices;
 using eMotoCare.DAL;
@@ -11,17 +11,19 @@ namespace eMotoCare.API.Configurations
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddAppDI(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAppDI(
+            this IServiceCollection services,
+            IConfiguration configuration
+        )
         {
+            services.AddScoped<IAdminUserService, AdminUserService>();
             services.AddScoped<IAuthenticateService, AuthenticateService>();
             services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<IJwtService, JwtService>();
 
-
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
-
 
             return services;
         }
