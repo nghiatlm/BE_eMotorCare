@@ -1,3 +1,4 @@
+using BE_eMotoCare.API.Configuration;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +34,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             )
     );
 });
+
+//DI
+builder.Services.AddAppDI();
 
 
 
