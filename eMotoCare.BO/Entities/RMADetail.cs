@@ -28,7 +28,7 @@ namespace eMotoCare.BO.Entities
         [Column("expiration_date_rma")]
         public DateTime? ExpirationDateRMA { get; set; }
 
-        [Column("expiration_date_rma", TypeName = "nvarchar(400)")]
+        [Column("inspector", TypeName = "nvarchar(400)")]
         public string? Inspector { get; set; }
 
         [Column("result", TypeName = "nvarchar(400)")]

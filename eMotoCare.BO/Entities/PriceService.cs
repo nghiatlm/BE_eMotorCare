@@ -17,6 +17,8 @@ namespace eMotoCare.BO.Entities
         public Guid PartTypeId { get; set; }
 
         [ForeignKey(nameof(PartTypeId))]
+        public virtual PartType? PartType { get; set; }
+
         [Required]
         [StringLength(50)]
         [Column("code")]
@@ -46,6 +48,5 @@ namespace eMotoCare.BO.Entities
         [Column("description")]
         [StringLength(2000)]
         public string? Description { get; set; }
-        public virtual PartType? PartType { get; set; }
     }
 }

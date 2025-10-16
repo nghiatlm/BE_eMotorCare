@@ -27,7 +27,8 @@ namespace eMotoCare.BO.Entities
         public virtual Part? Part { get; set; }
 
         [Required]
-        [Column("action_type")]
+        [Column("action_type", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(ActionType))]
         public ActionType ActionType { get; set; }
 
         [Column("description")]

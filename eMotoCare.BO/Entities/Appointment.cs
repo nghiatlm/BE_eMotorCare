@@ -66,11 +66,13 @@ namespace eMotoCare.BO.Entities
         public decimal? ActualCost { get; set; }
 
         [Required]
-        [Column("status")]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(AppointmentStatus))]
         public AppointmentStatus Status { get; set; }
 
         [Required]
-        [Column("type")]
+        [Column("type", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(ServiceType))]
         public ServiceType Type { get; set; }
 
         public virtual ICollection<Payment>? Payments { get; set; }

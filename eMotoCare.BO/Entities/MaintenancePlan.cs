@@ -38,7 +38,8 @@ namespace eMotoCare.BO.Entities
         public DateTime EffectiveDate { get; set; }
 
         [Required]
-        [Column("status")]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
         public virtual ICollection<Model>? Models { get; set; }
         public virtual ICollection<MaintenanceStage>? MaintenanceStages { get; set; }

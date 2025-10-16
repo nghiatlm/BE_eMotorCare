@@ -31,7 +31,7 @@ namespace eMotoCare.BO.Entities
         public AccountStatus Stattus { get; set; }
 
         [Required]
-        [Column("status", TypeName = "varchar(200)")]
+        [Column("role_ame", TypeName = "varchar(200)")]
         [EnumDataType(typeof(RoleName))]
         public RoleName RoleName { get; set; }
 

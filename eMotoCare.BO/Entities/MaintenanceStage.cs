@@ -29,18 +29,21 @@ namespace eMotoCare.BO.Entities
         public string? Description { get; set; }
 
         [Required]
-        [Column("mileage")]
+        [Column("mileage", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Mileage))]
         public Mileage Mileage { get; set; }
 
         [Required]
-        [Column("duration_month")]
+        [Column("duration_month", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(DurationMonth))]
         public DurationMonth DurationMonth { get; set; }
 
         [Column("estimated_time")]
         public int? EstimatedTime { get; set; }
 
         [Required]
-        [Column("status")]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
 
         public virtual ICollection<VehicleStage>? VehicleStages { get; set; }

@@ -54,7 +54,8 @@ namespace eMotoCare.BO.Entities
         public decimal Price { get; set; }
 
         [Required]
-        [Column("status")]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
 
         [Column("warranty_period")]

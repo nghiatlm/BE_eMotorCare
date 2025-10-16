@@ -19,6 +19,10 @@ namespace eMotoCare.BO.Entities
         public virtual MaintenanceStage? MaintenanceStage { get; set; }
 
         [Required]
+        [Column("actual_maintenance_mileage")]
+        public DateTime ActualMaintenanceMileage { get; set; }
+
+        [Required]
         [Column("vehicle_id")]
         public Guid VehicleId { get; set; }
 
@@ -27,7 +31,8 @@ namespace eMotoCare.BO.Entities
         public DateTime DateOfImplementation { get; set; }
 
         [Required]
-        [Column("status")]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
 
         [ForeignKey(nameof(VehicleId))]

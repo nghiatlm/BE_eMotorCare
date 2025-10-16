@@ -23,7 +23,8 @@ namespace eMotoCare.BO.Entities
         public string? Description { get; set; }
 
         [Required]
-        [Column("type")]
+        [Column("type", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(CampaignType))]
         public CampaignType Type { get; set; }
 
         [Required]
@@ -35,7 +36,8 @@ namespace eMotoCare.BO.Entities
         public DateTime EndDate { get; set; }
 
         [Required]
-        [Column("status")]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
         public virtual ICollection<CampaignDetail>? CampaignDetails { get; set; }
         public virtual ICollection<Appointment>? Appointments { get; set; }
