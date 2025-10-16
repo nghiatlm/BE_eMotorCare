@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
 {
-    public interface IServiceCenterInventoryRepository { }
+    public interface IServiceCenterInventoryRepository : IGenericRepository<ServiceCenterInventory> { }
 }

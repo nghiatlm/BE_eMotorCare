@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
 {
-    internal interface IEVCheckDetailRepository { }
+    public interface IEVCheckDetailRepository : IGenericRepository<EVCheckDetail> { }
 }

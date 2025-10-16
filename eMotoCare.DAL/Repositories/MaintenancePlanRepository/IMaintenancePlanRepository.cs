@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
 {
-    public interface IMaintenancePlanRepository { }
+    public interface IMaintenancePlanRepository : IGenericRepository<MaintenancePlan> { }
 }

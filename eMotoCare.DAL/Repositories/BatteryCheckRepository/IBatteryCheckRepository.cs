@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.BatteryCheck
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
 {
-    public interface IBatteryCheckRepository { }
+    public interface IBatteryCheckRepository : IGenericRepository<BatteryCheck> { }
 }

@@ -1,4 +1,13 @@
-﻿namespace eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+using eMotoCare.DAL.context;
+
+namespace eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository
 {
-    public class MaintenanceStageDetailRepository : IMaintenanceStageDetailRepository { }
+    public class MaintenanceStageDetailRepository : GenericRepository<MaintenanceStageDetail>, IMaintenanceStageDetailRepository
+    {
+        public MaintenanceStageDetailRepository(ApplicationDbContext context) : base(context)
+        {
+        }
+    }
 }

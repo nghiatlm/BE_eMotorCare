@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.ExportNoteRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.ExportNoteRepository
 {
-    public interface IExportNoteRepository { }
+    public interface IExportNoteRepository : IGenericRepository<ExportNote> { }
 }

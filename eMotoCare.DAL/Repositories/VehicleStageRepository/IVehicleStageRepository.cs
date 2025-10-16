@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.VehicleStageRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.VehicleStageRepository
 {
-    public interface IVehicleStageRepository { }
+    public interface IVehicleStageRepository : IGenericRepository<VehicleStage> { }
 }

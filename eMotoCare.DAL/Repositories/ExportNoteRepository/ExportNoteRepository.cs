@@ -1,4 +1,13 @@
-﻿namespace eMotoCare.DAL.Repositories.ExportNoteRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+using eMotoCare.DAL.context;
+
+namespace eMotoCare.DAL.Repositories.ExportNoteRepository
 {
-    public class ExportNoteRepository : IExportNoteRepository { }
+    public class ExportNoteRepository : GenericRepository<ExportNote>, IExportNoteRepository
+    {
+        public ExportNoteRepository(ApplicationDbContext context) : base(context)
+        {
+        }
+    }
 }

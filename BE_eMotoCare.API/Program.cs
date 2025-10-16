@@ -1,4 +1,5 @@
 using BE_eMotoCare.API.Configuration;
+using BE_eMotoCare.API.Middlewares;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<JwtMiddleware>();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

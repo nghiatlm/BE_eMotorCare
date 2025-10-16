@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
 {
-    public interface IVehiclePartItemRepository { }
+    public interface IVehiclePartItemRepository : IGenericRepository<VehiclePartItem> { }
 }

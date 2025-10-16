@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.AccountRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.AccountRepository
 {
-    public interface IAccountRepository { }
+    public interface IAccountRepository : IGenericRepository<Account> { }
 }

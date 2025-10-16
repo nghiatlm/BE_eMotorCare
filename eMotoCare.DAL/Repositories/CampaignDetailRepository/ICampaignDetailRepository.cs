@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.CampaignDetailRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.CampaignDetailRepository
 {
-    public interface ICampaignDetailRepository { }
+    public interface ICampaignDetailRepository: IGenericRepository<CampaignDetail> { }
 }

@@ -1,4 +1,13 @@
-﻿namespace eMotoCare.DAL.Repositories.AppointmentRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+using eMotoCare.DAL.context;
+
+namespace eMotoCare.DAL.Repositories.AppointmentRepository
 {
-    public class AppointmentRepository : IAppointmentRepository { }
+    public class AppointmentRepository : GenericRepository<Appointment>, IAppointmentRepository
+    {
+        public AppointmentRepository(ApplicationDbContext context) : base(context)
+        {
+        }
+    }
 }

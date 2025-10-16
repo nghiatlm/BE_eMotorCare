@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.RMADetailRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.RMADetailRepository
 {
-    public interface IRMADetailRepository { }
+    public interface IRMADetailRepository : IGenericRepository<RMADetail> { }
 }

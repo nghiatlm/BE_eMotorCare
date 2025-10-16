@@ -1,4 +1,7 @@
-﻿namespace eMotoCare.DAL.Repositories.ImportNoteRepository
+﻿using eMotoCare.BO.Entities;
+using eMotoCare.DAL.Base;
+
+namespace eMotoCare.DAL.Repositories.ImportNoteRepository
 {
-    public interface IImportNoteRepository { }
+    public interface IImportNoteRepository : IGenericRepository<ImportNote> { }
 }
