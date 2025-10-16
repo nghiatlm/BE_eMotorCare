@@ -18,9 +18,8 @@ namespace eMotoCare.BO.DTO.ApiResponse
             Data = data;
         }
 
-        private ApiResponse(bool success, string message)
+        private ApiResponse(string message)
         {
-            Success = success;
             Message = message;
         }
 
@@ -34,7 +33,7 @@ namespace eMotoCare.BO.DTO.ApiResponse
             return new ApiResponse<T>(HttpStatusCode.Created, true, message, data);
         }
 
-        public static ApiResponse<T> BadRequest(bool success, string message = "BadRequest")
+        public static ApiResponse<T> BadRequest(string message = "BadRequest")
         {
             return new ApiResponse<T>(HttpStatusCode.BadRequest, false, message);
         }
