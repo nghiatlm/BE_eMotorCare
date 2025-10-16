@@ -1,12 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using eMotoCare.BO.Common;
+using eMotoCare.BO.DTO.ApiResponse;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Net;
-using System.Text.Json;
-using eMotoCare.BO.DTO.ApiResponse;
 
 namespace BE_eMotoCare.API.Middlewares
 {
@@ -19,20 +19,28 @@ namespace BE_eMotoCare.API.Middlewares
         private static readonly string[] _excludedPaths = new[]
         {
             "/api/v1/auths/login",
+            "/api/v1/admin/service-centers",
             "/api/v1/auths/register",
             "/api/v1/public",
             "/swagger",
-            "/health"
+            "/health",
         };
 
-        public JwtMiddleware(RequestDelegate next, ILogger<JwtMiddleware> logger, IOptions<JwtSettings> jwtOptions)
+        public JwtMiddleware(
+            RequestDelegate next,
+            ILogger<JwtMiddleware> logger,
+            IOptions<JwtSettings> jwtOptions
+        )
         {
             _next = next;
             _logger = logger;
             _jwtSettings = jwtOptions.Value;
-            _jwtSettings.SecretKey = Environment.GetEnvironmentVariable("JWT_KEY") ?? _jwtSettings.SecretKey;
-            _jwtSettings.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? _jwtSettings.Issuer;
-            _jwtSettings.Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? _jwtSettings.Audience;
+            _jwtSettings.SecretKey =
+                Environment.GetEnvironmentVariable("JWT_KEY") ?? _jwtSettings.SecretKey;
+            _jwtSettings.Issuer =
+                Environment.GetEnvironmentVariable("JWT_ISSUER") ?? _jwtSettings.Issuer;
+            _jwtSettings.Audience =
+                Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? _jwtSettings.Audience;
 
             string? envExpires = Environment.GetEnvironmentVariable("JWT_EXPIRES_IN_MINUTES");
             if (int.TryParse(envExpires, out int expiresInMinutes))
@@ -73,23 +81,39 @@ namespace BE_eMotoCare.API.Middlewares
                 }
                 catch (SecurityTokenExpiredException)
                 {
-                    await WriteErrorResponse(context, HttpStatusCode.Unauthorized, "Token has expired");
+                    await WriteErrorResponse(
+                        context,
+                        HttpStatusCode.Unauthorized,
+                        "Token has expired"
+                    );
                     return;
                 }
                 catch (SecurityTokenException ex)
                 {
-                    await WriteErrorResponse(context, HttpStatusCode.Unauthorized, $"Invalid token: {ex.Message}");
+                    await WriteErrorResponse(
+                        context,
+                        HttpStatusCode.Unauthorized,
+                        $"Invalid token: {ex.Message}"
+                    );
                     return;
                 }
                 catch (Exception ex)
                 {
-                    await WriteErrorResponse(context, HttpStatusCode.InternalServerError, $"Unexpected error: {ex.Message}");
+                    await WriteErrorResponse(
+                        context,
+                        HttpStatusCode.InternalServerError,
+                        $"Unexpected error: {ex.Message}"
+                    );
                     return;
                 }
             }
             else
             {
-                await WriteErrorResponse(context, HttpStatusCode.Unauthorized, "Missing or invalid Authorization header");
+                await WriteErrorResponse(
+                    context,
+                    HttpStatusCode.Unauthorized,
+                    "Missing or invalid Authorization header"
+                );
                 return;
             }
 
@@ -111,10 +135,14 @@ namespace BE_eMotoCare.API.Middlewares
                 ValidateAudience = false,
                 ValidAudience = _jwtSettings.Audience,
                 ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
             };
 
-            var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            var principal = tokenHandler.ValidateToken(
+                token,
+                validationParameters,
+                out SecurityToken validatedToken
+            );
 
             if (validatedToken is not JwtSecurityToken)
                 throw new SecurityTokenException("Invalid JWT token format");
@@ -122,7 +150,11 @@ namespace BE_eMotoCare.API.Middlewares
             context.User = principal;
         }
 
-        private async Task WriteErrorResponse(HttpContext context, HttpStatusCode statusCode, string message)
+        private async Task WriteErrorResponse(
+            HttpContext context,
+            HttpStatusCode statusCode,
+            string message
+        )
         {
             context.Response.StatusCode = (int)statusCode;
             context.Response.ContentType = "application/json";

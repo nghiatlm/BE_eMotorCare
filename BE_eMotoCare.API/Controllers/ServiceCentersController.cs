@@ -14,91 +14,65 @@ namespace BE_eMotoCare.API.Controllers
     //[Authorize(Roles = "ROLE_ADMIN")]
     public class ServiceCentersController : ControllerBase
     {
-        private readonly IServiceCenterService _svc;
+        private readonly IServiceCenterService _service;
 
-        public ServiceCentersController(IServiceCenterService svc)
+        public ServiceCentersController(IServiceCenterService service)
         {
-            _svc = svc;
+            _service = service;
         }
 
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<PageResult<ServiceCenterResponse>>>> GetPaged(
+        public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] StatusEnum? status,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _svc.GetPagedAsync(search, status, page, pageSize);
-
-            if (
-                data is null
-                || data.RowDatas is null
-                || data.RowDatas.Count == 0
-                || data.Total == 0
-            )
-            {
-                var respNotFound = ApiResponse<PageResult<ServiceCenterResponse>>.NotFound(
-                    "không có dữ liệu"
-                );
-                return StatusCode((int)respNotFound.StatusCode, respNotFound);
-            }
-
-            var resp = ApiResponse<PageResult<ServiceCenterResponse>>.SuccessResponse(
-                data,
-                "lấy danh sách thành công"
+            var data = await _service.GetPagedAsync(search, status, page, pageSize);
+            return Ok(
+                ApiResponse<PageResult<ServiceCenterResponse>>.SuccessResponse(
+                    data,
+                    "Lấy danh sách ServiceCenter thành công"
+                )
             );
-            return StatusCode((int)resp.StatusCode, resp);
         }
 
-        [HttpGet("{id:guid}")]
-        public async Task<ActionResult<ApiResponse<ServiceCenterResponse>>> GetById(Guid id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _svc.GetByIdAsync(id);
-            if (item is null)
-            {
-                var notFound = ApiResponse<ServiceCenterResponse>.NotFound(
-                    "không tìm thấy ServiceCenter"
-                );
-                return StatusCode((int)notFound.StatusCode, notFound);
-            }
-
-            var resp = ApiResponse<ServiceCenterResponse>.SuccessResponse(
-                item,
-                "lấy chi tiết thành công"
+            var item = await _service.GetByIdAsync(id);
+            return Ok(
+                ApiResponse<ServiceCenterResponse>.SuccessResponse(
+                    item,
+                    "Lấy ServiceCenter thành công"
+                )
             );
-            return StatusCode((int)resp.StatusCode, resp);
         }
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<object>>> Create(
-            [FromBody] ServiceCenterRequest req
-        )
+        public async Task<IActionResult> Create([FromBody] ServiceCenterRequest request)
         {
-            var id = await _svc.CreateAsync(req);
-
-            var resp = ApiResponse<object>.CreatedSuccess(new { id }, "tạo thành công");
-            return StatusCode((int)resp.StatusCode, resp);
+            var id = await _service.CreateAsync(request);
+            return Ok(
+                ApiResponse<object>.SuccessResponse(new { id }, "Tạo ServiceCenter thành công")
+            );
         }
 
-        [HttpPut("{id:guid}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(
-            Guid id,
-            [FromBody] ServiceCenterRequest req
-        )
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] ServiceCenterRequest request)
         {
-            await _svc.UpdateAsync(id, req);
-
-            var resp = ApiResponse<object>.SuccessResponse(null, "cập nhật thành công");
-            return StatusCode((int)resp.StatusCode, resp);
+            await _service.UpdateAsync(id, request);
+            return Ok(
+                ApiResponse<string>.SuccessResponse(null, "Cập nhật ServiceCenter thành công")
+            );
         }
 
-        [HttpDelete("{id:guid}")]
-        public async Task<ActionResult<ApiResponse<object>>> Delete(Guid id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _svc.DeleteAsync(id);
-            var resp = ApiResponse<object>.DeleteSuccess();
-            return StatusCode((int)resp.StatusCode, resp);
+            await _service.DeleteAsync(id);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá ServiceCenter thành công"));
         }
     }
 }
