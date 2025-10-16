@@ -1,4 +1,7 @@
 ﻿namespace eMotoCare.BO.Enum
 {
-    public enum MaintenanceUnit { }
+    public enum MaintenanceUnit 
+    { 
+        KILOMETER
+    }
 }
