@@ -7,11 +7,11 @@ namespace eMotoCare.DAL.Base
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly ApplicationDbContext _context;
+        public readonly ApplicationDbContext _context;
 
         public GenericRepository(ApplicationDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public void Create(T entity)
