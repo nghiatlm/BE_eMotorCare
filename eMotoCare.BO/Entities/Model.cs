@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,8 +17,23 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(MaintenancePlanId))]
         public MaintenancePlan? MaintenancePlan { get; set; }
 
+        [Required]
+        [StringLength(50)]
+        [Column("code")]
+        public string Code { get; set; } = default!;
+
+        [Required]
+        [StringLength(255)]
+        [Column("name")]
+        public string Name { get; set; } = default!;
+
+        [Required]
+        [StringLength(255)]
+        [Column("brand")]
+        public string Brand { get; set; } = default!;
+
         public virtual ICollection<Vehicle>? Vehicles { get; set; }
-        
+
         public virtual ICollection<ModelPartType>? ModelPartTypes { get; set; }
     }
 }

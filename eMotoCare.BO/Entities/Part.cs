@@ -1,7 +1,7 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
@@ -19,6 +19,26 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(PartTypeId))]
         public virtual PartType? PartType { get; set; }
 
+        [Required]
+        [Column("code")]
+        public string Code { get; set; } = default!;
+
+        [Required]
+        [StringLength(255)]
+        [Column("name")]
+        public string Name { get; set; } = default!;
+
+        [Required]
+        [Column("quantity")]
+        public int Quantity { get; set; }
+
+        [Column("image")]
+        [StringLength(500)]
+        public string? Image { get; set; }
+
+        [Required]
+        [Column("status")]
+        public Status Status { get; set; }
         public virtual ICollection<PartItem>? PartItems { get; set; }
         public virtual ICollection<CampaignDetail>? CampaignDetails { get; set; }
         public virtual ICollection<MaintenanceStageDetail>? MaintenanceStageDetails { get; set; }

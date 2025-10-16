@@ -1,4 +1,3 @@
-
 using Microsoft.OpenApi.Models;
 
 namespace BE_eMotoCare.API.Configuration
@@ -14,12 +13,12 @@ namespace BE_eMotoCare.API.Configuration
                     new OpenApiInfo
                     {
                         Version = "v1",
-                        Title = "Modern Estate API",
-                        Description = "API for Modern Estate",
+                        Title = "EMotoCare API",
+                        Description = "API for EMotoCare",
                         TermsOfService = new Uri("https://example.com/terms"),
                         Contact = new OpenApiContact
                         {
-                            Name = "Mordern Estate",
+                            Name = "EMotoCare",
                             Email = "mordernestate@gmail.com",
                         },
                         License = new OpenApiLicense
@@ -58,6 +57,5 @@ namespace BE_eMotoCare.API.Configuration
             });
             return services;
         }
-
     }
 }

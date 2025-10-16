@@ -1,6 +1,6 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
@@ -21,6 +21,14 @@ namespace eMotoCare.BO.Entities
         [Required]
         [Column("vehicle_id")]
         public Guid VehicleId { get; set; }
+
+        [Required]
+        [Column("date_of_implementation")]
+        public DateTime DateOfImplementation { get; set; }
+
+        [Required]
+        [Column("status")]
+        public Status Status { get; set; }
 
         [ForeignKey(nameof(VehicleId))]
         public virtual Vehicle? Vehicle { get; set; }
