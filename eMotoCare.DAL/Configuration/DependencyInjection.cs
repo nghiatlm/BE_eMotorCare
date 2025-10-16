@@ -1,4 +1,5 @@
 
+using eMotoCare.DAL.Base;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace eMotoCare.DAL.Configuration
@@ -7,8 +8,10 @@ namespace eMotoCare.DAL.Configuration
     {
         public static IServiceCollection AddRepoDI(this IServiceCollection services)
         {
-            // services.AddScoped<IPetShopMemberRepository, PetShopMemberRepository>();
-            // services.AddScoped<IPetRepository, PetRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+
             return services;
         }
     }
