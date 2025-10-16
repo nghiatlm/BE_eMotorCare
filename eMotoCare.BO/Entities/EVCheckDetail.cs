@@ -1,6 +1,6 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
@@ -49,5 +49,31 @@ namespace eMotoCare.BO.Entities
 
         [InverseProperty(nameof(BatteryCheck.EVCheckDetail))]
         public virtual BatteryCheck? BatteryCheck { get; set; }
+
+        [Column("result")]
+        public string? Result { get; set; }
+
+        [Required]
+        [Column("remedies")]
+        public Remedies Remedies { get; set; }
+
+        [Column("unit")]
+        public string? Unit { get; set; }
+
+        [Column("quantity", TypeName = "decimal(18,2)")]
+        public decimal? Quantity { get; set; }
+
+        [Column("price_part", TypeName = "decimal(18,2)")]
+        public decimal? PricePart { get; set; }
+
+        [Column("price_service", TypeName = "decimal(18,2)")]
+        public decimal? PriceService { get; set; }
+
+        [Column("total_amount", TypeName = "decimal(18,2)")]
+        public decimal? TotalAmount { get; set; }
+
+        [Required]
+        [Column("status")]
+        public Status Status { get; set; }
     }
 }

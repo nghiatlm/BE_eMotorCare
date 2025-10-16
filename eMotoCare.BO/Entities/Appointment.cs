@@ -1,6 +1,6 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
@@ -11,13 +11,11 @@ namespace eMotoCare.BO.Entities
         [Column("appointment_id")]
         public Guid Id { get; set; }
 
-
         [Column("approve_by_id")]
         public Guid? ApproveById { get; set; }
 
         [ForeignKey(nameof(ApproveById))]
         public virtual Staff? ApproveBy { get; set; }
-
 
         [Required]
         [Column("service_center_id")]
@@ -26,20 +24,14 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
 
-
-
         [Column("customer_id")]
         public Guid CustomerId { get; set; }
 
         [ForeignKey(nameof(CustomerId))]
         public virtual Customer? Customer { get; set; }
 
-
-
         [InverseProperty(nameof(EVCheck.Appointment))]
         public virtual EVCheck? EVCheck { get; set; }
-
-
 
         [Column("vehicle_stage_id")]
         public Guid? VehicleStageId { get; set; }
@@ -47,15 +39,39 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(VehicleStageId))]
         public virtual VehicleStage? VehicleStage { get; set; }
 
-
-
         [Column("campaign_id")]
         public Guid? CampaignId { get; set; }
 
         [ForeignKey(nameof(CampaignId))]
         public virtual Campaign? Campaign { get; set; }
 
+        [Required]
+        [StringLength(50)]
+        [Column("code")]
+        public string Code { get; set; } = default!;
 
+        [Required]
+        [Column("appointment_date")]
+        public DateTime AppointmentDate { get; set; }
+
+        [Required]
+        [StringLength(50)]
+        [Column("time_slot")]
+        public string TimeSlot { get; set; } = default!;
+
+        [Column("estimated_cost", TypeName = "decimal(18,2)")]
+        public decimal? EstimatedCost { get; set; }
+
+        [Column("actual_cost", TypeName = "decimal(18,2)")]
+        public decimal? ActualCost { get; set; }
+
+        [Required]
+        [Column("status")]
+        public AppointmentStatus Status { get; set; }
+
+        [Required]
+        [Column("type")]
+        public ServiceType Type { get; set; }
 
         public virtual ICollection<Payment>? Payments { get; set; }
     }

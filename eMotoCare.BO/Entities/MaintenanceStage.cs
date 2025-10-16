@@ -1,7 +1,7 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
@@ -18,6 +18,31 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(MaintenancePlanId))]
         public virtual MaintenancePlan? MaintenancePlan { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        [Column("name")]
+        public string Name { get; set; } = default!;
+
+        [Column("description")]
+        [StringLength(2000)]
+        public string? Description { get; set; }
+
+        [Required]
+        [Column("mileage")]
+        public Mileage Mileage { get; set; }
+
+        [Required]
+        [Column("duration_month")]
+        public DurationMonth DurationMonth { get; set; }
+
+        [Column("estimated_time")]
+        public int? EstimatedTime { get; set; }
+
+        [Required]
+        [Column("status")]
+        public Status Status { get; set; }
+
         public virtual ICollection<VehicleStage>? VehicleStages { get; set; }
         public virtual ICollection<MaintenanceStageDetail>? MaintenanceStageDetails { get; set; }
     }

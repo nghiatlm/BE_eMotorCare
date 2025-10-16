@@ -1,12 +1,11 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
     [Table("maintenance_stage_detail")]
-
     public class MaintenanceStageDetail : BaseEntity
     {
         [Key]
@@ -26,6 +25,14 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(PartId))]
         public virtual Part? Part { get; set; }
+
+        [Required]
+        [Column("action_type")]
+        public ActionType ActionType { get; set; }
+
+        [Column("description")]
+        [StringLength(2000)]
+        public string? Description { get; set; }
 
         [InverseProperty(nameof(EVCheckDetail.MaintenanceStageDetail))]
         public virtual EVCheckDetail? EVCheckDetail { get; set; }
