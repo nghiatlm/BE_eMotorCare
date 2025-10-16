@@ -1,10 +1,10 @@
 using BE_eMotoCare.API.Configuration;
 using BE_eMotoCare.API.Middlewares;
+using eMotoCare.BO.Common;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 var dbSection = builder.Configuration.GetSection("Database");
 var server = dbSection["Server"];
@@ -37,9 +37,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 //DI
+
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddAppDI();
-
-
+builder.Services.MapperInjection();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
