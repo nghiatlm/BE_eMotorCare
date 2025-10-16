@@ -9,9 +9,9 @@ namespace eMotoCare.DAL.Repositories.AccountRepository
 
         public AccountRepository(ApplicationDbContext context) : base(context) { }
 
-        public Task<Account> FindByEmail(string email)
+        public async Task<Account?> FindByEmail(string email)
         {
-            throw new NotImplementedException();
+            return await _context.Accounts.FindAsync(email);
         }
 
         public async Task<Account?> FindByPhone(string phone)
