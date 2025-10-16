@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace eMototCare.BLL.Services.AccountService
+using eMotoCare.BO.DTO.Requests;
+using eMotoCare.BO.DTO.Responses;
+using eMototCare.BLL.Services.AccountService;
+
+namespace eMototCare.BLL.Services.AccountServices
 {
-    public interface AccountService
+    public class AccountService : IAccountService
     {
         
     }

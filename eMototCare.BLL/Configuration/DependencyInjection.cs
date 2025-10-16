@@ -1,5 +1,6 @@
 using eMototCare.BLL.HashPasswords;
 using eMototCare.BLL.JwtServices;
+using eMototCare.BLL.Services.AuthServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace eMototCare.BLL.Configuration
@@ -10,6 +11,9 @@ namespace eMototCare.BLL.Configuration
         {
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IJwtService, JwtService>();
+
+
+            services.AddScoped<IAuthService, AuthService>();
 
             return services;
         }
