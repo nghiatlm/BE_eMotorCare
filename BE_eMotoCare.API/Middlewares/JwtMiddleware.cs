@@ -16,6 +16,15 @@ namespace BE_eMotoCare.API.Middlewares
         private readonly ILogger<JwtMiddleware> _logger;
         private readonly JwtSettings _jwtSettings;
 
+        private static readonly string[] _excludedPaths = new[]
+        {
+            "/api/v1/auths/login",
+            "/api/v1/auths/register",
+            "/api/v1/public",
+            "/swagger",
+            "/health"
+        };
+
         public JwtMiddleware(RequestDelegate next, ILogger<JwtMiddleware> logger, IOptions<JwtSettings> jwtOptions)
         {
             _next = next;
@@ -37,9 +46,9 @@ namespace BE_eMotoCare.API.Middlewares
             var path = context.Request.Path.Value?.ToLower();
             _logger.LogInformation($"Processing request for path: {path}");
 
-            if (path?.StartsWith("/public") == true)
+            if (_excludedPaths.Any(p => path.StartsWith(p)))
             {
-                _logger.LogInformation("Public endpoint, skipping JWT validation");
+                _logger.LogInformation($"Skipping JWT validation for public path: {path}");
                 await _next(context);
                 return;
             }

@@ -22,7 +22,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             var response = await _service.Login(request);
-            return BadRequest(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
+            return Ok(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using eMotoCare.BO.Entities;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
+using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.DAL.Repositories.AccountRepository
 {
@@ -13,10 +14,10 @@ namespace eMotoCare.DAL.Repositories.AccountRepository
         {
             return await _context.Accounts.FindAsync(email);
         }
-
         public async Task<Account?> FindByPhone(string phone)
         {
-            return await _context.Accounts.FindAsync(phone);
+            return await _context.Accounts.FirstOrDefaultAsync(a => a.Phone.Equals(phone));
         }
     }
 }
+
