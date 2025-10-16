@@ -1,15 +1,20 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Common;
 
 namespace eMotoCare.BO.Entities
 {
     [Table("vehicle_part_item")]
-    public class VehiclePartItem
+    public class VehiclePartItem : BaseEntity
     {
         [Key]
         [Column("vehicle_part_item_id")]
         public Guid Id { get; set; }
+
+        [Required]
+        [Column("install_date")]
+        public DateTime InstallDate { get; set; }
 
         [Required]
         [Column("vehicle_id")]

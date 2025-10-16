@@ -1,16 +1,27 @@
-
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Common;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
-    [Table("ec_check")]
-    public class EVCheck
+    [Table("ev_check")]
+    public class EVCheck : BaseEntity
     {
         [Key]
         [Column("ev_check_id")]
         public Guid Id { get; set; }
+
+        [Required]
+        [Column("check_date")]
+        public DateTime CheckDate { get; set; }
+
+        [Column("total_amout")]
+        public decimal? TotalAmout { get; set; }
+
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(EVCheckStatus))]
+        public EVCheckStatus Status { get; set; }
 
         [Required]
         [Column("appointment_id")]

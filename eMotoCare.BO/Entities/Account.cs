@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
@@ -11,6 +12,28 @@ namespace eMotoCare.BO.Entities
         [Key]
         [Column("account_id")]
         public Guid Id { get; set; }
+
+        [Required]
+        [Column("phone", TypeName = "varchar(15)")]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required]
+        [Column("email", TypeName = "varchar(200)")]
+        public string? Email { get; set; }
+
+        [Required]
+        [Column("password", TypeName = "varchar(200)")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(AccountStatus))]
+        public AccountStatus Stattus { get; set; }
+
+        [Required]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(RoleName))]
+        public RoleName RoleName { get; set; }
 
         [InverseProperty(nameof(Customer.Account))]
         public Customer? Customer { get; set; }
