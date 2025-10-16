@@ -24,6 +24,10 @@ namespace eMotoCare.BO.Entities
         public EVCheckStatus Status { get; set; }
 
         [Required]
+        [Column("odometer")]
+        public string Odometer { get; set; } = string.Empty;
+
+        [Required]
         [Column("appointment_id")]
         public Guid AppointmentId { get; set; }
 
