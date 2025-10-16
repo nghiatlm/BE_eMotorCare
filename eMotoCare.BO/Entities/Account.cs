@@ -13,11 +13,9 @@ namespace eMotoCare.BO.Entities
         [Column("account_id")]
         public Guid Id { get; set; }
 
-        [Required]
         [Column("phone", TypeName = "varchar(15)")]
         public string Phone { get; set; } = string.Empty;
 
-        [Required]
         [Column("email", TypeName = "varchar(200)")]
         public string? Email { get; set; }
 

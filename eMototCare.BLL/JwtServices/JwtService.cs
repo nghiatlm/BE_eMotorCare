@@ -46,7 +46,8 @@ namespace eMototCare.BLL.JwtServices
             var claims = new List<Claim> {
                 new Claim("accountId", _account.Id.ToString()),
                 // new Claim("email", _account.Email),
-                // new Claim(ClaimTypes.Role, _account.Role.RoleName.ToString()),
+                new Claim("phone", _account.Phone),
+                new Claim(ClaimTypes.Role, _account.RoleName.ToString()),
             };
             var tokenDescriptor = new SecurityTokenDescriptor
             {

@@ -24,5 +24,12 @@ namespace BE_eMotoCare.API.Controllers
             var response = await _service.Login(request);
             return Ok(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
         }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        {
+            var response = await _service.Register(request);
+            return Ok(ApiResponse<string>.SuccessResponse("Đăng ký thành công"));
+        }
     }
 }

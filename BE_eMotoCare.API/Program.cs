@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using BE_eMotoCare.API.Configuration;
 using BE_eMotoCare.API.Middlewares;
 using eMotoCare.BO.Common;
@@ -38,11 +39,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 //DI
 
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAppDI();
 builder.Services.MapperInjection();
 
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
