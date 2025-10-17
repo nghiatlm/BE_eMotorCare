@@ -7,7 +7,8 @@ namespace BE_eMotoCare.API.Configuration
         public static IServiceCollection MapperInjection(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(ServiceCenterMapper));
-
+            services.AddAutoMapper(typeof(AccountMapper));
+            services.AddAutoMapper(typeof(StaffMapper));
             return services;
         }
     }

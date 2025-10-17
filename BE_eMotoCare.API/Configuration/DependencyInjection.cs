@@ -10,12 +10,7 @@ namespace BE_eMotoCare.API.Configuration
         public static IServiceCollection AddAppDI(this IServiceCollection services)
         {
             services.AddServiceDI().AddRepoDI();
-            services.AddScoped<IServiceCenterService, ServiceCenterService>();
 
-            services.AddScoped<
-                IServiceCenterInventoryRepository,
-                ServiceCenterInventoryRepository
-            >();
             return services;
         }
     }
