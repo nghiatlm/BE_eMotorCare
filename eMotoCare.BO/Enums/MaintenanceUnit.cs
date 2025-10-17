@@ -2,6 +2,8 @@
 {
     public enum MaintenanceUnit 
     { 
-        KILOMETER
+        KILOMETER,
+        MONTH,
+        KILOMETER_OR_MONTH
     }
 }

@@ -7,6 +7,7 @@ using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
 using eMototCare.BLL.Services.CustomerServices;
 using Microsoft.Extensions.DependencyInjection;
+using eMototCare.BLL.Services.MaintenancePlanServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -19,7 +20,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IServiceCenterService, ServiceCenterService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<ICustomerService, CustomerService>();
-
+            services.AddScoped<IMaintenancePlanService, MaintenancePlanService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStaffService, StaffService>();
             return services;

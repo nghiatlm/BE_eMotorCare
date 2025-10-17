@@ -70,6 +70,8 @@ namespace eMototCare.BLL.Services.CustomerServices
             {
                 var code = req.CitizenId.Trim();
 
+                if (await _unitOfWork.Customers.ExistsCitizenAsync(code))
+                    throw new AppException("Citizen Id đã tồn tại", HttpStatusCode.Conflict);
 
                 var entity = _mapper.Map<Customer>(req);
                 entity.Id = Guid.NewGuid();
@@ -179,7 +181,7 @@ namespace eMototCare.BLL.Services.CustomerServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetById ServiceCenter failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetById Customer failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
