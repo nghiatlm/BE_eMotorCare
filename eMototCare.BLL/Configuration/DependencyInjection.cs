@@ -5,7 +5,11 @@ using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
+using eMototCare.BLL.Services.CustomerServices;
 using Microsoft.Extensions.DependencyInjection;
+using eMototCare.BLL.Services.MaintenancePlanServices;
+using eMototCare.BLL.Services.MaintenanceStageServices;
+using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -17,8 +21,13 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IServiceCenterService, ServiceCenterService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IMaintenancePlanService, MaintenancePlanService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStaffService, StaffService>();
+            services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
+            services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
+
             return services;
         }
     }

@@ -1,5 +1,4 @@
 
-using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Responses
