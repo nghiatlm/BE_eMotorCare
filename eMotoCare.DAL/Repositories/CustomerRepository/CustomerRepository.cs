@@ -8,6 +8,8 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
     {
         public CustomerRepository(ApplicationDbContext context) : base(context)
         {
+
+
         }
     }
 }
