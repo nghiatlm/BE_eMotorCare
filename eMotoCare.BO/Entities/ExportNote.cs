@@ -5,7 +5,7 @@ using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
-    [Table("export_not")]
+    [Table("export_note")]
     public class ExportNote : BaseEntity
     {
         [Key]

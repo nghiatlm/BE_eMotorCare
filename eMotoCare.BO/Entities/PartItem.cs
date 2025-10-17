@@ -36,10 +36,6 @@ namespace eMotoCare.BO.Entities
         [InverseProperty(nameof(VehiclePartItem.ReplaceFor))]
         public virtual VehiclePartItem? ReplaceFor { get; set; }
 
-        [InverseProperty(nameof(ServiceCenterInventory.PartItem))]
-        [Column("export_id")]
-        public Guid? ExportId { get; set; }
-
         [Required]
         [Column("quantity")]
         public int Quantity { get; set; }
