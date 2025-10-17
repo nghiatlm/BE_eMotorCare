@@ -8,6 +8,6 @@ namespace eMototCare.BLL.Services.AuthServices
     public interface IAuthService
     {
         Task<AuthResponse> Login(LoginRequest request);
-        Task<AuthResponse> Register(RegisterRequest request);
+        Task<bool> Register(RegisterRequest request);
     }
 }
