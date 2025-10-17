@@ -1,9 +1,11 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
+using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
@@ -34,96 +36,170 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
             int pageSize
         )
         {
-            var (items, total) = await _unitOfWork.ServiceCenters.GetPagedAsync(
-                search,
-                status,
-                page,
-                pageSize
-            );
-            var rows = _mapper.Map<List<ServiceCenterResponse>>(items);
-            return new PageResult<ServiceCenterResponse>(rows, pageSize, page, (int)total);
+            try
+            {
+                var (items, total) = await _unitOfWork.ServiceCenters.GetPagedAsync(
+                    search,
+                    status,
+                    page,
+                    pageSize
+                );
+                var rows = _mapper.Map<List<ServiceCenterResponse>>(items);
+                return new PageResult<ServiceCenterResponse>(rows, pageSize, page, (int)total);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetPaged ServiceCenter failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
 
         public async Task<ServiceCenterResponse?> GetByIdAsync(Guid id)
         {
-            var sc = await _unitOfWork.ServiceCenters.GetByIdAsync(id);
-            return sc is null ? null : _mapper.Map<ServiceCenterResponse>(sc);
+            try
+            {
+                var sc = await _unitOfWork.ServiceCenters.GetByIdAsync(id);
+                if (sc is null)
+                    throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
+
+                return _mapper.Map<ServiceCenterResponse>(sc);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetById ServiceCenter failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
 
         public async Task<Guid> CreateAsync(ServiceCenterRequest req)
         {
-            var code = req.Code.Trim();
-            var email = req.Email.Trim().ToLowerInvariant();
-            var phone = req.Phone.Trim();
+            try
+            {
+                var code = req.Code.Trim();
+                var email = req.Email.Trim().ToLowerInvariant();
+                var phone = req.Phone.Trim();
 
-            if (await _unitOfWork.ServiceCenters.ExistsCodeAsync(code))
-                throw new Exception("HAS_EXISTED");
-            if (await _unitOfWork.ServiceCenters.ExistsEmailAsync(email))
-                throw new Exception("HAS_EXISTED");
-            if (await _unitOfWork.ServiceCenters.ExistsPhoneAsync(phone))
-                throw new Exception("HAS_EXISTED");
+                if (await _unitOfWork.ServiceCenters.ExistsCodeAsync(code))
+                    throw new AppException("Mã ServiceCenter đã tồn tại", HttpStatusCode.Conflict);
+                if (await _unitOfWork.ServiceCenters.ExistsEmailAsync(email))
+                    throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
+                if (await _unitOfWork.ServiceCenters.ExistsPhoneAsync(phone))
+                    throw new AppException("Số điện thoại đã tồn tại", HttpStatusCode.Conflict);
 
-            var entity = _mapper.Map<ServiceCenter>(req);
-            entity.Id = Guid.NewGuid();
-            entity.Code = code;
-            entity.Email = email;
-            entity.Phone = phone;
+                var entity = _mapper.Map<ServiceCenter>(req);
+                entity.Id = Guid.NewGuid();
+                entity.Code = code;
+                entity.Email = email;
+                entity.Phone = phone;
 
-            await _unitOfWork.ServiceCenters.CreateAsync(entity);
-            await _unitOfWork.SaveAsync();
+                await _unitOfWork.ServiceCenters.CreateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
-            _logger.LogInformation("Created ServiceCenter {Code} ({Id})", entity.Code, entity.Id);
-            return entity.Id;
+                _logger.LogInformation(
+                    "Created ServiceCenter {Code} ({Id})",
+                    entity.Code,
+                    entity.Id
+                );
+                return entity.Id;
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Create ServiceCenter failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
 
         public async Task UpdateAsync(Guid id, ServiceCenterRequest req)
         {
-            var entity =
-                await _unitOfWork.ServiceCenters.GetByIdAsync(id)
-                ?? throw new Exception("NOT_Found");
+            try
+            {
+                var entity =
+                    await _unitOfWork.ServiceCenters.GetByIdAsync(id)
+                    ?? throw new AppException(
+                        "Không tìm thấy ServiceCenter",
+                        HttpStatusCode.NotFound
+                    );
 
-            if (
-                !string.Equals(entity.Code, req.Code, StringComparison.OrdinalIgnoreCase)
-                && await _unitOfWork.ServiceCenters.ExistsCodeAsync(req.Code.Trim())
-            )
-                throw new Exception("HAS_EXISTED");
+                var newCode = req.Code.Trim();
+                var newEmail = req.Email.Trim().ToLowerInvariant();
+                var newPhone = req.Phone.Trim();
 
-            if (
-                !string.Equals(entity.Email, req.Email, StringComparison.OrdinalIgnoreCase)
-                && await _unitOfWork.ServiceCenters.ExistsEmailAsync(
-                    req.Email.Trim().ToLowerInvariant()
+                if (
+                    !string.Equals(entity.Code, newCode, StringComparison.OrdinalIgnoreCase)
+                    && await _unitOfWork.ServiceCenters.ExistsCodeAsync(newCode)
                 )
-            )
-                throw new Exception("HAS_EXISTED");
+                    throw new AppException("Mã ServiceCenter đã tồn tại", HttpStatusCode.Conflict);
 
-            if (
-                !string.Equals(entity.Phone, req.Phone, StringComparison.OrdinalIgnoreCase)
-                && await _unitOfWork.ServiceCenters.ExistsPhoneAsync(req.Phone.Trim())
-            )
-                throw new Exception("HAS_EXISTED");
+                if (
+                    !string.Equals(entity.Email, newEmail, StringComparison.OrdinalIgnoreCase)
+                    && await _unitOfWork.ServiceCenters.ExistsEmailAsync(newEmail)
+                )
+                    throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
 
-            _mapper.Map(req, entity);
-            entity.Code = req.Code.Trim();
-            entity.Email = req.Email.Trim().ToLowerInvariant();
-            entity.Phone = req.Phone.Trim();
+                if (
+                    !string.Equals(entity.Phone, newPhone, StringComparison.OrdinalIgnoreCase)
+                    && await _unitOfWork.ServiceCenters.ExistsPhoneAsync(newPhone)
+                )
+                    throw new AppException("Số điện thoại đã tồn tại", HttpStatusCode.Conflict);
 
-            await _unitOfWork.ServiceCenters.UpdateAsync(entity);
-            await _unitOfWork.SaveAsync();
+                _mapper.Map(req, entity);
+                entity.Code = newCode;
+                entity.Email = newEmail;
+                entity.Phone = newPhone;
 
-            _logger.LogInformation("Updated ServiceCenter {Id}", id);
+                await _unitOfWork.ServiceCenters.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("Updated ServiceCenter {Id}", id);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Update ServiceCenter failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
 
         public async Task DeleteAsync(Guid id)
         {
-            var entity =
-                await _unitOfWork.ServiceCenters.GetByIdAsync(id)
-                ?? throw new Exception("not_found");
-            ;
+            try
+            {
+                var entity =
+                    await _unitOfWork.ServiceCenters.GetByIdAsync(id)
+                    ?? throw new AppException(
+                        "Không tìm thấy ServiceCenter",
+                        HttpStatusCode.NotFound
+                    );
 
-            await _unitOfWork.ServiceCenters.DeleteAsync(entity);
-            await _unitOfWork.SaveAsync();
+                await _unitOfWork.ServiceCenters.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
 
-            _logger.LogInformation("Deleted ServiceCenter {Id}", id);
+                _logger.LogInformation("Deleted ServiceCenter {Id}", id);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete ServiceCenter failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
     }
 }
