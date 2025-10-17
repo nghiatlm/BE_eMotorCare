@@ -15,7 +15,7 @@ RUN dotnet restore
 COPY . .
 
 # Build the WebAPI project
-RUN dotnet publish BE_ModernEstate.WebAPI/BE_ModernEstate.WebAPI.csproj -c Release -o out
+RUN dotnet publish BE_eMotoCare.API/BE_eMotoCare.API.csproj -c Release -o out
 
 # Stage 2: Run
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
@@ -67,4 +67,4 @@ COPY --from=build /app/out .
 EXPOSE 80
 EXPOSE 443
 
-ENTRYPOINT ["dotnet", "BE_ModernEstate.WebAPI.dll"]
+ENTRYPOINT ["dotnet", "BE_eMotoCare.API.dll"]
