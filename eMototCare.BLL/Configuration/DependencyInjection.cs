@@ -2,6 +2,7 @@ using eMototCare.BLL.HashPasswords;
 using eMototCare.BLL.JwtServices;
 using eMototCare.BLL.Services.AccountService;
 using eMototCare.BLL.Services.AccountServices;
+using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
@@ -16,9 +17,11 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IServiceCenterService, ServiceCenterService>();
+            services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStaffService, StaffService>();
+
             return services;
         }
     }

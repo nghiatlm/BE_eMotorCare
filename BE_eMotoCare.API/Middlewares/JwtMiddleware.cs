@@ -23,6 +23,7 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/admin/users",
             "/api/v1/auths/register",
             "/api/v1/public",
+            "/api/v1/appointments",
             "/api/v1/admin/staffs",
             "/swagger",
             "/health",
