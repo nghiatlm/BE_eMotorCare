@@ -21,7 +21,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] int page = 1,
@@ -38,7 +38,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _customerService.GetByIdAsync(id);
@@ -48,7 +48,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_USER")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_USER")]
         public async Task<IActionResult> Create([FromBody] CustomerRequest request)
         {
             var id = await _customerService.CreateAsync(request);
@@ -56,7 +56,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CustomerRequest request)
         {
             await _customerService.UpdateAsync(id, request);
@@ -64,7 +64,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER")]
+        //[Authorize(Roles = "ROLE_MANAGER")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _customerService.DeleteAsync(id);
