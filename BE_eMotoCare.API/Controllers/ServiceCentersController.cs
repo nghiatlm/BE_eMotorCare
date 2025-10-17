@@ -14,11 +14,11 @@ namespace BE_eMotoCare.API.Controllers
     //[Authorize(Roles = "ROLE_ADMIN")]
     public class ServiceCentersController : ControllerBase
     {
-        private readonly IServiceCenterService _service;
+        private readonly IServiceCenterService _serviceCenterService;
 
-        public ServiceCentersController(IServiceCenterService service)
+        public ServiceCentersController(IServiceCenterService serviceCenterService)
         {
-            _service = service;
+            _serviceCenterService = serviceCenterService;
         }
 
         [HttpGet]
@@ -29,7 +29,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(search, status, page, pageSize);
+            var data = await _serviceCenterService.GetPagedAsync(search, status, page, pageSize);
             return Ok(
                 ApiResponse<PageResult<ServiceCenterResponse>>.SuccessResponse(
                     data,
@@ -41,7 +41,7 @@ namespace BE_eMotoCare.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _service.GetByIdAsync(id);
+            var item = await _serviceCenterService.GetByIdAsync(id);
             return Ok(
                 ApiResponse<ServiceCenterResponse>.SuccessResponse(
                     item,
@@ -53,7 +53,7 @@ namespace BE_eMotoCare.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ServiceCenterRequest request)
         {
-            var id = await _service.CreateAsync(request);
+            var id = await _serviceCenterService.CreateAsync(request);
             return Ok(
                 ApiResponse<object>.SuccessResponse(new { id }, "Tạo ServiceCenter thành công")
             );
@@ -62,7 +62,7 @@ namespace BE_eMotoCare.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ServiceCenterRequest request)
         {
-            await _service.UpdateAsync(id, request);
+            await _serviceCenterService.UpdateAsync(id, request);
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật ServiceCenter thành công")
             );
@@ -71,7 +71,7 @@ namespace BE_eMotoCare.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _serviceCenterService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá ServiceCenter thành công"));
         }
     }
