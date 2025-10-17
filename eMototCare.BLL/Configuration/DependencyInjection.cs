@@ -9,6 +9,7 @@ using eMototCare.BLL.Services.CustomerServices;
 using Microsoft.Extensions.DependencyInjection;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
+using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -25,6 +26,8 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
+            services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
+
             return services;
         }
     }

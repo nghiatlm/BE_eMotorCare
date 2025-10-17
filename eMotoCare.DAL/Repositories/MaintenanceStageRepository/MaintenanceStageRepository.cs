@@ -3,7 +3,6 @@ using eMotoCare.BO.Enum;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace eMotoCare.DAL.Repositories.MaintenanceStageRepository
 {

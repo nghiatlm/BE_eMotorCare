@@ -73,6 +73,7 @@ namespace eMototCare.BLL.Services.MaintenanceStageServices
                 
 
                 var entity = _mapper.Map<MaintenanceStage>(req);
+                entity.Id = Guid.NewGuid();
 
 
                 await _unitOfWork.MaintenanceStages.CreateAsync(entity);
