@@ -7,7 +7,6 @@ using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
-using eMototCare.BLL.Services.CustomerServices;
 using Microsoft.Extensions.DependencyInjection;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
