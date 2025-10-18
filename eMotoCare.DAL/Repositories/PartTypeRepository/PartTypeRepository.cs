@@ -50,5 +50,11 @@ namespace eMotoCare.DAL.Repositories.PartTypeRepository
 
             return (items, total);
         }
+
+        public Task<PartType?> GetByIdAsync(Guid id) =>
+            _context.PartTypes.FirstOrDefaultAsync(x => x.Id == id);
+
+        public Task<bool> ExistsNameAsync(string name) =>
+            _context.PartTypes.AnyAsync(x => x.Name == name);
     }
 }
