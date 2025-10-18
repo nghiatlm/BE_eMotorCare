@@ -3,6 +3,7 @@ using eMotoCare.BO.Enum;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
 {
@@ -28,7 +29,7 @@ namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
             string? name,
             int? totalStage,
             Status? status,
-            MaintenanceUnit? maintenanceUnit,
+            MaintenanceUnit[]? maintenanceUnit,
             int page,
             int pageSize
        )
@@ -59,9 +60,10 @@ namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
                 q = q.Where(x => x.TotalStages == totalStage.Value);
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
-            if (maintenanceUnit.HasValue)
-                q = q.Where(x => x.Unit == maintenanceUnit.Value);
-
+            if (maintenanceUnit != null && maintenanceUnit.Any())
+            {
+                q = q.Where(x => x.Unit.Any(u => maintenanceUnit.Contains(u)));
+            }
 
 
 

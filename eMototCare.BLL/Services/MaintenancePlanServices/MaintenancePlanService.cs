@@ -33,7 +33,7 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
             string? name,
             int? totalStage,
             Status? status,
-            MaintenanceUnit? maintenanceUnit,
+            MaintenanceUnit[]? maintenanceUnit,
             int page = 1,
             int pageSize = 10
         )
@@ -60,7 +60,7 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "GetPaged Maintenance Plan failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+                throw new AppException(ex.Message);
             }
         }
 
@@ -96,7 +96,7 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Create maintenance plan failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+                throw new AppException(ex.Message);
             }
         }
 

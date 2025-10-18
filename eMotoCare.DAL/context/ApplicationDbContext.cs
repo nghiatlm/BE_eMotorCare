@@ -1,7 +1,9 @@
 
 using eMotoCare.BO.Common;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace eMotoCare.DAL.context
 {
@@ -80,9 +82,27 @@ namespace eMotoCare.DAL.context
                 }
             }
         }
+        private class EnumArrayToStringConverter<TEnum> : ValueConverter<TEnum[], string> where TEnum : struct, Enum
+        {
+            public EnumArrayToStringConverter() : base(
+                v => string.Join(",", v.Select(x => x.ToString())),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                      .Select(x => Enum.Parse<TEnum>(x))
+                      .ToArray()
+            )
+            { }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<MaintenancePlan>()
+                .Property(x => x.Unit)
+                .HasConversion(new EnumArrayToStringConverter<MaintenanceUnit>());
+
+            modelBuilder.Entity<MaintenanceStageDetail>()
+                .Property(x => x.ActionType)
+                .HasConversion(new EnumArrayToStringConverter<ActionType>());
+
             base.OnModelCreating(modelBuilder);
         }
     }

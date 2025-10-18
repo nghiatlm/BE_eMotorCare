@@ -23,7 +23,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> GetByParams(
             [FromQuery] Guid? maintenanceStageId,
             [FromQuery] Guid? partId,
-            [FromQuery] ActionType? actionType,
+            [FromQuery] ActionType[]? actionType,
             [FromQuery] string? description,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10

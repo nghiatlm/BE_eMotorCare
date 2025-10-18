@@ -30,7 +30,7 @@ namespace eMototCare.BLL.Services.MaintenanceStageDetailServices
         public async Task<PageResult<MaintenanceStageDetailResponse>> GetPagedAsync(
             Guid? maintenanceStageId,
             Guid? partId,
-            ActionType? actionType,
+            ActionType[]? actionType,
             string? description,
             int page,
             int pageSize
@@ -93,14 +93,14 @@ namespace eMototCare.BLL.Services.MaintenanceStageDetailServices
                 return entity.Id;
 
             }
-            catch (AppException)
+            catch (AppException e)
             {
-                throw;
+                throw new AppException (e.Message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Create MaintenanceStageDetail failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+                throw new Exception(ex.Message);
             }
         }
 

@@ -29,7 +29,7 @@ namespace eMotoCare.BO.Entities
         [Required]
         [Column("action_type", TypeName = "varchar(200)")]
         [EnumDataType(typeof(ActionType))]
-        public ActionType ActionType { get; set; }
+        public ActionType[] ActionType { get; set; }
 
         [Column("description")]
         [StringLength(2000)]

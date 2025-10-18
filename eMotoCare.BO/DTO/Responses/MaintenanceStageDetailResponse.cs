@@ -9,7 +9,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid Id { get; set; }
         public Guid MaintenanceStageId { get; set; }
         public PartMaintenanceStageDetailResponse? Part { get; set; }
-        public ActionType ActionType { get; set; }
+        public ActionType[] ActionType { get; set; }
         public string? Description { get; set; }
     }
 }

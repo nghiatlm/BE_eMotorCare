@@ -26,7 +26,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] string? name,
             [FromQuery] int? totalStage,
             [FromQuery] Status? status,
-            [FromQuery] MaintenanceUnit? maintenanceUnit,
+            [FromQuery] MaintenanceUnit[]? maintenanceUnit,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )

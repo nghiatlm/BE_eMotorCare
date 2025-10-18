@@ -17,4 +17,8 @@
     <ProjectReference Include="..\eMotoCare.DAL\eMotoCare.DAL.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\CustomerServices\" />
+  </ItemGroup>
+
 </Project>

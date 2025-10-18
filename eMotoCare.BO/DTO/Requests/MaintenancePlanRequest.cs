@@ -13,7 +13,7 @@ namespace eMotoCare.BO.DTO.Requests
         public string Name { get; set; } = default!;
         public string? Description { get; set; }
         [Required]
-        public MaintenanceUnit Unit { get; set; }
+        public MaintenanceUnit[] Unit { get; set; }
         [Required]
         public int TotalStages { get; set; }
         [Required]

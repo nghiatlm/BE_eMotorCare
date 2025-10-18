@@ -28,7 +28,7 @@ namespace eMotoCare.BO.Entities
         [Required]
         [Column("unit", TypeName = "varchar(200)")]
         [EnumDataType(typeof(MaintenanceUnit))]
-        public MaintenanceUnit Unit { get; set; }
+        public MaintenanceUnit[] Unit { get; set; }
 
         [Required]
         [Column("total_stages")]

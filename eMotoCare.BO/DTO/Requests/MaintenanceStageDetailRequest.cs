@@ -12,8 +12,7 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public Guid PartId { get; set; }
         [Required]
-        [EnumDataType(typeof(ActionType))]
-        public ActionType ActionType { get; set; }
+        public ActionType[] ActionType { get; set; }
         public string? Description { get; set; }
     }
 }

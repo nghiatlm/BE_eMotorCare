@@ -15,7 +15,7 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository
         public async Task<(IReadOnlyList<MaintenanceStageDetail> Items, long Total)> GetPagedAsync(
             Guid? maintenanceStageId,
             Guid? partId,
-            ActionType? actionType,
+            ActionType[]? actionType,
             string? description,
             int page,
             int pageSize
@@ -34,8 +34,11 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository
                 q = q.Where(x => x.MaintenanceStageId == maintenanceStageId.Value);
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
-            if (actionType.HasValue)
-                q = q.Where(x => x.ActionType == actionType.Value);
+            //if (actionType != null && actionType.Any())
+            //{
+            //    q = q.Where(x => x.ActionType.Any(u => actionType.Contains(u)));
+            //}
+
 
             if (!string.IsNullOrWhiteSpace(description))
             {
