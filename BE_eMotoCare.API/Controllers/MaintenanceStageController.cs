@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
-    [Route("api/v1/maintenanceStages")]
+    [Route("api/v1/maintenance-stages")]
     [ApiController]
     public class MaintenanceStageController : ControllerBase
     {
