@@ -4,6 +4,6 @@ namespace eMotoCare.BO.Enums
     {
         MALE,
         FEMALE,
-        NG
+        ORTHER,
     }
 }

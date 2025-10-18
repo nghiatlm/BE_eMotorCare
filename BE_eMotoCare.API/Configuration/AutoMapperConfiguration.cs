@@ -9,6 +9,7 @@ namespace BE_eMotoCare.API.Configuration
             services.AddAutoMapper(typeof(ServiceCenterMapper));
             services.AddAutoMapper(typeof(AccountMapper));
             services.AddAutoMapper(typeof(StaffMapper));
+            services.AddAutoMapper(typeof(AppointmentMapper));
             services.AddAutoMapper(typeof(CustomerMapper));
             services.AddAutoMapper(typeof(MaintenancePlanMapper));
             services.AddAutoMapper(typeof(MaintenanceStageMapper));
