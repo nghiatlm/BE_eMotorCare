@@ -12,20 +12,30 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
         public FirebaseService(IConfiguration configuration)
         {
-            // Nếu FirebaseApp đã tồn tại, lấy instance mặc định luôn
             if (FirebaseApp.DefaultInstance != null)
             {
                 _firebaseApp = FirebaseApp.DefaultInstance;
                 return;
             }
 
-            // Nếu chưa tồn tại thì tạo mới
-            var firebaseConfig = configuration.GetSection("Firebase").Get<Dictionary<string, string>>();
-            string jsonString = JsonSerializer.Serialize(firebaseConfig);
+            string? firebaseJsonEnv = Environment.GetEnvironmentVariable("FIREBASE_CONFIG");
+
+            GoogleCredential credential;
+
+            if (!string.IsNullOrEmpty(firebaseJsonEnv))
+            {
+                credential = GoogleCredential.FromJson(firebaseJsonEnv);
+            }
+            else
+            {
+                var firebaseConfig = configuration.GetSection("Firebase").Get<Dictionary<string, string>>();
+                string jsonString = JsonSerializer.Serialize(firebaseConfig);
+                credential = GoogleCredential.FromJson(jsonString);
+            }
 
             _firebaseApp = FirebaseApp.Create(new AppOptions()
             {
-                Credential = GoogleCredential.FromJson(jsonString)
+                Credential = credential
             });
         }
 
