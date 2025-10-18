@@ -4,6 +4,7 @@ using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
 {
@@ -60,21 +61,40 @@ namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
                 q = q.Where(x => x.TotalStages == totalStage.Value);
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
-            if (maintenanceUnit != null && maintenanceUnit.Any())
+
+            if (maintenanceUnit != null && maintenanceUnit.Length > 0)
             {
-                q = q.Where(x => x.Unit.Any(u => maintenanceUnit.Contains(u)));
+                var unitString = string.Join(".", maintenanceUnit.Select(u => u.ToString()));
+
+                var list = await q.ToListAsync();
+
+                list = list
+                    .Where(x => string.Join(",", x.Unit)
+                        .Replace(",", ".")
+                        .Contains(unitString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var total = list.LongCount();
+
+                var items = list
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                return (items, total);
             }
+            else
+            {
+                var total = await q.LongCountAsync();
+                var items = await q
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
-
-
-            var total = await q.LongCountAsync();
-
-            var items = await q.OrderByDescending(x => x.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return (items, total);
+                return (items, total);
+            }
         }
     }
 }

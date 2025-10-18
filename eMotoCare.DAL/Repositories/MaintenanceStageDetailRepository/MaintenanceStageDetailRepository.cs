@@ -34,25 +34,45 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository
                 q = q.Where(x => x.MaintenanceStageId == maintenanceStageId.Value);
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
-            //if (actionType != null && actionType.Any())
-            //{
-            //    q = q.Where(x => x.ActionType.Any(u => actionType.Contains(u)));
-            //}
-
-
             if (!string.IsNullOrWhiteSpace(description))
             {
                 q = q.Where(x =>
                     x.Description.Contains(description));
             }
-            var total = await q.LongCountAsync();
 
-            var items = await q.OrderByDescending(x => x.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            if (actionType != null && actionType.Length > 0)
+            {
+                var unitString = string.Join(".", actionType.Select(u => u.ToString()));
 
-            return (items, total);
+                var list = await q.ToListAsync();
+
+                list = list
+                    .Where(x => string.Join(",", x.ActionType)
+                        .Replace(",", ".")
+                        .Contains(unitString, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var total = list.LongCount();
+
+                var items = list
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+
+                return (items, total);
+            }
+            else
+            {
+                var total = await q.LongCountAsync();
+                var items = await q
+                    .OrderByDescending(x => x.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return (items, total);
+            }
         }
 
         public async Task<MaintenanceStageDetail?> GetByIdAsync(Guid id)
