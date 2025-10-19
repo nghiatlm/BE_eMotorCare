@@ -33,7 +33,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("varchar(200)")
                         .HasColumnName("email");
 
@@ -550,7 +549,7 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ServiceCenterId");
 
-                    b.ToTable("export_not");
+                    b.ToTable("export_note");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ImportNote", b =>
@@ -649,8 +648,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("total_stages");
 
-                    b.Property<int>("Unit")
-                        .HasColumnType("int")
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("unit");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -867,10 +867,6 @@ namespace eMotoCare.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)")
                         .HasColumnName("part_item_id");
-
-                    b.Property<Guid?>("ExportId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("export_id");
 
                     b.Property<Guid?>("ExportNoteId")
                         .HasColumnType("char(36)")
