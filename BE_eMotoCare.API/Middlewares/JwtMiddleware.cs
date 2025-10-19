@@ -28,6 +28,12 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/customers",
             "/swagger",
             "/health",
+            "/api/v1/customers",
+            "/api/v1/maintenance-plans",
+            "/api/v1/maintenance-stages",
+            "/api/v1/maintenance-stage-details",
+            "/api/v1/part-types",
+            "/api/v1/parts",
         };
 
         public JwtMiddleware(

@@ -8,6 +8,11 @@ using eMototCare.BLL.Services.CustomerServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
 using Microsoft.Extensions.DependencyInjection;
+using eMototCare.BLL.Services.MaintenancePlanServices;
+using eMototCare.BLL.Services.MaintenanceStageServices;
+using eMototCare.BLL.Services.MaintenanceStageDetailServices;
+using eMototCare.BLL.Services.PartTypeServices;
+using eMototCare.BLL.Services.PartServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -20,9 +25,14 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IServiceCenterService, ServiceCenterService>();
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IMaintenancePlanService, MaintenancePlanService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IStaffService, StaffService>();
             services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IPartTypeService, PartTypeService>();
+            services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
+            services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
+            services.AddScoped<IPartService, PartService>();
 
             return services;
         }
