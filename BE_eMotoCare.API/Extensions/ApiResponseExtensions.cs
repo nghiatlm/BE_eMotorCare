@@ -15,7 +15,7 @@ namespace BE_eMotoCare.API.Extensions
                 return controller.StatusCode((int)HttpStatusCode.InternalServerError, err);
             }
 
-            if (response.StatusCode == HttpStatusCode.NoContent)
+            if (response.StatusCode == (int)HttpStatusCode.NoContent)
                 return controller.NoContent();
 
             return controller.StatusCode((int)response.StatusCode, response);
