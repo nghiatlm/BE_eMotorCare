@@ -65,12 +65,16 @@ namespace eMototCare.BLL.Services.AuthServices
         {
             try
             {
+                var phone = request.Phone.Trim();
+                if (await _unitOfWork.Accounts.ExistsPhoneAsync(phone))
+                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+
                 var account = await _unitOfWork.Accounts.CreateAsync(new Account
                 {
-                    Phone = request.Phone,
+                    Phone = phone,
                     Password = _passwordHasher.HashPassword(request.Password),
                     RoleName = RoleName.ROLE_CUSTOMER,
-                    Stattus = AccountStatus.ACTIVE,
+                    Stattus = AccountStatus.IN_ACTVIE,
                 });
                 if (account < 1) throw new AppException("Tạo không thành công", HttpStatusCode.BadRequest);
                 var result = await _unitOfWork.SaveAsync();
