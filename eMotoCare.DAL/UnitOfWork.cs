@@ -1,5 +1,4 @@
-
-
+using eMotoCare.BO.Entities;
 using eMotoCare.DAL.context;
 using eMotoCare.DAL.Repositories.AccountRepository;
 using eMotoCare.DAL.Repositories.AppointmentRepository;
@@ -70,7 +69,6 @@ namespace eMotoCare.DAL
         private IVehicleRepository? _vehicleRepository;
         private IVehicleStageRepository? _vehicleStageRepository;
 
-
         public IAccountRepository Accounts =>
             _accountRepository ??= new AccountRepository(_unitOfWorkContext);
 
@@ -105,7 +103,9 @@ namespace eMotoCare.DAL
             _maintenancePlanRepository ??= new MaintenancePlanRepository(_unitOfWorkContext);
 
         public IMaintenanceStageDetailRepository MaintenanceStageDetails =>
-            _maintenanceStageDetailRepository ??= new MaintenanceStageDetailRepository(_unitOfWorkContext);
+            _maintenanceStageDetailRepository ??= new MaintenanceStageDetailRepository(
+                _unitOfWorkContext
+            );
 
         public IMaintenanceStageRepository MaintenanceStages =>
             _maintenanceStageRepository ??= new MaintenanceStageRepository(_unitOfWorkContext);
@@ -119,8 +119,7 @@ namespace eMotoCare.DAL
         public IPartItemRepository PartItems =>
             _partItemRepository ??= new PartItemRepository(_unitOfWorkContext);
 
-        public IPartRepository Parts =>
-            _partRepository ??= new PartRepository(_unitOfWorkContext);
+        public IPartRepository Parts => _partRepository ??= new PartRepository(_unitOfWorkContext);
 
         public IPartTypeRepository PartTypes =>
             _partTypeRepository ??= new PartTypeRepository(_unitOfWorkContext);
@@ -134,11 +133,12 @@ namespace eMotoCare.DAL
         public IRMADetailRepository RMADetails =>
             _rmaDetailRepository ??= new RMADetailRepository(_unitOfWorkContext);
 
-        public IRMARepository RMAs =>
-            _rmaRepository ??= new RMARepository(_unitOfWorkContext);
+        public IRMARepository RMAs => _rmaRepository ??= new RMARepository(_unitOfWorkContext);
 
         public IServiceCenterInventoryRepository ServiceCenterInventories =>
-            _serviceCenterInventoryRepository ??= new ServiceCenterInventoryRepository(_unitOfWorkContext);
+            _serviceCenterInventoryRepository ??= new ServiceCenterInventoryRepository(
+                _unitOfWorkContext
+            );
 
         public IServiceCenterRepository ServiceCenters =>
             _serviceCenterRepository ??= new ServiceCenterRepository(_unitOfWorkContext);
@@ -155,10 +155,13 @@ namespace eMotoCare.DAL
         public IVehicleStageRepository VehicleStages =>
             _vehicleStageRepository ??= new VehicleStageRepository(_unitOfWorkContext);
 
-        public void Dispose()
-        => _unitOfWorkContext.Dispose();
+        public void RemoveRange(List<EVCheckDetail> olds)
+        {
+            _unitOfWorkContext.EVCheckDetails.RemoveRange(olds);
+        }
 
-        public async Task<int> SaveAsync()
-        => await _unitOfWorkContext.SaveChangesAsync();
+        public void Dispose() => _unitOfWorkContext.Dispose();
+
+        public async Task<int> SaveAsync() => await _unitOfWorkContext.SaveChangesAsync();
     }
 }

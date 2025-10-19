@@ -3,5 +3,9 @@ using eMotoCare.DAL.Base;
 
 namespace eMotoCare.DAL.Repositories.EVCheckRepository
 {
-    public interface IEVCheckRepository : IGenericRepository<EVCheck>{ }
+    public interface IEVCheckRepository : IGenericRepository<EVCheck>
+    {
+        Task<EVCheck?> GetByAppointmentIdAsync(Guid appointmentId);
+        Task<EVCheck?> GetByIdIncludeDetailsAsync(Guid evCheckId);
+    }
 }

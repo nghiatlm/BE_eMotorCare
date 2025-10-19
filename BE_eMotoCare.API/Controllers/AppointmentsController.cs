@@ -4,7 +4,6 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.AppointmentServices;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -113,6 +112,92 @@ namespace BE_eMotoCare.API.Controllers
             var code = await _service.GetCheckinCodeAsync(id);
             return Ok(
                 ApiResponse<object>.SuccessResponse(new { code }, "Lấy mã check-in thành công")
+            );
+        }
+
+        [HttpPost("assign-technician")]
+        public async Task<IActionResult> AssignTechnician(
+            Guid id,
+            [FromBody] AssignTechnicianRequest req,
+            [FromQuery] Guid approveById
+        )
+        {
+            await _service.AssignTechnicianAsync(id, req.TechnicianId, approveById);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Gán kỹ thuật viên thành công"));
+        }
+
+        [HttpPost("checkin")]
+        public async Task<IActionResult> CheckIn(Guid id)
+        {
+            await _service.CheckInAsync(id);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
+        }
+
+        [HttpPost("inspection")]
+        public async Task<IActionResult> UpsertInspection(
+            Guid id,
+            [FromBody] EVCheckUpsertRequest req,
+            [FromQuery] Guid technicianId
+        )
+        {
+            var res = await _service.UpsertEVCheckAsync(id, req, technicianId);
+            return Ok(
+                ApiResponse<EVCheckResponse>.SuccessResponse(res, "Lưu kết quả kiểm tra thành công")
+            );
+        }
+
+        [HttpGet("inspection")]
+        public async Task<IActionResult> GetInspection(Guid id)
+        {
+            var res = await _service.GetEVCheckAsync(id);
+            return Ok(
+                ApiResponse<EVCheckResponse?>.SuccessResponse(
+                    res,
+                    "Lấy kết quả kiểm tra thành công"
+                )
+            );
+        }
+
+        [HttpPost("inspection/confirm")]
+        public async Task<IActionResult> ConfirmInspection(
+            Guid id,
+            [FromBody] InspectionConfirmRequest req
+        )
+        {
+            await _service.ConfirmInspectionAsync(id, req);
+            return Ok(
+                ApiResponse<string>.SuccessResponse(
+                    null,
+                    req.Accept ? "Khách đã xác nhận" : "Khách đã hủy"
+                )
+            );
+        }
+
+        [HttpPost("repair/start")]
+        public async Task<IActionResult> StartRepair(Guid id)
+        {
+            await _service.StartRepairAsync(id);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Đã bắt đầu sửa chữa"));
+        }
+
+        [HttpPost("repair/finish")]
+        public async Task<IActionResult> FinishRepair(Guid id)
+        {
+            await _service.FinishRepairAsync(id);
+            return Ok(
+                ApiResponse<string>.SuccessResponse(null, "Đã hoàn tất sửa chữa, chờ thanh toán")
+            );
+        }
+
+        [HttpGet("repair-ticket")]
+        public async Task<IActionResult> GetRepairTicket(Guid id)
+        {
+            var res = await _service.GetRepairTicketAsync(id);
+            return Ok(
+                ApiResponse<RepairTicketResponse>.SuccessResponse(
+                    res,
+                    "Lấy phiếu sửa chữa thành công"
+                )
             );
         }
     }
