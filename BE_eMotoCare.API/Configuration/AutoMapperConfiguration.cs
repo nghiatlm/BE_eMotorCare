@@ -15,6 +15,7 @@ namespace BE_eMotoCare.API.Configuration
             services.AddAutoMapper(typeof(MaintenanceStageMapper));
             services.AddAutoMapper(typeof(MaintenanceStageDetailMapper));
             services.AddAutoMapper(typeof(PartMapper));
+            services.AddAutoMapper(typeof(PartTypeMapper));
             return services;
         }
     }

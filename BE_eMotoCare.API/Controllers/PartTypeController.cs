@@ -34,6 +34,7 @@ namespace BE_eMotoCare.API.Controllers
                 )
             );
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
