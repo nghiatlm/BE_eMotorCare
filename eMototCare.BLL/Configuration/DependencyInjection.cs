@@ -5,14 +5,15 @@ using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
+using eMototCare.BLL.Services.FirebaseServices;
+using eMototCare.BLL.Services.MaintenancePlanServices;
+using eMototCare.BLL.Services.MaintenanceStageDetailServices;
+using eMototCare.BLL.Services.MaintenanceStageServices;
+using eMototCare.BLL.Services.PartServices;
+using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
 using Microsoft.Extensions.DependencyInjection;
-using eMototCare.BLL.Services.MaintenancePlanServices;
-using eMototCare.BLL.Services.MaintenanceStageServices;
-using eMototCare.BLL.Services.MaintenanceStageDetailServices;
-using eMototCare.BLL.Services.PartTypeServices;
-using eMototCare.BLL.Services.PartServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -32,6 +33,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPartTypeService, PartTypeService>();
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
             services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IPartService, PartService>();
 
             return services;
