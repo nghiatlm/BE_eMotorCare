@@ -13,6 +13,7 @@ using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
+using eMototCare.BLL.Services.VehicleServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace eMototCare.BLL.Configuration
@@ -33,9 +34,9 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPartTypeService, PartTypeService>();
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
             services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
-            services.AddScoped<IFirebaseService, FirebaseService>();
+            //services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IPartService, PartService>();
-
+            services.AddScoped<IVehicleService, VehicleService>();
             return services;
         }
     }
