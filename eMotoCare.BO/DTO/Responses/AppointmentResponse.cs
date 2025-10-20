@@ -21,5 +21,7 @@ namespace eMotoCare.BO.DTO.Responses
         public DateTime? UpdatedAt { get; set; }
 
         public string? CheckinCode { get; set; }
+        public ServiceCenterResponse? ServiceCenter { get; set; }
+        public CustomerResponse? Customer { get; set; }
     }
 }
