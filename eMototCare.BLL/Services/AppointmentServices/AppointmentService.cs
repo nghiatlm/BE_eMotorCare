@@ -190,7 +190,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             var entity =
                 await _unitOfWork.Appointments.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-            return entity.Code; // có thể encode QR ở frontend từ string này
+            return entity.Code;
         }
 
         public async Task ApproveAsync(Guid id, Guid staffId)
@@ -214,21 +214,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
             entity.Status = status;
             await _unitOfWork.Appointments.UpdateAsync(entity);
-            await _unitOfWork.SaveAsync();
-        }
-
-        public async Task AssignTechnicianAsync(
-            Guid appointmentId,
-            Guid technicianId,
-            Guid approveById
-        )
-        {
-            var appt =
-                await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-            appt.ApproveById = approveById;
-            appt.Status = AppointmentStatus.APPROVED;
-            await _unitOfWork.Appointments.UpdateAsync(appt);
             await _unitOfWork.SaveAsync();
         }
 
@@ -261,128 +246,19 @@ namespace eMototCare.BLL.Services.AppointmentServices
             }
         }
 
-        public async Task<EVCheckResponse> UpsertEVCheckAsync(
+        public async Task AssignTechnicianAsync(
             Guid appointmentId,
-            EVCheckUpsertRequest req,
-            Guid technicianId
+            Guid technicianId,
+            Guid approveById
         )
         {
             var appt =
                 await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-
-            var ev = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appointmentId);
-            if (ev == null)
-            {
-                ev = _mapper.Map<EVCheck>(req);
-                ev.Id = Guid.NewGuid();
-                ev.AppointmentId = appointmentId;
-                ev.TaskExecutorId = technicianId;
-                await _unitOfWork.EVChecks.CreateAsync(ev);
-            }
-            else
-            {
-                ev.CheckDate = req.CheckDate;
-                ev.Odometer = req.Odometer;
-                ev.Status = req.Status;
-                ev.TotalAmout = req.TotalAmout;
-                await _unitOfWork.EVChecks.UpdateAsync(ev);
-
-                var olds = ev.EVCheckDetails?.ToList() ?? new();
-                if (olds.Count > 0)
-                    _unitOfWork.RemoveRange(olds);
-            }
-
-            ev.EVCheckDetails = new List<EVCheckDetail>();
-            foreach (var i in req.Items)
-            {
-                var item = _mapper.Map<EVCheckDetail>(i);
-                item.Id = Guid.NewGuid();
-                item.EVCheckId = ev.Id;
-                item.Status = Status.ACTIVE;
-
-                var qty = i.Quantity ?? 1m;
-                var part = i.PricePart ?? 0m;
-                var svc = i.PriceService ?? 0m;
-                item.TotalAmount ??= (part + svc) * qty;
-                ev.EVCheckDetails.Add(item);
-            }
-
-            ev.TotalAmout ??= ev.EVCheckDetails.Sum(x => x.TotalAmount ?? 0m);
-
-            await _unitOfWork.SaveAsync();
-
-            return _mapper.Map<EVCheckResponse>(
-                await _unitOfWork.EVChecks.GetByIdIncludeDetailsAsync(ev.Id)!
-            );
-        }
-
-        public async Task<EVCheckResponse?> GetEVCheckAsync(Guid appointmentId)
-        {
-            var ev = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appointmentId);
-            return ev is null ? null : _mapper.Map<EVCheckResponse>(ev);
-        }
-
-        public async Task ConfirmInspectionAsync(Guid appointmentId, InspectionConfirmRequest req)
-        {
-            var appt =
-                await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-
-            if (!req.Accept)
-            {
-                appt.Status = AppointmentStatus.CANCELED;
-            }
-            else
-            {
-                appt.Status = AppointmentStatus.IN_SERVICE; // đồng ý sửa
-            }
-
-            await _unitOfWork.Appointments.UpdateAsync(appt);
-            await _unitOfWork.SaveAsync();
-        }
-
-        public async Task StartRepairAsync(Guid appointmentId)
-        {
-            var appt =
-                await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-            appt.Status = AppointmentStatus.IN_SERVICE;
-            await _unitOfWork.Appointments.UpdateAsync(appt);
-            await _unitOfWork.SaveAsync();
-        }
-
-        public async Task FinishRepairAsync(Guid appointmentId)
-        {
-            var appt =
-                await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
+            appt.ApproveById = approveById;
             appt.Status = AppointmentStatus.APPROVED;
             await _unitOfWork.Appointments.UpdateAsync(appt);
             await _unitOfWork.SaveAsync();
-        }
-
-        public async Task<RepairTicketResponse> GetRepairTicketAsync(Guid appointmentId)
-        {
-            var appt =
-                await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-            var ev =
-                await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appointmentId)
-                ?? throw new AppException("Chưa có kết quả kiểm tra", HttpStatusCode.BadRequest);
-
-            var resp = _mapper.Map<EVCheckResponse>(ev);
-            var total = Convert.ToDouble(resp.Items.Sum(x => (x.TotalAmount ?? 0m)));
-
-            return new RepairTicketResponse
-            {
-                AppointmentId = appt.Id,
-                AppointmentCode = appt.Code,
-                AppointmentDate = appt.AppointmentDate,
-                TimeSlot = appt.TimeSlot,
-                EVCheck = resp,
-                TotalMustPay = total,
-            };
         }
     }
 }

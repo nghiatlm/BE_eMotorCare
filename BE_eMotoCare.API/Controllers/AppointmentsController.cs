@@ -99,13 +99,6 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Duyệt lịch hẹn thành công"));
         }
 
-        [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] AppointmentStatus status)
-        {
-            await _service.UpdateStatusAsync(id, status);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật trạng thái thành công"));
-        }
-
         [HttpGet("{id}/checkin")]
         public async Task<IActionResult> GetCheckinCode(Guid id)
         {
@@ -131,74 +124,6 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _service.AssignTechnicianAsync(id, req.TechnicianId, approveById);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Gán kỹ thuật viên thành công"));
-        }
-
-        [HttpPost("inspection")]
-        public async Task<IActionResult> UpsertInspection(
-            Guid id,
-            [FromBody] EVCheckUpsertRequest req,
-            [FromQuery] Guid technicianId
-        )
-        {
-            var res = await _service.UpsertEVCheckAsync(id, req, technicianId);
-            return Ok(
-                ApiResponse<EVCheckResponse>.SuccessResponse(res, "Lưu kết quả kiểm tra thành công")
-            );
-        }
-
-        [HttpGet("inspection")]
-        public async Task<IActionResult> GetInspection(Guid id)
-        {
-            var res = await _service.GetEVCheckAsync(id);
-            return Ok(
-                ApiResponse<EVCheckResponse?>.SuccessResponse(
-                    res,
-                    "Lấy kết quả kiểm tra thành công"
-                )
-            );
-        }
-
-        [HttpPost("inspection/confirm")]
-        public async Task<IActionResult> ConfirmInspection(
-            Guid id,
-            [FromBody] InspectionConfirmRequest req
-        )
-        {
-            await _service.ConfirmInspectionAsync(id, req);
-            return Ok(
-                ApiResponse<string>.SuccessResponse(
-                    null,
-                    req.Accept ? "Khách đã xác nhận" : "Khách đã hủy"
-                )
-            );
-        }
-
-        [HttpPost("repair/start")]
-        public async Task<IActionResult> StartRepair(Guid id)
-        {
-            await _service.StartRepairAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Đã bắt đầu sửa chữa"));
-        }
-
-        [HttpPost("repair/finish")]
-        public async Task<IActionResult> FinishRepair(Guid id)
-        {
-            await _service.FinishRepairAsync(id);
-            return Ok(
-                ApiResponse<string>.SuccessResponse(null, "Đã hoàn tất sửa chữa, chờ thanh toán")
-            );
-        }
-
-        [HttpGet("repair-ticket")]
-        public async Task<IActionResult> GetRepairTicket(Guid id)
-        {
-            var res = await _service.GetRepairTicketAsync(id);
-            return Ok(
-                ApiResponse<RepairTicketResponse>.SuccessResponse(
-                    res,
-                    "Lấy phiếu sửa chữa thành công"
-                )
-            );
         }
     }
 }
