@@ -1,3 +1,4 @@
+using eMotoCare.BO.Entities;
 using eMotoCare.DAL.Repositories.AccountRepository;
 using eMotoCare.DAL.Repositories.AppointmentRepository;
 using eMotoCare.DAL.Repositories.BatteryCheckRepository;
@@ -60,6 +61,7 @@ namespace eMotoCare.DAL
         IVehicleRepository Vehicles { get; }
         IVehicleStageRepository VehicleStages { get; }
 
+        void RemoveRange(List<EVCheckDetail> olds);
         Task<int> SaveAsync();
     }
 }

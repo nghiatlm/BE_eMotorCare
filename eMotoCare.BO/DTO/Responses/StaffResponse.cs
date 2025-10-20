@@ -16,7 +16,8 @@ namespace eMotoCare.BO.DTO.Responses
         public PositionEnum Position { get; set; }
 
         public Guid AccountId { get; set; }
-
+        public Guid ServiceCenterId { get; set; }
+        public ServiceCenterResponse? ServiceCenter { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

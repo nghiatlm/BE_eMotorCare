@@ -12,8 +12,8 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251015142043_InitCreateDatabase")]
-    partial class InitCreateDatabase
+    [Migration("20251020071843_initCreateDatabase")]
+    partial class initCreateDatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -29,24 +29,58 @@ namespace eMotoCare.DAL.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("account_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("password");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("role_ame");
+
+                    b.Property<string>("Stattus")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Accounts");
+                    b.ToTable("account");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Appointment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("appointment_id");
+
+                    b.Property<decimal?>("ActualCost")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("actual_cost");
+
+                    b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("appointment_date");
 
                     b.Property<Guid?>("ApproveById")
                         .HasColumnType("char(36)")
@@ -56,9 +90,39 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("campaign_id");
 
-                    b.Property<Guid?>("CustomerId")
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("code");
+
+                    b.Property<Guid>("CustomerId")
                         .HasColumnType("char(36)")
                         .HasColumnName("customer_id");
+
+                    b.Property<decimal?>("EstimatedCost")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("estimated_cost");
+
+                    b.Property<Guid>("ServiceCenterId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TimeSlot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("time_slot");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("type");
 
                     b.Property<Guid?>("VehicleStageId")
                         .HasColumnType("char(36)")
@@ -72,24 +136,82 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("CustomerId");
 
+                    b.HasIndex("ServiceCenterId");
+
                     b.HasIndex("VehicleStageId");
 
-                    b.ToTable("Appointments");
+                    b.ToTable("appointment");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.BatteryCheck", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("battery_check_id");
+
+                    b.Property<string>("Capacity")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("capacity");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("EVCheckDetailId")
                         .HasColumnType("char(36)")
                         .HasColumnName("ev_check_detail_id");
 
+                    b.Property<string>("Energy")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("energy");
+
                     b.Property<Guid>("PartItemId")
                         .HasColumnType("char(36)")
                         .HasColumnName("part_item_id");
+
+                    b.Property<string>("Power")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("power");
+
+                    b.Property<string>("SOC")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("soc");
+
+                    b.Property<string>("SOH")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("soh");
+
+                    b.Property<string>("Solution")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("solution");
+
+                    b.Property<string>("Temp")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("temp");
+
+                    b.Property<string>("Time")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("time");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Voltage")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("voltage");
+
+                    b.Property<string>("current")
+                        .IsRequired()
+                        .HasColumnType("json")
+                        .HasColumnName("current");
 
                     b.HasKey("Id");
 
@@ -98,29 +220,88 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartItemId");
 
-                    b.ToTable("BatteryChecks");
+                    b.ToTable("battery_check");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Campaign", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("campaign_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("code");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("end_date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("type");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Campaigns");
+                    b.ToTable("campaign");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.CampaignDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("campaign_detail_id");
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("action_type");
 
                     b.Property<Guid>("CampaignId")
                         .HasColumnType("char(36)")
                         .HasColumnName("campaign_id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<Guid>("EVCheckDetailId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<int?>("EstimatedTime")
+                        .HasColumnType("int")
+                        .HasColumnName("estimated_time");
+
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("tinyint(1)")
+                        .HasColumnName("is_mandatory");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("note");
 
                     b.Property<Guid>("PartId")
                         .HasColumnType("char(36)")
@@ -132,40 +313,101 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("CampaignDetails");
+                    b.ToTable("campaign_detail");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("customer_id");
 
                     b.Property<Guid>("AccountId")
                         .HasColumnType("char(36)")
                         .HasColumnName("account_id");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("avatar_url");
+
+                    b.Property<string>("CitizenId")
+                        .IsRequired()
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("citizen_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("date_of_birth");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("gender");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("last_name");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId")
                         .IsUnique();
 
-                    b.ToTable("Customers");
+                    b.ToTable("customer");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.EVCheck", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("ev_check_id");
 
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("char(36)")
                         .HasColumnName("appointment_id");
 
+                    b.Property<DateTime>("CheckDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("check_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Odometer")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("odometer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
                     b.Property<Guid>("TaskExecutorId")
                         .HasColumnType("char(36)")
                         .HasColumnName("task_executor_id");
+
+                    b.Property<decimal?>("TotalAmout")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("total_amout");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -174,14 +416,15 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("TaskExecutorId");
 
-                    b.ToTable("EVChecks");
+                    b.ToTable("ev_check");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.EVCheckDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("ev_check_detail_id");
 
                     b.Property<Guid?>("CampaignDetailId")
                         .HasColumnType("char(36)")
@@ -199,9 +442,41 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("part_item_id");
 
+                    b.Property<decimal?>("PricePart")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price_part");
+
+                    b.Property<decimal?>("PriceService")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price_service");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("Remedies")
+                        .HasColumnType("int")
+                        .HasColumnName("remedies");
+
                     b.Property<Guid?>("ReplacePartId")
                         .HasColumnType("char(36)")
                         .HasColumnName("replace_part_id");
+
+                    b.Property<string>("Result")
+                        .HasColumnType("longtext")
+                        .HasColumnName("result");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<decimal?>("TotalAmount")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("total_amount");
+
+                    b.Property<string>("Unit")
+                        .HasColumnType("longtext")
+                        .HasColumnName("unit");
 
                     b.HasKey("Id");
 
@@ -217,22 +492,59 @@ namespace eMotoCare.DAL.Migrations
                     b.HasIndex("ReplacePartId")
                         .IsUnique();
 
-                    b.ToTable("EVCheckDetails");
+                    b.ToTable("ev_check_detail");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ExportNote", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("export_note_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("ExportById")
                         .HasColumnType("char(36)")
                         .HasColumnName("export_by_id");
 
+                    b.Property<DateTime>("ExportDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("export_date");
+
+                    b.Property<string>("ExportTo")
+                        .HasColumnType("longtext")
+                        .HasColumnName("export_to");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("note");
+
                     b.Property<Guid>("ServiceCenterId")
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
+
+                    b.Property<int>("TotalQuantity")
+                        .HasColumnType("int")
+                        .HasColumnName("total_quantity");
+
+                    b.Property<decimal>("TotalValue")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("total_value");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -240,22 +552,56 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ServiceCenterId");
 
-                    b.ToTable("ExportNotes");
+                    b.ToTable("export_note");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ImportNote", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("import_note_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("ImportById")
                         .HasColumnType("char(36)")
                         .HasColumnName("import_by_id");
 
+                    b.Property<DateTime>("ImportDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("import_date");
+
+                    b.Property<string>("ImportFrom")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("import_from");
+
                     b.Property<Guid>("ServiceCenterId")
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("supplier");
+
+                    b.Property<decimal?>("TotalAmout")
+                        .HasColumnType("decimal(65,30)")
+                        .HasColumnName("total_amout");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -263,38 +609,104 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ServiceCenterId");
 
-                    b.ToTable("ImportNotes");
+                    b.ToTable("import_note");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.MaintenancePlan", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("maintenance_plan_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("effective_date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<int>("TotalStages")
+                        .HasColumnType("int")
+                        .HasColumnName("total_stages");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("unit");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("MaintenancePlans");
+                    b.ToTable("maintenance_plan");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.MaintenanceStage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("maintenance_stage_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("DurationMonth")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("duration_month");
+
+                    b.Property<int?>("EstimatedTime")
+                        .HasColumnType("int")
+                        .HasColumnName("estimated_time");
+
                     b.Property<Guid>("MaintenancePlanId")
                         .HasColumnType("char(36)")
                         .HasColumnName("maintenance_plan_id");
+
+                    b.Property<string>("Mileage")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("mileage");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -303,17 +715,28 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("MaintenancePlanId");
 
-                    b.ToTable("MaintenanceStages");
+                    b.ToTable("maintenance_stage");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.MaintenanceStageDetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("maintenance_stage_detail_id");
+
+                    b.Property<string>("ActionType")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("action_type");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("description");
 
                     b.Property<Guid>("MaintenanceStageId")
                         .HasColumnType("char(36)")
@@ -332,31 +755,48 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("MaintenanceStageDetails");
+                    b.ToTable("maintenance_stage_detail");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Model", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("model_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("code");
 
                     b.Property<Guid>("MaintenancePlanId")
                         .HasColumnType("char(36)")
                         .HasColumnName("maintenance_plan_id");
 
+                    b.Property<string>("Manufacturer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("manufacturer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("name");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MaintenancePlanId");
 
-                    b.ToTable("Models");
+                    b.ToTable("model");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ModelPartType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("model_part_type_id");
 
                     b.Property<Guid>("ModelId")
                         .HasColumnType("char(36)")
@@ -372,21 +812,47 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartTypeId");
 
-                    b.ToTable("ModelPartTypes");
+                    b.ToTable("model_part_type");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Part", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("part_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Image")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)")
+                        .HasColumnName("image");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
+
                     b.Property<Guid>("PartTypeId")
                         .HasColumnType("char(36)")
                         .HasColumnName("part_type_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -395,14 +861,15 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartTypeId");
 
-                    b.ToTable("Parts");
+                    b.ToTable("part");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.PartItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("part_item_id");
 
                     b.Property<Guid?>("ExportNoteId")
                         .HasColumnType("char(36)")
@@ -416,6 +883,29 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("part_id");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("serial_number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<int?>("WarrantyPeriod")
+                        .HasColumnType("int")
+                        .HasColumnName("warranty_period");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ExportNoteId");
@@ -424,39 +914,75 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartId");
 
-                    b.ToTable("PartItems");
+                    b.ToTable("part_item");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.PartType", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("part_type_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("PartTypes");
+                    b.ToTable("part_type");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Payment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("payment_id");
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("double")
+                        .HasColumnName("amount");
 
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("char(36)")
                         .HasColumnName("appointment_id");
 
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("varchar(10)")
+                        .HasColumnName("currency");
+
                     b.Property<Guid>("CustomerID")
                         .HasColumnType("char(36)")
                         .HasColumnName("customer_id");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("payment_method");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TransactionCode")
+                        .HasColumnType("varchar(150)")
+                        .HasColumnName("transaction_code");
 
                     b.HasKey("Id");
 
@@ -464,21 +990,55 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("CustomerID");
 
-                    b.ToTable("Payments");
+                    b.ToTable("payment");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.PriceService", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("price_service_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("varchar(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("effective_date");
+
+                    b.Property<decimal>("LaborCost")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("labor_cost");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)")
+                        .HasColumnName("name");
+
                     b.Property<Guid>("PartTypeId")
                         .HasColumnType("char(36)")
                         .HasColumnName("part_type_id");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
+
+                    b.Property<int>("Remedies")
+                        .HasColumnType("int")
+                        .HasColumnName("remedies");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -487,22 +1047,52 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("PartTypeId");
 
-                    b.ToTable("PriceServices");
+                    b.ToTable("price_service");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.RMA", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("rma_id");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("code");
 
                     b.Property<Guid>("CreateById")
                         .HasColumnType("char(36)")
                         .HasColumnName("create_by_id");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("char(36)")
                         .HasColumnName("customer_id");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("longtext")
+                        .HasColumnName("note");
+
+                    b.Property<DateTime>("RMADate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("rma_date");
+
+                    b.Property<string>("ReturnDddress")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("return_address");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -510,26 +1100,66 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("RMAs");
+                    b.ToTable("rma");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.RMADetail", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("rma_detail_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("EVCheckDetailId")
                         .HasColumnType("char(36)")
                         .HasColumnName("ev_check_detail_id");
 
+                    b.Property<DateTime?>("ExpirationDateRMA")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("expiration_date_rma");
+
+                    b.Property<string>("Inspector")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("inspector");
+
                     b.Property<Guid>("PartItemId")
                         .HasColumnType("char(36)")
                         .HasColumnName("part_item_id");
 
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int")
+                        .HasColumnName("quantity");
+
                     b.Property<Guid>("RMAId")
                         .HasColumnType("char(36)")
                         .HasColumnName("rma_id");
+
+                    b.Property<string>("RMANumber")
+                        .IsRequired()
+                        .HasColumnType("varchar(100)")
+                        .HasColumnName("rma_number");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("reason");
+
+                    b.Property<DateTime?>("ReleaseDateRMA")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("release_date_rma");
+
+                    b.Property<string>("Result")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("result");
+
+                    b.Property<string>("Solution")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("solution");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -540,25 +1170,75 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("RMAId");
 
-                    b.ToTable("RMADetails");
+                    b.ToTable("rma_detail");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ServiceCenter", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_id");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Latitude")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("latitude");
+
+                    b.Property<string>("Longitude")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("longitude");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ServiceCenters");
+                    b.ToTable("service_center");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ServiceCenterInventory", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_inventory_id");
 
                     b.Property<Guid?>("PartItemId")
                         .HasColumnType("char(36)")
@@ -575,21 +1255,68 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ServiceCenterId");
 
-                    b.ToTable("ServiceCenterInventorys");
+                    b.ToTable("service_center_inventory");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Staff", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("staff_id");
 
                     b.Property<Guid>("AccountId")
                         .HasColumnType("char(36)")
                         .HasColumnName("account_id");
 
-                    b.Property<Guid?>("ServiceCenterId")
-                        .HasColumnType("char(36)");
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(400)")
+                        .HasColumnName("address");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("longtext")
+                        .HasColumnName("avatar_url");
+
+                    b.Property<string>("CitizenId")
+                        .IsRequired()
+                        .HasColumnType("varchar(15)")
+                        .HasColumnName("citizen_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("date_of_birth");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("gender");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("ServiceCenterId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_id");
+
+                    b.Property<string>("StaffCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("staff_code");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
@@ -598,22 +1325,71 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ServiceCenterId");
 
-                    b.ToTable("Staffs");
+                    b.ToTable("staff");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Vehicle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("vehicle_id");
+
+                    b.Property<string>("ChassisNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("chassis_number");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("color");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid?>("CustomerId")
                         .HasColumnType("char(36)")
                         .HasColumnName("customer_id");
 
+                    b.Property<string>("EngineNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("engine_number");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("image");
+
+                    b.Property<DateTime>("ManufactureDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("manufacture_date");
+
                     b.Property<Guid>("ModelId")
                         .HasColumnType("char(36)")
                         .HasColumnName("model_id");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("purchase_date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("VinNUmber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("vin_number");
+
+                    b.Property<DateTime>("WarrantyExpiry")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("warranty_expiry");
 
                     b.HasKey("Id");
 
@@ -621,14 +1397,22 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ModelId");
 
-                    b.ToTable("Vehicles");
+                    b.ToTable("vehicle");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.VehiclePartItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("vehicle_part_item_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("InstallDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("install_date");
 
                     b.Property<Guid>("PartItemId")
                         .HasColumnType("char(36)")
@@ -637,6 +1421,9 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<Guid?>("ReplaceForId")
                         .HasColumnType("char(36)")
                         .HasColumnName("replace_for_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("char(36)")
@@ -651,18 +1438,32 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("VehiclePartItems");
+                    b.ToTable("vehicle_part_item");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.VehicleStage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
+                        .HasColumnType("char(36)")
+                        .HasColumnName("vehicle_stage_id");
+
+                    b.Property<DateTime>("ActualMaintenanceMileage")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("actual_maintenance_mileage");
+
+                    b.Property<DateTime>("DateOfImplementation")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("date_of_implementation");
 
                     b.Property<Guid>("MaintenanceStageId")
                         .HasColumnType("char(36)")
                         .HasColumnName("maintenance_stage_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
 
                     b.Property<Guid>("VehicleId")
                         .HasColumnType("char(36)")
@@ -674,7 +1475,7 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("VehicleId");
 
-                    b.ToTable("VehicleStages");
+                    b.ToTable("vehicle_stage");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Appointment", b =>
@@ -689,7 +1490,15 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasOne("eMotoCare.BO.Entities.Customer", "Customer")
                         .WithMany("Appointments")
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("eMotoCare.BO.Entities.ServiceCenter", "ServiceCenter")
+                        .WithMany("Appointments")
+                        .HasForeignKey("ServiceCenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("eMotoCare.BO.Entities.VehicleStage", "VehicleStage")
                         .WithMany("Appointments")
@@ -700,6 +1509,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("Campaign");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("ServiceCenter");
 
                     b.Navigation("VehicleStage");
                 });
@@ -1042,11 +1853,15 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eMotoCare.BO.Entities.ServiceCenter", null)
+                    b.HasOne("eMotoCare.BO.Entities.ServiceCenter", "ServiceCenter")
                         .WithMany("Staffs")
-                        .HasForeignKey("ServiceCenterId");
+                        .HasForeignKey("ServiceCenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Account");
+
+                    b.Navigation("ServiceCenter");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Vehicle", b =>
@@ -1237,6 +2052,8 @@ namespace eMotoCare.DAL.Migrations
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ServiceCenter", b =>
                 {
+                    b.Navigation("Appointments");
+
                     b.Navigation("ExportNotes");
 
                     b.Navigation("ImportNotes");

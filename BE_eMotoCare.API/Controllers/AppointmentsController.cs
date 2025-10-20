@@ -4,7 +4,6 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.AppointmentServices;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -100,13 +99,6 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Duyệt lịch hẹn thành công"));
         }
 
-        [HttpPatch("{id}/status")]
-        public async Task<IActionResult> UpdateStatus(Guid id, [FromQuery] AppointmentStatus status)
-        {
-            await _service.UpdateStatusAsync(id, status);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật trạng thái thành công"));
-        }
-
         [HttpGet("{id}/checkin")]
         public async Task<IActionResult> GetCheckinCode(Guid id)
         {
@@ -114,6 +106,24 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(
                 ApiResponse<object>.SuccessResponse(new { code }, "Lấy mã check-in thành công")
             );
+        }
+
+        [HttpPost("checkin/by-code")]
+        public async Task<IActionResult> CheckInByCode([FromBody] CheckInRequest req)
+        {
+            await _service.CheckInByCodeAsync(req.Code);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
+        }
+
+        [HttpPost("assign-technician")]
+        public async Task<IActionResult> AssignTechnician(
+            Guid id,
+            [FromBody] AssignTechnicianRequest req,
+            [FromQuery] Guid approveById
+        )
+        {
+            await _service.AssignTechnicianAsync(id, req.TechnicianId, approveById);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Gán kỹ thuật viên thành công"));
         }
     }
 }

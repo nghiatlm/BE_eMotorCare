@@ -12,13 +12,17 @@ namespace eMototCare.BLL.Services.CustomerServices
 {
     public class CustomerService : ICustomerService
     {
-        private readonly IUnitOfWork _uow;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<CustomerService> _logger;
 
-        public CustomerService(IUnitOfWork uow, IMapper mapper, ILogger<CustomerService> logger)
+        public CustomerService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<CustomerService> logger
+        )
         {
-            _uow = uow;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -31,7 +35,11 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
-                var (items, total) = await _uow.Customers.GetPagedAsync(search, page, pageSize);
+                var (items, total) = await _unitOfWork.Customers.GetPagedAsync(
+                    search,
+                    page,
+                    pageSize
+                );
                 var rows = _mapper.Map<List<CustomerResponse>>(items);
                 return new PageResult<CustomerResponse>(rows, pageSize, page, (int)total);
             }
@@ -47,7 +55,7 @@ namespace eMototCare.BLL.Services.CustomerServices
             try
             {
                 var entity =
-                    await _uow.Customers.GetByIdAsync(id)
+                    await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
                 return _mapper.Map<CustomerResponse>(entity);
             }
@@ -68,21 +76,21 @@ namespace eMototCare.BLL.Services.CustomerServices
             {
                 var citizen = req.CitizenId.Trim();
 
-                if (await _uow.Customers.ExistsForAccountAsync(req.AccountId))
+                if (await _unitOfWork.Customers.ExistsForAccountAsync(req.AccountId))
                     throw new AppException(
                         "Tài khoản đã có hồ sơ khách hàng",
                         HttpStatusCode.Conflict
                     );
 
-                if (await _uow.Customers.ExistsCitizenAsync(citizen))
+                if (await _unitOfWork.Customers.ExistsCitizenAsync(citizen))
                     throw new AppException("CCCD đã tồn tại", HttpStatusCode.Conflict);
 
                 var entity = _mapper.Map<Customer>(req);
                 entity.Id = Guid.NewGuid();
                 entity.CitizenId = citizen;
 
-                await _uow.Customers.CreateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.Customers.CreateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation(
                     "Created Customer {Id} (Account {AccountId})",
@@ -107,21 +115,21 @@ namespace eMototCare.BLL.Services.CustomerServices
             try
             {
                 var entity =
-                    await _uow.Customers.GetByIdAsync(id)
+                    await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
 
                 var newCitizen = req.CitizenId.Trim();
                 if (
                     !string.Equals(entity.CitizenId, newCitizen, StringComparison.OrdinalIgnoreCase)
-                    && await _uow.Customers.ExistsCitizenAsync(newCitizen, entity.Id)
+                    && await _unitOfWork.Customers.ExistsCitizenAsync(newCitizen, entity.Id)
                 )
                     throw new AppException("CCCD đã tồn tại", HttpStatusCode.Conflict);
 
                 _mapper.Map(req, entity);
                 entity.CitizenId = newCitizen;
 
-                await _uow.Customers.UpdateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.Customers.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Updated Customer {Id}", id);
             }
@@ -141,11 +149,11 @@ namespace eMototCare.BLL.Services.CustomerServices
             try
             {
                 var entity =
-                    await _uow.Customers.GetByIdAsync(id)
+                    await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
 
-                await _uow.Customers.DeleteAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.Customers.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted Customer {Id}", id);
             }

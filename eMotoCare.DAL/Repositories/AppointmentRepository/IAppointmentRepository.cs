@@ -15,6 +15,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             int page,
             int pageSize
         );
+        Task<Appointment?> GetByCodeAsync(string code);
 
         Task<Appointment?> GetByIdAsync(Guid id);
         Task<bool> ExistsCodeAsync(string code);

@@ -25,11 +25,18 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] PositionEnum? position,
+            [FromQuery] Guid? serviceCenterId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(search, position, page, pageSize);
+            var data = await _service.GetPagedAsync(
+                search,
+                position,
+                serviceCenterId,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<StaffResponse>>.SuccessResponse(
                     data,

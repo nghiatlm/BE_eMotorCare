@@ -34,7 +34,11 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.Appointments.AsNoTracking().AsQueryable();
+            var q = _context
+                .Appointments.AsNoTracking()
+                .Include(x => x.ServiceCenter)
+                .Include(x => x.Customer)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -99,5 +103,11 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                     || x.Status == AppointmentStatus.IN_SERVICE
                 )
             );
+
+        public Task<Appointment?> GetByCodeAsync(string code) =>
+            _context
+                .Appointments.Include(x => x.ServiceCenter)
+                .Include(x => x.Customer)
+                .FirstOrDefaultAsync(x => x.Code == code);
     }
 }

@@ -10,6 +10,7 @@ namespace eMototCare.BLL.Services.StaffServices
         Task<PageResult<StaffResponse>> GetPagedAsync(
             string? search,
             PositionEnum? position,
+            Guid? serviceCenterId,
             int page,
             int pageSize
         );
