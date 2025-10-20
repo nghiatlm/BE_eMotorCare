@@ -13,13 +13,17 @@ namespace eMototCare.BLL.Services.VehicleServices
 {
     public class VehicleService : IVehicleService
     {
-        private readonly IUnitOfWork _uow;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<VehicleService> _logger;
 
-        public VehicleService(IUnitOfWork uow, IMapper mapper, ILogger<VehicleService> logger)
+        public VehicleService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<VehicleService> logger
+        )
         {
-            _uow = uow;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -37,7 +41,7 @@ namespace eMototCare.BLL.Services.VehicleServices
         {
             try
             {
-                var (items, total) = await _uow.Vehicles.GetPagedAsync(
+                var (items, total) = await _unitOfWork.Vehicles.GetPagedAsync(
                     search,
                     status,
                     modelId,
@@ -61,7 +65,7 @@ namespace eMototCare.BLL.Services.VehicleServices
         public async Task<VehicleResponse?> GetByIdAsync(Guid id)
         {
             var v =
-                await _uow.Vehicles.GetByIdAsync(id)
+                await _unitOfWork.Vehicles.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
             return _mapper.Map<VehicleResponse>(v);
         }
@@ -73,8 +77,8 @@ namespace eMototCare.BLL.Services.VehicleServices
                 var entity = _mapper.Map<Vehicle>(req);
                 entity.Id = Guid.NewGuid();
 
-                await _uow.Vehicles.CreateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.Vehicles.CreateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Created Vehicle {Id} ({Vin})", entity.Id, entity.VinNUmber);
                 return entity.Id;
@@ -95,12 +99,12 @@ namespace eMototCare.BLL.Services.VehicleServices
             try
             {
                 var entity =
-                    await _uow.Vehicles.GetByIdAsync(id)
+                    await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
 
                 _mapper.Map(req, entity);
-                await _uow.Vehicles.UpdateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.Vehicles.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Updated Vehicle {Id}", id);
             }
@@ -120,11 +124,11 @@ namespace eMototCare.BLL.Services.VehicleServices
             try
             {
                 var entity =
-                    await _uow.Vehicles.GetByIdAsync(id)
+                    await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
 
-                await _uow.Vehicles.DeleteAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.Vehicles.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted Vehicle {Id}", id);
             }

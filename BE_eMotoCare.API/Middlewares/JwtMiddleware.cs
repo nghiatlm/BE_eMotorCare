@@ -36,6 +36,7 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/part-types",
             "/api/v1/parts",
             "/api/v1/vehicles",
+            "/api/v1/vehicle-part-items",
         };
 
         public JwtMiddleware(

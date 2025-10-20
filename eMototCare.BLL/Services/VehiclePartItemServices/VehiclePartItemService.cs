@@ -17,17 +17,17 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
 {
     public class VehiclePartItemService : IVehiclePartItemService
     {
-        private readonly IUnitOfWork _uow;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<VehiclePartItemService> _logger;
 
         public VehiclePartItemService(
-            IUnitOfWork uow,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<VehiclePartItemService> logger
         )
         {
-            _uow = uow;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -45,7 +45,7 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
         {
             try
             {
-                var (items, total) = await _uow.VehiclePartItems.GetPagedAsync(
+                var (items, total) = await _unitOfWork.VehiclePartItems.GetPagedAsync(
                     search,
                     vehicleId,
                     partItemId,
@@ -69,7 +69,7 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
         public async Task<VehiclePartItemResponse?> GetByIdAsync(Guid id)
         {
             var v =
-                await _uow.VehiclePartItems.GetByIdAsync(id)
+                await _unitOfWork.VehiclePartItems.GetByIdAsync(id)
                 ?? throw new AppException(
                     "Không tìm thấy linh kiện gắn trên xe",
                     HttpStatusCode.NotFound
@@ -85,8 +85,8 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
                 var entity = _mapper.Map<VehiclePartItem>(req);
                 entity.Id = Guid.NewGuid();
 
-                await _uow.VehiclePartItems.CreateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.VehiclePartItems.CreateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation(
                     "Created VehiclePartItem {Id} for Vehicle {VehicleId}",
@@ -111,15 +111,15 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
             try
             {
                 var entity =
-                    await _uow.VehiclePartItems.GetByIdAsync(id)
+                    await _unitOfWork.VehiclePartItems.GetByIdAsync(id)
                     ?? throw new AppException(
                         "Không tìm thấy linh kiện gắn trên xe",
                         HttpStatusCode.NotFound
                     );
 
                 _mapper.Map(req, entity);
-                await _uow.VehiclePartItems.UpdateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.VehiclePartItems.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Updated VehiclePartItem {Id}", id);
             }
@@ -139,14 +139,14 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
             try
             {
                 var entity =
-                    await _uow.VehiclePartItems.GetByIdAsync(id)
+                    await _unitOfWork.VehiclePartItems.GetByIdAsync(id)
                     ?? throw new AppException(
                         "Không tìm thấy linh kiện gắn trên xe",
                         HttpStatusCode.NotFound
                     );
 
-                await _uow.VehiclePartItems.DeleteAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.VehiclePartItems.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted VehiclePartItem {Id}", id);
             }
