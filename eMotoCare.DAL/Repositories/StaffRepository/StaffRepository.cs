@@ -14,6 +14,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
         public async Task<(IReadOnlyList<Staff> Items, long Total)> GetPagedAsync(
             string? search,
             PositionEnum? position,
+            Guid? serviceCenterId,
             int page,
             int pageSize
         )
@@ -56,6 +57,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             _context
                 .Staffs.Include(s => s.Account)
                 .AsNoTracking()
+                .Include(s => s.ServiceCenter)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public async Task UpdateAsync(Staff entity)

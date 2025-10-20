@@ -35,7 +35,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPartTypeService, PartTypeService>();
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
             services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
-            //services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IPartService, PartService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();

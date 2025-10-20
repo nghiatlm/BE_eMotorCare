@@ -27,6 +27,7 @@ namespace eMototCare.BLL.Services.StaffServices
         public async Task<PageResult<StaffResponse>> GetPagedAsync(
             string? search,
             PositionEnum? position,
+            Guid? serviceCenterId,
             int page,
             int pageSize
         )
@@ -36,6 +37,7 @@ namespace eMototCare.BLL.Services.StaffServices
                 var (items, total) = await _unitOfWork.Staffs.GetPagedAsync(
                     search,
                     position,
+                    serviceCenterId,
                     page,
                     pageSize
                 );
@@ -75,7 +77,7 @@ namespace eMototCare.BLL.Services.StaffServices
                 entity.Id = Guid.NewGuid();
                 entity.StaffCode = code;
                 entity.CitizenId = citizen;
-
+                entity.ServiceCenterId = req.ServiceCenterId;
                 await _unitOfWork.Staffs.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
