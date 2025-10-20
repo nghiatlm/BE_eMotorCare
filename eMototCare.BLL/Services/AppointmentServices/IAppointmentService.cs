@@ -28,9 +28,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
         Task ApproveAsync(Guid id, Guid staffId);
         Task UpdateStatusAsync(Guid id, AppointmentStatus status);
         Task AssignTechnicianAsync(Guid appointmentId, Guid technicianId, Guid approveById);
-
-        Task CheckInAsync(Guid appointmentId);
-
         Task<EVCheckResponse> UpsertEVCheckAsync(
             Guid appointmentId,
             EVCheckUpsertRequest req,
@@ -44,5 +41,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
         Task FinishRepairAsync(Guid appointmentId);
 
         Task<RepairTicketResponse> GetRepairTicketAsync(Guid appointmentId);
+        Task CheckInByCodeAsync(string code);
     }
 }

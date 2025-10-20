@@ -115,6 +115,13 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
+        [HttpPost("checkin/by-code")]
+        public async Task<IActionResult> CheckInByCode([FromBody] CheckInRequest req)
+        {
+            await _service.CheckInByCodeAsync(req.Code);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
+        }
+
         [HttpPost("assign-technician")]
         public async Task<IActionResult> AssignTechnician(
             Guid id,
@@ -124,13 +131,6 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _service.AssignTechnicianAsync(id, req.TechnicianId, approveById);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Gán kỹ thuật viên thành công"));
-        }
-
-        [HttpPost("checkin")]
-        public async Task<IActionResult> CheckIn(Guid id)
-        {
-            await _service.CheckInAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
         }
 
         [HttpPost("inspection")]

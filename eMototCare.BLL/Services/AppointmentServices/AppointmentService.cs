@@ -232,15 +232,33 @@ namespace eMototCare.BLL.Services.AppointmentServices
             await _uow.SaveAsync();
         }
 
-        public async Task CheckInAsync(Guid appointmentId)
+        public async Task CheckInByCodeAsync(string code)
         {
+            if (string.IsNullOrWhiteSpace(code))
+                throw new AppException("Mã check-in không hợp lệ", HttpStatusCode.BadRequest);
+
             var appt =
-                await _uow.Appointments.GetByIdAsync(appointmentId)
+                await _uow.Appointments.GetByCodeAsync(code.Trim())
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
 
-            appt.Status = AppointmentStatus.IN_SERVICE;
-            await _uow.Appointments.UpdateAsync(appt);
-            await _uow.SaveAsync();
+            switch (appt.Status)
+            {
+                case AppointmentStatus.PENDING:
+                case AppointmentStatus.APPROVED:
+                    appt.Status = AppointmentStatus.IN_SERVICE;
+                    await _uow.Appointments.UpdateAsync(appt);
+                    await _uow.SaveAsync();
+                    break;
+
+                case AppointmentStatus.IN_SERVICE:
+                    break;
+
+                default:
+                    throw new AppException(
+                        "Trạng thái lịch hẹn không cho phép check-in",
+                        HttpStatusCode.Conflict
+                    );
+            }
         }
 
         public async Task<EVCheckResponse> UpsertEVCheckAsync(

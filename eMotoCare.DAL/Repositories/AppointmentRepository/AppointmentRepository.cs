@@ -99,5 +99,11 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                     || x.Status == AppointmentStatus.IN_SERVICE
                 )
             );
+
+        public Task<Appointment?> GetByCodeAsync(string code) =>
+            _context
+                .Appointments.Include(x => x.ServiceCenter)
+                .Include(x => x.Customer)
+                .FirstOrDefaultAsync(x => x.Code == code);
     }
 }
