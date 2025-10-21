@@ -14,6 +14,7 @@ using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.PartServices;
+using eMototCare.BLL.Services.EVCheckServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -34,7 +35,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
             services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
             services.AddScoped<IPartService, PartService>();
-
+            services.AddScoped<IEVCheckService, EVCheckService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
             return services;
         }

@@ -25,8 +25,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("odometer")]
-        public string Odometer { get; set; } = string.Empty;
-
+        public int Odometer { get; set; }
         [Required]
         [Column("appointment_id")]
         public Guid AppointmentId { get; set; }

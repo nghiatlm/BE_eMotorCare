@@ -90,5 +90,13 @@ namespace eMototCare.BLL.Services.AuthServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task ActiveAccount(string phone)
+        {
+            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
+            account.Stattus = AccountStatus.ACTIVE;
+            await _unitOfWork.Accounts.UpdateAsync(account);
+            await _unitOfWork.SaveAsync();
+        }
     }
 }

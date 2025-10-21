@@ -1,6 +1,8 @@
 ﻿using eMotoCare.BO.Entities;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
+using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace eMotoCare.DAL.Repositories.VehicleRepository
 {
@@ -9,5 +11,11 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
         public VehicleRepository(ApplicationDbContext context) : base(context)
         {
         }
+
+        public async Task<Vehicle?> GetByIdAsync(Guid id) =>
+           await _context
+                .Vehicles
+                .Include(x => x.Model)
+                .FirstOrDefaultAsync(x => x.Id == id);
     }
 }

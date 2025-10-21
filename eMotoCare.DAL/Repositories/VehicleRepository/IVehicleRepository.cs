@@ -3,5 +3,8 @@ using eMotoCare.DAL.Base;
 
 namespace eMotoCare.DAL.Repositories.VehicleRepository
 {
-    public interface IVehicleRepository : IGenericRepository<Vehicle> { }
+    public interface IVehicleRepository : IGenericRepository<Vehicle>
+    {
+        Task<Vehicle?> GetByIdAsync(Guid id);
+    }
 }

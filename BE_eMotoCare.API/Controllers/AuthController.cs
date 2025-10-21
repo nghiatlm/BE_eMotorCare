@@ -40,6 +40,7 @@ namespace BE_eMotoCare.API.Controllers
         {
             var decodedToken = await _firebase.VerifyIdTokenAsync(request.IdToken);
             var phone = decodedToken.Claims["phone_number"].ToString();
+            await _service.ActiveAccount(phone);
             return Ok(ApiResponse<AuthResponse>.SuccessResponse(null, "Xác thực OTP thành công"));
         }
     }
