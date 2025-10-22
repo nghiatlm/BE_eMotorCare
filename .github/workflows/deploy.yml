@@ -1,4 +1,4 @@
-name: Deploy .NET App with Docker zero-downtime
+name: Deploy .NET App with Docker via gcloud
 
 on:
   push:
@@ -13,47 +13,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 1️⃣ Authenticate với Service Account
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # 2️⃣ Setup gcloud SDK
       - name: Set up gcloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          version: 'latest'
 
-      - name: SSH and zero-downtime deploy
+      # 3️⃣ SSH và deploy
+      - name: SSH and deploy
         run: |
           gcloud compute ssh minhn@${{ secrets.GCP_VM_NAME }} --zone=${{ secrets.GCP_ZONE }} --command="
           cd /home/minhn/app/BE_eMotoCare
-
-          # Pull code mới
           git reset --hard
           git checkout main
           git pull origin main
 
-          # Build Docker image mới với tag tạm
-          docker build -t eMotoCare:new .
-
-          # Chạy container mới trên port tạm 8081
-          docker run -d --name eMotoCare_new -p 8081:80 eMotoCare:new
-
-          # Optional: kiểm tra container mới
-          sleep 5
-          if ! curl -f http://localhost:8081/health; then
-            echo 'New container failed!'
-            docker rm -f eMotoCare_new
-            exit 1
-          fi
-
-          # Dừng và xoá container cũ
+          # Dừng container cũ nếu đang chạy
           if [ \$(docker ps -q -f name=eMotoCare) ]; then
             docker stop eMotoCare
             docker rm eMotoCare
           fi
 
-          # Đổi tên container mới thành container chính
-          docker rename eMotoCare_new eMotoCare
+          # Build Docker image mới
+          docker build -t eMotoCare:latest .
 
-          # Chuyển port sang 80 (nếu cần restart với port 80)
-          docker run -d --name eMotoCare -p 80:80 eMotoCare:new
-          docker rm eMotoCare_new || true
+          # Run container mới
+          docker run -d --name eMotoCare -p 80:80 eMotoCare:latest
           "
