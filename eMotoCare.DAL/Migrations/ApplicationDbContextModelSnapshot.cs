@@ -1302,8 +1302,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(200)")
                         .HasColumnName("position");
 
-                    b.Property<Guid?>("ServiceCenterId")
-                        .HasColumnType("char(36)");
+                    b.Property<Guid>("ServiceCenterId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_id");
 
                     b.Property<string>("StaffCode")
                         .IsRequired()
@@ -1853,11 +1854,15 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eMotoCare.BO.Entities.ServiceCenter", null)
+                    b.HasOne("eMotoCare.BO.Entities.ServiceCenter", "ServiceCenter")
                         .WithMany("Staffs")
-                        .HasForeignKey("ServiceCenterId");
+                        .HasForeignKey("ServiceCenterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Account");
+
+                    b.Navigation("ServiceCenter");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Vehicle", b =>

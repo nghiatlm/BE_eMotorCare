@@ -1,4 +1,3 @@
-
 using System.Net;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -20,23 +19,36 @@ namespace eMototCare.BLL.Services.AuthServices
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtService _jwtService;
 
-        public AuthService(IUnitOfWork unitOfWork, ILogger<AuthService> logger, IAccountRepository repository, IPasswordHasher passwordHasher, IJwtService jwtService)
+        public AuthService(
+            IUnitOfWork unitOfWork,
+            ILogger<AuthService> logger,
+            IAccountRepository repository,
+            IPasswordHasher passwordHasher,
+            IJwtService jwtService
+        )
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _jwtService = jwtService;
         }
+
         public async Task<AuthResponse> Login(LoginRequest request)
         {
             try
             {
                 var account = await _unitOfWork.Accounts.FindByPhone(request.Phone);
-                if (account == null) throw new AppException("Tài khoảng không tồn tại", HttpStatusCode.NotFound);
-                bool checkPasswo5rd = _passwordHasher.VerifyPassword(request.Password, account.Password);
-                if (!checkPasswo5rd) throw new AppException("Mật khẩu không đúng", HttpStatusCode.BadRequest);
+                if (account == null)
+                    throw new AppException("Tài khoản không tồn tại", HttpStatusCode.NotFound);
+                bool checkPasswo5rd = _passwordHasher.VerifyPassword(
+                    request.Password,
+                    account.Password
+                );
+                if (!checkPasswo5rd)
+                    throw new AppException("Mật khẩu không đúng", HttpStatusCode.BadRequest);
                 string token = _jwtService.GenerateJwtToken(account);
-                if (token == null) throw new AppException("Token không được null", HttpStatusCode.BadRequest);
+                if (token == null)
+                    throw new AppException("Token không được null", HttpStatusCode.BadRequest);
                 return new AuthResponse
                 {
                     Token = token,

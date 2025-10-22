@@ -9,6 +9,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
         Task<(IReadOnlyList<Staff> Items, long Total)> GetPagedAsync(
             string? search,
             PositionEnum? position,
+            Guid? serviceCenterId,
             int page,
             int pageSize
         );

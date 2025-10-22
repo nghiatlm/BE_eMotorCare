@@ -83,5 +83,17 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }
+        
+
+        public Task<EVCheck?> GetByAppointmentIdAsync(Guid appointmentId) =>
+            _context
+                .EVChecks.Include(x => x.EVCheckDetails)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.AppointmentId == appointmentId);
+
+        public Task<EVCheck?> GetByIdIncludeDetailsAsync(Guid evCheckId) =>
+            _context
+                .EVChecks.Include(x => x.EVCheckDetails)
+                .FirstOrDefaultAsync(x => x.Id == evCheckId);
     }
 }

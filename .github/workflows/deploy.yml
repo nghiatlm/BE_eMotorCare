@@ -1,0 +1,52 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - main  # Chỉ chạy khi push vào nhánh main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Authenticate with Google Cloud (optional nếu chỉ dùng SSH)
+      - name: Authenticate GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # 3. Set GCP project & zone
+      - name: Set gcloud project
+        run: |
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud config set compute/zone ${{ secrets.GCP_ZONE }}
+
+      # 4. Build Docker image locally
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/emotocare:new .
+
+      # 5. Login to Docker Hub
+      - name: Docker login
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      # 6. Push image to Docker Hub
+      - name: Push Docker image
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/emotocare:new
+
+      # 7. Deploy Docker on VM
+      - name: Deploy Docker to VM
+        run: |
+          gcloud compute ssh ${{ secrets.VM_USER }}@${{ secrets.GCP_VM_NAME }} --command="
+            docker pull ${{ secrets.DOCKER_USERNAME }}/emotocare:new
+            docker stop emotocare_new || true
+            docker rm emotocare_new || true
+            docker run -d --name emotocare_new -p 80:80 -p 443:443 ${{ secrets.DOCKER_USERNAME }}/emotocare:new
+          "
