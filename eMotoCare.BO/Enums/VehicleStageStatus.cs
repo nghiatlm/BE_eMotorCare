@@ -6,7 +6,7 @@ namespace eMotoCare.BO.Enums
     {
         UPCOMING,
         COMPLETED,
-        OVERDUE,
-        FUTURE
+        EXPIRED,
+        NO_START
     }
 }

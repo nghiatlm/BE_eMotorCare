@@ -71,7 +71,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
 
                 var entity = _mapper.Map<EVCheck>(req);
                 entity.Id = Guid.NewGuid();
-
+                entity.Status = EVCheckStatus.PENDING;
                 await _unitOfWork.EVChecks.CreateAsync(entity);
 
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
@@ -113,7 +113,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     if (vs.ActualMaintenanceMileage <= entity.Odometer)
                     {
                         if (vs.Status != VehicleStageStatus.COMPLETED)
-                            vs.Status = VehicleStageStatus.OVERDUE;
+                            vs.Status = VehicleStageStatus.EXPIRED;
                     }
                     else if (nextStage != null && vs.Id == nextStage.Id)
                     {
@@ -121,7 +121,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     }
                     else
                     {
-                        vs.Status = VehicleStageStatus.FUTURE;
+                        vs.Status = VehicleStageStatus.NO_START;
                     }
 
                     _unitOfWork.VehicleStages.Update(vs);
