@@ -15,7 +15,7 @@ namespace eMotoCare.BO.DTO.Responses
         public int Odometer { get; set; }
         public AppointmentResponse? Appointment { get; set; }
         public StaffResponse? TaskExecutor { get; set; }
-        public ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
+        public ICollection<EVCheckDetailResponse>? EVCheckDetails { get; set; }
 
     }
 }
