@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /app/out .
 
 # Set environment to listen on all interfaces
-ENV ASPNETCORE_URLS="http://+:80;https://+:443"
+ENV ASPNETCORE_URLS="http://+:80"
 
 # Expose ports
 EXPOSE 80
