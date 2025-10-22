@@ -71,10 +71,5 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
             return (items, total);
         }
 
-        public async Task<Vehicle?> GetByIdAsync(Guid id) =>
-           await _context
-                .Vehicles
-                .Include(x => x.Model)
-                .FirstOrDefaultAsync(x => x.Id == id);
     }
 }

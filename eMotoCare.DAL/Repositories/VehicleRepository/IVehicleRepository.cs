@@ -19,6 +19,5 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
 
         Task<Vehicle?> GetByIdAsync(Guid id);
 
-        Task<Vehicle?> GetByIdAsync(Guid id);
     }
 }
