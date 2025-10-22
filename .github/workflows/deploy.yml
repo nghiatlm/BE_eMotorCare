@@ -43,8 +43,8 @@ jobs:
           fi
 
           # Build Docker image mới
-          docker build -t emotoCare:latest .
+          docker build -t emotocare:latest .
 
           # Run container mới
-          docker run -d --name emotoCare -p 80:80 emotoCare:latest
+          docker run -d --name emotocare -p 80:80 emotocare:latest
           "
