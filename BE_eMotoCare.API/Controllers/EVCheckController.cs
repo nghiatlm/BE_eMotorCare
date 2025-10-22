@@ -68,7 +68,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckRequest request)
+        public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckUpdateRequest request)
         {
             await _evCheckService.UpdateAsync(id, request);
             return Ok(

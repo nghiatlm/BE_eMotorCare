@@ -172,7 +172,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, EVCheckRequest req)
+        public async Task UpdateAsync(Guid id, EVCheckUpdateRequest req)
         {
             try
             {

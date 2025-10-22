@@ -2,8 +2,10 @@ namespace eMotoCare.BO.Enums
 {
     public enum EVCheckStatus
     {
-        COMPLETED,
+        PENDING,
         IN_PROGRESS,
-        PENDING
+        COMPLETED,
+        APPROVEDBYCUSTOMER,
+        CANCELLED,
     }
 }

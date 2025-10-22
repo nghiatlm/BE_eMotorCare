@@ -13,6 +13,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
         Task DeleteAsync(Guid id);
         Task<EVCheckResponse?> GetByIdAsync(Guid id);
         Task<PageResult<EVCheckResponse>> GetPagedAsync(DateTime? startDate, DateTime? endDate, EVCheckStatus? status, Guid? appointmentId, Guid? taskExecutorId, int page, int pageSize);
-        Task UpdateAsync(Guid id, EVCheckRequest req);
+        Task UpdateAsync(Guid id, EVCheckUpdateRequest req);
     }
 }
