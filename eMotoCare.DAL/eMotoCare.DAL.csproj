@@ -10,4 +10,8 @@
     <ProjectReference Include="..\eMotoCare.BO\eMotoCare.BO.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>
