@@ -21,7 +21,11 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("actual_maintenance_mileage")]
-        public DateTime ActualMaintenanceMileage { get; set; }
+        public int ActualMaintenanceMileage { get; set; }
+        [Required]
+        [Column("actual_maintenance_unit", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(MaintenanceUnit))]
+        public MaintenanceUnit ActualMaintenanceUnit { get; set; }
 
         [Required]
         [Column("vehicle_id")]
