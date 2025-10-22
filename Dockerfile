@@ -62,7 +62,8 @@ RUN apt-get update \
 
 COPY --from=build /app/out .
 
-ENV ASPNETCORE_URLS="http://+:5154;https://+:7314"
+ENV ASPNETCORE_URLS="http://+:80;https://+:443"
+
 
 # Expose HTTP & HTTPS
 EXPOSE 80
