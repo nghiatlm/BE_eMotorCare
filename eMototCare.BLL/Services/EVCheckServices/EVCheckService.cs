@@ -3,10 +3,13 @@
 
 using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
+using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
+using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -25,6 +28,41 @@ namespace eMototCare.BLL.Services.EVCheckServices
             _logger = logger;
         }
 
+        public async Task<PageResult<EVCheckResponse>> GetPagedAsync(
+            DateTime? startDate,
+            DateTime? endDate,
+            EVCheckStatus? status,
+            Guid? appointmentId,
+            Guid? taskExecutorId,
+            int page,
+            int pageSize
+        )
+        {
+            try
+            {
+                var (items, total) = await _unitOfWork.EVChecks.GetPagedAsync(
+                    startDate,
+                    endDate,
+                    status,
+                    appointmentId,
+                    taskExecutorId,
+                    page,
+                    pageSize
+                );
+                var rows = _mapper.Map<List<EVCheckResponse>>(items);
+                return new PageResult<EVCheckResponse>(rows, pageSize, page, (int)total);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetPaged EVCheck failed: {Message}", ex.Message);
+                //throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+                throw new AppException(ex.Message);
+            }
+        }
         public async Task<Guid> CreateAsync(EVCheckRequest req)
         {
 
@@ -53,48 +91,31 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     throw new AppException("Maintenance plan not found", HttpStatusCode.NotFound);
 
 
-                var stages = await _unitOfWork.MaintenanceStages.FindByMaintenancePlanIdAsync(plan.Id);
+                var allVehicleStages = (await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicle.Id)).ToList();
+                if (!allVehicleStages.Any())
+                    throw new AppException("No vehicle stages found", HttpStatusCode.NotFound);
 
-                var matchedStage = stages
-                                            .Select(s => new
-                                            {
-                                                Stage = s,
-                                                Km = int.Parse(s.Mileage.ToString().Replace("KM", "").Trim())
-                                            })
-                                            .Where(x => x.Km <= entity.Odometer)
-                                            .OrderByDescending(x => x.Km)
-                                            .Select(x => x.Stage)
-                                            .FirstOrDefault();
-                if (matchedStage == null)
-                {
-                    throw new AppException("No matching maintenance stage for Odo", HttpStatusCode.NotFound);
-                }
-
-                var allVehicleStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicle.Id);
-                var stageList = allVehicleStages.ToList();
-                var stageKmList = stages
-                        .Select(s => new { s.Id, Km = int.Parse(s.Mileage.ToString().Replace("KM", "").Trim()) })
-                        .ToDictionary(x => x.Id, x => x.Km);
-                var nextStage = stages
-                                    .Select(s => new
-                                    {
-                                        Stage = s,
-                                        Km = int.Parse(s.Mileage.ToString().Replace("KM", "").Trim())
-                                    })
-                                    .Where(x => x.Km > entity.Odometer)
-                                    .OrderBy(x => x.Km)
+                var matchedStage = allVehicleStages
+                                    .Where(vs => vs.ActualMaintenanceMileage <= entity.Odometer)
+                                    .OrderByDescending(vs => vs.ActualMaintenanceMileage)
                                     .FirstOrDefault();
-                foreach (var vs in stageList)
-                {
-                    if (!stageKmList.TryGetValue(vs.MaintenanceStageId, out var stageKm))
-                        continue;
 
-                    if (stageKm <= entity.Odometer)
+                if (matchedStage == null)
+                    throw new AppException("No matching maintenance stage for Odo", HttpStatusCode.NotFound);
+
+                var nextStage = allVehicleStages
+                                    .Where(vs => vs.ActualMaintenanceMileage > entity.Odometer)
+                                    .OrderBy(vs => vs.ActualMaintenanceMileage)
+                                    .FirstOrDefault();
+
+                foreach (var vs in allVehicleStages)
+                {
+                    if (vs.ActualMaintenanceMileage <= entity.Odometer)
                     {
                         if (vs.Status != VehicleStageStatus.COMPLETED)
                             vs.Status = VehicleStageStatus.OVERDUE;
                     }
-                    else if (nextStage != null && vs.MaintenanceStageId == nextStage.Stage.Id)
+                    else if (nextStage != null && vs.Id == nextStage.Id)
                     {
                         vs.Status = VehicleStageStatus.UPCOMING;
                     }
@@ -105,6 +126,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
 
                     _unitOfWork.VehicleStages.Update(vs);
                 }
+
 
                 await _unitOfWork.SaveAsync();
 
@@ -120,6 +142,88 @@ namespace eMototCare.BLL.Services.EVCheckServices
             {
                 _logger.LogError(ex, "Create EVCheck failed: {Message}", ex.Message);
                 throw new AppException(ex.InnerException.Message);
+            }
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            try
+            {
+                var entity =
+                    await _unitOfWork.EVChecks.GetByIdAsync(id)
+                    ?? throw new AppException(
+                        "Không tìm thấy EVCheck",
+                        HttpStatusCode.NotFound
+                    );
+
+                await _unitOfWork.EVChecks.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("Deleted EVCheck {Id}", id);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete EVCheck failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task UpdateAsync(Guid id, EVCheckRequest req)
+        {
+            try
+            {
+                var entity =
+                    await _unitOfWork.EVChecks.GetByIdAsync(id)
+                    ?? throw new AppException(
+                        "Không tìm thấy EVCheck",
+                        HttpStatusCode.NotFound
+                    );
+
+
+
+                _mapper.Map(req, entity);
+
+
+                await _unitOfWork.EVChecks.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("Updated EVCheck {Id}", id);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Update EVCheck failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+
+
+        }
+
+        public async Task<EVCheckResponse?> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _unitOfWork.EVChecks.GetByIdAsync(id);
+                if (entity is null)
+                    throw new AppException("Không tìm thấy EVCheck", HttpStatusCode.NotFound);
+
+                return _mapper.Map<EVCheckResponse>(entity);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetById EVCheck failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
     }
