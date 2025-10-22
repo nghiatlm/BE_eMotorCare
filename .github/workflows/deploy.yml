@@ -29,7 +29,7 @@ jobs:
       # 3️⃣ SSH và deploy zero-downtime
       - name: SSH and deploy
         run: |
-          gcloud compute ssh minhn@${{ secrets.GCP_VM_NAME }} --zone=${{ secrets.GCP_ZONE }} --command="
+          gcloud compute ssh minhn@${{ secrets.GCP_VM_NAME }} --zone=${{ secrets.GCP_ZONE }} --command="$(cat <<'ENDSSH'
           cd /home/minhn/app/BE_eMotoCare
 
           # Pull code mới
@@ -46,15 +46,15 @@ jobs:
           # Optional: kiểm tra container mới hoạt động
           sleep 5
           if ! curl -f http://localhost:8080/health; then
-            echo 'New container failed!'
-            docker rm -f emotocare_new
-            exit 1
+          echo 'New container failed!'
+          docker rm -f emotocare_new
+          exit 1
           fi
 
           # Dừng container cũ nếu đang chạy
-          if [ \$(docker ps -q -f name=emotocare) ]; then
-            docker stop emotocare
-            docker rm emotocare
+          if [ $(docker ps -q -f name=emotocare) ]; then
+          docker stop emotocare
+          docker rm emotocare
           fi
 
           # Chạy lại container mới trên port chính (80 HTTP, 443 HTTPS)
@@ -62,3 +62,5 @@ jobs:
 
           # Xóa container tạm
           docker rm emotocare_new || true
+          ENDSSH
+          )"
