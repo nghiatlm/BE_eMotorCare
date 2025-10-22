@@ -1,4 +1,4 @@
-name: Deploy .NET App with Docker via gcloud
+name: Deploy .NET App with Docker via gcloud (Zero-downtime)
 
 on:
   push:
@@ -26,25 +26,39 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT }}
           version: 'latest'
 
-      # 3️⃣ SSH và deploy
+      # 3️⃣ SSH và deploy zero-downtime
       - name: SSH and deploy
         run: |
           gcloud compute ssh minhn@${{ secrets.GCP_VM_NAME }} --zone=${{ secrets.GCP_ZONE }} --command="
           cd /home/minhn/app/BE_eMotoCare
+
           # Pull code mới
           git reset --hard
           git checkout main
           git pull origin main
 
-          # Dừng container cũ nếu đang chạy
-          if [ \$(docker ps -q -f name=emotocare) ]; then
-          docker stop emotocare
-          docker rm emotocare
+          # Build Docker image mới với tag tạm
+          docker build -t emotocare:new .
+
+          # Chạy container mới song song trên port tạm (8080 HTTP, 8443 HTTPS)
+          docker run -d --name emotocare_new -p 8080:5154 -p 8443:7314 emotocare:new
+
+          # Optional: kiểm tra container mới hoạt động
+          sleep 5
+          if ! curl -f http://localhost:8080/health; then
+            echo 'New container failed!'
+            docker rm -f emotocare_new
+            exit 1
           fi
 
-          # Build Docker image mới
-          docker build -t emotocare:latest .
+          # Dừng container cũ nếu đang chạy
+          if [ \$(docker ps -q -f name=emotocare) ]; then
+            docker stop emotocare
+            docker rm emotocare
+          fi
 
-          # Run container mới
-          docker run -d --name emotocare -p 80:80 emotocare:latest
-          "
+          # Chạy lại container mới trên port chính (80 HTTP, 443 HTTPS)
+          docker run -d --name emotocare -p 80:5154 -p 443:7314 emotocare:new
+
+          # Xóa container tạm
+          docker rm emotocare_new || true
