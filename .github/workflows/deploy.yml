@@ -31,19 +31,20 @@ jobs:
         run: |
           gcloud compute ssh minhn@${{ secrets.GCP_VM_NAME }} --zone=${{ secrets.GCP_ZONE }} --command="
           cd /home/minhn/app/BE_eMotoCare
+          # Pull code mới
           git reset --hard
           git checkout main
           git pull origin main
 
           # Dừng container cũ nếu đang chạy
-          if [ \$(docker ps -q -f name=eMotoCare) ]; then
-            docker stop eMotoCare
-            docker rm eMotoCare
+          if [ \$(docker ps -q -f name=emotocare) ]; then
+          docker stop emotocare
+          docker rm emotocare
           fi
 
           # Build Docker image mới
-          docker build -t eMotoCare:latest .
+          docker build -t emotoCare:latest .
 
           # Run container mới
-          docker run -d --name eMotoCare -p 80:80 eMotoCare:latest
+          docker run -d --name emotoCare -p 80:80 emotoCare:latest
           "
