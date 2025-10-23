@@ -57,5 +57,7 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(RMAId))]
         public virtual RMA? RMA { get; set; }
+        [Column("image", TypeName = "nvarchar(400)")]
+        public string? Image { get; set; }
     }
 }
