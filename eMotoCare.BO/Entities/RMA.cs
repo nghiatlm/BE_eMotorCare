@@ -40,10 +40,6 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(CreateById))]
         public virtual Staff? Staff { get; set; }
-        [Required]
-        [Column("rma_type", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(RMATypeEnum))]
-        public RMATypeEnum RMAType { get; set; }
 
         [Required]
         [Column("customer_id")]
