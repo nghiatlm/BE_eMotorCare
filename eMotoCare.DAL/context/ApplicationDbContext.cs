@@ -1,5 +1,4 @@
-﻿
-using eMotoCare.BO.Common;
+﻿using eMotoCare.BO.Common;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
 using Microsoft.EntityFrameworkCore;
@@ -9,9 +8,8 @@ namespace eMotoCare.DAL.context
 {
     public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options) { }
 
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
@@ -41,9 +39,10 @@ namespace eMotoCare.DAL.context
         public DbSet<Vehicle> Vehicles { get; set; }
         public DbSet<VehiclePartItem> VehiclePartItems { get; set; }
         public DbSet<VehicleStage> VehicleStages { get; set; }
-
-        private static readonly TimeZoneInfo _vnZone =
-        TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        public DbSet<ServiceCenterSlot> ServiceCenterSlots { get; set; }
+        private static readonly TimeZoneInfo _vnZone = TimeZoneInfo.FindSystemTimeZoneById(
+            "SE Asia Standard Time"
+        );
 
         private DateTime GetCurrentVnTime()
         {
@@ -58,7 +57,8 @@ namespace eMotoCare.DAL.context
 
         public override Task<int> SaveChangesAsync(
             bool acceptAllChangesOnSuccess,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default
+        )
         {
             ApplyTimestamps();
             return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
@@ -82,24 +82,29 @@ namespace eMotoCare.DAL.context
                 }
             }
         }
-        private class EnumArrayToStringConverter<TEnum> : ValueConverter<TEnum[], string> where TEnum : struct, Enum
+
+        private class EnumArrayToStringConverter<TEnum> : ValueConverter<TEnum[], string>
+            where TEnum : struct, Enum
         {
-            public EnumArrayToStringConverter() : base(
-                v => string.Join(",", v.Select(x => x.ToString())),
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                      .Select(x => Enum.Parse<TEnum>(x))
-                      .ToArray()
-            )
-            { }
+            public EnumArrayToStringConverter()
+                : base(
+                    v => string.Join(",", v.Select(x => x.ToString())),
+                    v =>
+                        v.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => Enum.Parse<TEnum>(x))
+                            .ToArray()
+                ) { }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MaintenancePlan>()
+            modelBuilder
+                .Entity<MaintenancePlan>()
                 .Property(x => x.Unit)
                 .HasConversion(new EnumArrayToStringConverter<MaintenanceUnit>());
 
-            modelBuilder.Entity<MaintenanceStageDetail>()
+            modelBuilder
+                .Entity<MaintenanceStageDetail>()
                 .Property(x => x.ActionType)
                 .HasConversion(new EnumArrayToStringConverter<ActionType>());
 

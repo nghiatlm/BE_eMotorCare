@@ -5,14 +5,15 @@ using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
+using eMototCare.BLL.Services.EVCheckServices;
 using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
-using eMototCare.BLL.Services.EVCheckServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
+using eMototCare.BLL.Services.ServiceCenterSlotServices;
 using eMototCare.BLL.Services.StaffServices;
 using eMototCare.BLL.Services.VehiclePartItemServices;
 using eMototCare.BLL.Services.VehicleServices;
@@ -41,7 +42,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();
-
+            services.AddScoped<IServiceCenterSlotService, ServiceCenterSlotService>();
             return services;
         }
     }

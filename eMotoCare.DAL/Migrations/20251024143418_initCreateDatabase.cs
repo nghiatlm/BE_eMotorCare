@@ -230,6 +230,7 @@ namespace eMotoCare.DAL.Migrations
                     quantity = table.Column<int>(type: "int", nullable: false),
                     image = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    description = table.Column<string>(type: "nvarchar(300)", nullable: true),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -274,6 +275,32 @@ namespace eMotoCare.DAL.Migrations
                         column: x => x.part_type_id,
                         principalTable: "part_type",
                         principalColumn: "part_type_id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "service_center_slot",
+                columns: table => new
+                {
+                    service_center_slot_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    service_center_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    day_of_week = table.Column<int>(type: "int", nullable: false),
+                    start_time = table.Column<TimeSpan>(type: "time(6)", nullable: false),
+                    end_time = table.Column<TimeSpan>(type: "time(6)", nullable: false),
+                    capacity = table.Column<int>(type: "int", nullable: false),
+                    is_active = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    note = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_service_center_slot", x => x.service_center_slot_id);
+                    table.ForeignKey(
+                        name: "FK_service_center_slot_service_center_service_center_id",
+                        column: x => x.service_center_id,
+                        principalTable: "service_center",
+                        principalColumn: "service_center_id",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -605,7 +632,9 @@ namespace eMotoCare.DAL.Migrations
                     price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    warranty_period = table.Column<int>(type: "int", nullable: true)
+                    warranty_period = table.Column<int>(type: "int", nullable: true),
+                    waranty_start_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    waranty_end_date = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1172,6 +1201,11 @@ namespace eMotoCare.DAL.Migrations
                 column: "service_center_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_service_center_slot_service_center_id",
+                table: "service_center_slot",
+                column: "service_center_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_staff_account_id",
                 table: "staff",
                 column: "account_id",
@@ -1239,6 +1273,9 @@ namespace eMotoCare.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "service_center_inventory");
+
+            migrationBuilder.DropTable(
+                name: "service_center_slot");
 
             migrationBuilder.DropTable(
                 name: "vehicle_part_item");
