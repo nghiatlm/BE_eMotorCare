@@ -2,6 +2,7 @@
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.PartServices;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? partTypeId,
             [FromQuery] string? code,
             [FromQuery] string? name,
-            [FromQuery] Status? status,
+            [FromQuery] PartStatus? status,
             [FromQuery] int? quantity,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10

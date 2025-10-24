@@ -1,5 +1,6 @@
 ﻿using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 
 namespace eMotoCare.DAL.Repositories.PartRepository
@@ -8,6 +9,6 @@ namespace eMotoCare.DAL.Repositories.PartRepository
     {
         Task<bool> ExistsCodeAsync(string code);
         Task<Part?> GetByIdAsync(Guid id);
-        Task<(IReadOnlyList<Part> Items, long Total)> GetPagedAsync(Guid? partTypeId, string? code, string? name, Status? status, int? quantity, int page, int pageSize);
+        Task<(IReadOnlyList<Part> Items, long Total)> GetPagedAsync(Guid? partTypeId, string? code, string? name, PartStatus? status, int? quantity, int page, int pageSize);
     }
 }

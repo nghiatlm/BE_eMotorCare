@@ -135,6 +135,8 @@ namespace eMotoCare.DAL.Migrations
                 columns: table => new
                 {
                     customer_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    customer_code = table.Column<string>(type: "varchar(100)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     first_name = table.Column<string>(type: "nvarchar(300)", nullable: true),
                     last_name = table.Column<string>(type: "nvarchar(300)", nullable: true),
                     address = table.Column<string>(type: "nvarchar(400)", nullable: true),
@@ -563,7 +565,9 @@ namespace eMotoCare.DAL.Migrations
                 {
                     vehicle_stage_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     maintenance_stage_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    actual_maintenance_mileage = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    actual_maintenance_mileage = table.Column<int>(type: "int", nullable: false),
+                    actual_maintenance_unit = table.Column<string>(type: "varchar(200)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     vehicle_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     date_of_implementation = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
@@ -645,6 +649,8 @@ namespace eMotoCare.DAL.Migrations
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     type = table.Column<string>(type: "varchar(200)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    checkin_qr_code = table.Column<string>(type: "varchar(200)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -749,8 +755,7 @@ namespace eMotoCare.DAL.Migrations
                     total_amout = table.Column<decimal>(type: "decimal(65,30)", nullable: true),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    odometer = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    odometer = table.Column<int>(type: "int", nullable: false),
                     appointment_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     task_executor_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),

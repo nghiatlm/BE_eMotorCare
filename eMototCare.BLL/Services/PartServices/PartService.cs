@@ -5,6 +5,7 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
@@ -31,7 +32,7 @@ namespace eMototCare.BLL.Services.PartServices
             Guid? partTypeId,
             string? code,
             string? name,
-            Status? status,
+            PartStatus? status,
             int? quantity,
             int page = 1,
             int pageSize = 10

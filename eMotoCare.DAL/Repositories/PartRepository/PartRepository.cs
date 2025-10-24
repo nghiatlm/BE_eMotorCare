@@ -1,5 +1,6 @@
 ﻿using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +17,7 @@ namespace eMotoCare.DAL.Repositories.PartRepository
             Guid? partTypeId,
             string? code,
             string? name,
-            Status? status,
+            PartStatus? status,
             int? quantity,
             int page,
             int pageSize

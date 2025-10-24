@@ -36,6 +36,8 @@ namespace eMotoCare.BO.Entities
         [Column("image")]
         [StringLength(500)]
         public string? Image { get; set; }
+        [Column("description", TypeName = "nvarchar(300)")]
+        public string? Description { get; set; }
 
         [Required]
         [Column("status", TypeName = "varchar(200)")]

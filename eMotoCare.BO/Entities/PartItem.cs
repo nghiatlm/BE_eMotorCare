@@ -58,6 +58,11 @@ namespace eMotoCare.BO.Entities
         [Column("warranty_period")]
         public int? WarrantyPeriod { get; set; }
 
+        [Column("waranty_start_date")]
+        public DateTime? WarantyStartDate { get; set; }
+        [Column("waranty_end_date")]
+        public DateTime? WarantyEndDate { get; set; }
+
         public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
         public virtual ICollection<RMADetail>? RMADetails { get; set; }
         public virtual ICollection<VehiclePartItem>? VehiclePartItems { get; set; }
