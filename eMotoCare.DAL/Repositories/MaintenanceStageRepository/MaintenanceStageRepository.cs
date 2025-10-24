@@ -3,6 +3,8 @@ using eMotoCare.BO.Enum;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
+using System.Linq.Expressions;
 
 namespace eMotoCare.DAL.Repositories.MaintenanceStageRepository
 {
@@ -69,5 +71,13 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageRepository
                 .Include(x => x.MaintenanceStageDetails).ThenInclude(x => x.Part)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<List<MaintenanceStage>> FindByMaintenancePlanIdAsync(Guid maintenancePlanId)
+        {
+            return await _context.MaintenanceStages
+                .Where(x => x.MaintenancePlanId == maintenancePlanId)
+                .ToListAsync();
+        }
+
     }
 }

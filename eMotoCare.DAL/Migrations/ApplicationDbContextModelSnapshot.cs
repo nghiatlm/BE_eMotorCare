@@ -385,9 +385,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Odometer")
-                        .IsRequired()
-                        .HasColumnType("longtext")
+                    b.Property<int>("Odometer")
+                        .HasColumnType("int")
                         .HasColumnName("odometer");
 
                     b.Property<string>("Status")
@@ -1445,9 +1444,14 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("vehicle_stage_id");
 
-                    b.Property<DateTime>("ActualMaintenanceMileage")
-                        .HasColumnType("datetime(6)")
+                    b.Property<int>("ActualMaintenanceMileage")
+                        .HasColumnType("int")
                         .HasColumnName("actual_maintenance_mileage");
+
+                    b.Property<string>("ActualMaintenanceUnit")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("actual_maintenance_unit");
 
                     b.Property<DateTime>("DateOfImplementation")
                         .HasColumnType("datetime(6)")

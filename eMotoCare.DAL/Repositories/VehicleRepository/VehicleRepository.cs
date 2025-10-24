@@ -3,6 +3,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace eMotoCare.DAL.Repositories.VehicleRepository
 {
@@ -69,5 +70,6 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
 
             return (items, total);
         }
+
     }
 }

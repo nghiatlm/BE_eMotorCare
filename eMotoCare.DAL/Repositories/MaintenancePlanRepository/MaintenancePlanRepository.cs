@@ -3,7 +3,6 @@ using eMotoCare.BO.Enum;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
@@ -17,6 +16,7 @@ namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
 
         public Task<MaintenancePlan?> GetByIdAsync(Guid id) =>
             _context.MaintenancePlans.FirstOrDefaultAsync(x => x.Id == id);
+
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.MaintenancePlans.AnyAsync(x => x.Code == code);

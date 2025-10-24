@@ -11,6 +11,7 @@ using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
+using eMototCare.BLL.Services.EVCheckServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.StaffServices;
 using eMototCare.BLL.Services.VehiclePartItemServices;
@@ -35,8 +36,9 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPartTypeService, PartTypeService>();
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
             services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
-            services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IPartService, PartService>();
+            services.AddScoped<IEVCheckService, EVCheckService>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();
 

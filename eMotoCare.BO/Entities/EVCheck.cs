@@ -25,8 +25,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("odometer")]
-        public string Odometer { get; set; } = string.Empty;
-
+        public int Odometer { get; set; }
         [Required]
         [Column("appointment_id")]
         public Guid AppointmentId { get; set; }
@@ -39,7 +38,7 @@ namespace eMotoCare.BO.Entities
         public Guid TaskExecutorId { get; set; }
 
         [ForeignKey(nameof(TaskExecutorId))]
-        public virtual Staff? Staff { get; set; }
+        public virtual Staff? TaskExecutor { get; set; }
         public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
     }
 }

@@ -77,17 +77,18 @@ namespace eMototCare.BLL.Services.AuthServices
         {
             try
             {
-                var account = await _unitOfWork.Accounts.CreateAsync(
-                    new Account
-                    {
-                        Phone = request.Phone,
-                        Password = _passwordHasher.HashPassword(request.Password),
-                        RoleName = RoleName.ROLE_CUSTOMER,
-                        Stattus = AccountStatus.ACTIVE,
-                    }
-                );
-                if (account < 1)
-                    throw new AppException("Tạo không thành công", HttpStatusCode.BadRequest);
+                var phone = request.Phone.Trim();
+                if (await _unitOfWork.Accounts.ExistsPhoneAsync(phone))
+                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+
+                var account = await _unitOfWork.Accounts.CreateAsync(new Account
+                {
+                    Phone = phone,
+                    Password = _passwordHasher.HashPassword(request.Password),
+                    RoleName = RoleName.ROLE_CUSTOMER,
+                    Stattus = AccountStatus.IN_ACTVIE,
+                });
+                if (account < 1) throw new AppException("Tạo không thành công", HttpStatusCode.BadRequest);
                 var result = await _unitOfWork.SaveAsync();
                 return result > 0 ? true : false;
             }
@@ -100,6 +101,14 @@ namespace eMototCare.BLL.Services.AuthServices
                 _logger.LogError($"Error: ${ex.Message}");
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
+        }
+
+        public async Task ActiveAccount(string phone)
+        {
+            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
+            account.Stattus = AccountStatus.ACTIVE;
+            await _unitOfWork.Accounts.UpdateAsync(account);
+            await _unitOfWork.SaveAsync();
         }
     }
 }
