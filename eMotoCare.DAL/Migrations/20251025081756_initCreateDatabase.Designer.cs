@@ -12,7 +12,7 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251024143418_initCreateDatabase")]
+    [Migration("20251025081756_initCreateDatabase")]
     partial class initCreateDatabase
     {
         /// <inheritdoc />
@@ -112,6 +112,10 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
 
+                    b.Property<Guid?>("ServiceCenterSlotId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_slot_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("varchar(200)")
@@ -141,6 +145,8 @@ namespace eMotoCare.DAL.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ServiceCenterId");
+
+                    b.HasIndex("ServiceCenterSlotId");
 
                     b.HasIndex("VehicleStageId");
 
@@ -1566,6 +1572,10 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("eMotoCare.BO.Entities.ServiceCenterSlot", "ServiceCenterSlot")
+                        .WithMany()
+                        .HasForeignKey("ServiceCenterSlotId");
+
                     b.HasOne("eMotoCare.BO.Entities.VehicleStage", "VehicleStage")
                         .WithMany("Appointments")
                         .HasForeignKey("VehicleStageId");
@@ -1577,6 +1587,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("ServiceCenter");
+
+                    b.Navigation("ServiceCenterSlot");
 
                     b.Navigation("VehicleStage");
                 });

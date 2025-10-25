@@ -680,7 +680,8 @@ namespace eMotoCare.DAL.Migrations
                     type = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     checkin_qr_code = table.Column<string>(type: "varchar(200)", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    service_center_slot_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
@@ -702,6 +703,11 @@ namespace eMotoCare.DAL.Migrations
                         principalTable: "service_center",
                         principalColumn: "service_center_id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_appointment_service_center_slot_service_center_slot_id",
+                        column: x => x.service_center_slot_id,
+                        principalTable: "service_center_slot",
+                        principalColumn: "service_center_slot_id");
                     table.ForeignKey(
                         name: "FK_appointment_staff_approve_by_id",
                         column: x => x.approve_by_id,
@@ -1009,6 +1015,11 @@ namespace eMotoCare.DAL.Migrations
                 column: "service_center_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_appointment_service_center_slot_id",
+                table: "appointment",
+                column: "service_center_slot_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_appointment_vehicle_stage_id",
                 table: "appointment",
                 column: "vehicle_stage_id");
@@ -1275,9 +1286,6 @@ namespace eMotoCare.DAL.Migrations
                 name: "service_center_inventory");
 
             migrationBuilder.DropTable(
-                name: "service_center_slot");
-
-            migrationBuilder.DropTable(
                 name: "vehicle_part_item");
 
             migrationBuilder.DropTable(
@@ -1312,6 +1320,9 @@ namespace eMotoCare.DAL.Migrations
 
             migrationBuilder.DropTable(
                 name: "campaign");
+
+            migrationBuilder.DropTable(
+                name: "service_center_slot");
 
             migrationBuilder.DropTable(
                 name: "vehicle_stage");
