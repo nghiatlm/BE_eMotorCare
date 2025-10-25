@@ -17,6 +17,7 @@ using eMototCare.BLL.Services.ServiceCenterSlotServices;
 using eMototCare.BLL.Services.StaffServices;
 using eMototCare.BLL.Services.VehiclePartItemServices;
 using eMototCare.BLL.Services.VehicleServices;
+using eMototCare.BLL.Services.VehicleStageServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace eMototCare.BLL.Configuration
@@ -43,6 +44,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();
             services.AddScoped<IServiceCenterSlotService, ServiceCenterSlotService>();
+            services.AddScoped<IVehicleStageService, VehicleStageService>();
             return services;
         }
     }
