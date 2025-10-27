@@ -1,7 +1,7 @@
-using eMotoCare.BO.Enum;
-using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
@@ -22,6 +22,7 @@ namespace eMotoCare.BO.Entities
         [Required]
         [Column("actual_maintenance_mileage")]
         public int ActualMaintenanceMileage { get; set; }
+
         [Required]
         [Column("actual_maintenance_unit", TypeName = "varchar(200)")]
         [EnumDataType(typeof(MaintenanceUnit))]
@@ -37,7 +38,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(Status))]
+        [EnumDataType(typeof(VehicleStageStatus))]
         public VehicleStageStatus Status { get; set; }
 
         [ForeignKey(nameof(VehicleId))]

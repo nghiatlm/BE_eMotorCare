@@ -12,6 +12,7 @@ using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
+using eMototCare.BLL.Services.PriceServiceServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.ServiceCenterSlotServices;
 using eMototCare.BLL.Services.StaffServices;
@@ -45,6 +46,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();
             services.AddScoped<IServiceCenterSlotService, ServiceCenterSlotService>();
             services.AddScoped<IVehicleStageService, VehicleStageService>();
+            services.AddScoped<IPriceServiceService, PriceServiceService>();
             return services;
         }
     }
