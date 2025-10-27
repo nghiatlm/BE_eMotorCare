@@ -8,8 +8,8 @@ namespace eMotoCare.BO.DTO.Responses
     {
         public Guid Id { get; set; }
         public MaintenanceStageDetailResponse? MaintenanceStageDetail { get; set; }
-        public  CampaignDetail? CampaignDetail { get; set; }
-        public PartItem? PartItem { get; set; }
+        public CampaignDetailResponse? CampaignDetail { get; set; }
+        public PartItemResponse? PartItem { get; set; }
         public EVCheckResponse? EVCheck { get; set; }
         public PartItem? ReplacePart { get; set; }
         public RMADetail? RMADetail { get; set; }
