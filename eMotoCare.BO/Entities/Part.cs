@@ -1,7 +1,8 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eMotoCare.BO.Entities
 {
@@ -35,11 +36,13 @@ namespace eMotoCare.BO.Entities
         [Column("image")]
         [StringLength(500)]
         public string? Image { get; set; }
+        [Column("description", TypeName = "nvarchar(300)")]
+        public string? Description { get; set; }
 
         [Required]
         [Column("status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(Status))]
-        public Status Status { get; set; }
+        [EnumDataType(typeof(PartStatus))]
+        public PartStatus Status { get; set; }
         public virtual ICollection<PartItem>? PartItems { get; set; }
         public virtual ICollection<CampaignDetail>? CampaignDetails { get; set; }
         public virtual ICollection<MaintenanceStageDetail>? MaintenanceStageDetails { get; set; }

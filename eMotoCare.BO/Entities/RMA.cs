@@ -23,7 +23,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("return_address")]
-        public string ReturnDddress { get; set; } = string.Empty;
+        public string ReturnAddress { get; set; } = string.Empty;
 
         [Required]
         [Column("status", TypeName = "varchar(200)")]

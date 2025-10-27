@@ -23,6 +23,7 @@ using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
 using eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository;
 using eMotoCare.DAL.Repositories.ServiceCenterRepository;
+using eMotoCare.DAL.Repositories.ServiceCenterSlotRepository;
 using eMotoCare.DAL.Repositories.StaffRepository;
 using eMotoCare.DAL.Repositories.VehiclePartItemRepository;
 using eMotoCare.DAL.Repositories.VehicleRepository;
@@ -49,7 +50,10 @@ namespace eMotoCare.DAL.Configuration
             services.AddScoped<IExportNoteRepository, ExportNoteRepository>();
             services.AddScoped<IImportNoteRepository, ImportNoteRepository>();
             services.AddScoped<IMaintenancePlanRepository, MaintenancePlanRepository>();
-            services.AddScoped<IMaintenanceStageDetailRepository, MaintenanceStageDetailRepository>();
+            services.AddScoped<
+                IMaintenanceStageDetailRepository,
+                MaintenanceStageDetailRepository
+            >();
             services.AddScoped<IMaintenanceStageRepository, MaintenanceStageRepository>();
             services.AddScoped<IModelPartTypeRepository, ModelPartTypeRepository>();
             services.AddScoped<IModelRepository, ModelRepository>();
@@ -60,12 +64,16 @@ namespace eMotoCare.DAL.Configuration
             services.AddScoped<IPriceServiceRepository, PriceServiceRepository>();
             services.AddScoped<IRMADetailRepository, RMADetailRepository>();
             services.AddScoped<IRMARepository, RMARepository>();
-            services.AddScoped<IServiceCenterInventoryRepository, ServiceCenterInventoryRepository>();
+            services.AddScoped<
+                IServiceCenterInventoryRepository,
+                ServiceCenterInventoryRepository
+            >();
             services.AddScoped<IServiceCenterRepository, ServiceCenterRepository>();
             services.AddScoped<IStaffRepository, StaffRepository>();
             services.AddScoped<IVehiclePartItemRepository, VehiclePartItemRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IVehicleStageRepository, VehicleStageRepository>();
+            services.AddScoped<IServiceCenterSlotRepository, ServiceCenterSlotRepository>();
 
             return services;
         }

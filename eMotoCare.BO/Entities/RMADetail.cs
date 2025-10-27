@@ -57,5 +57,6 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(RMAId))]
         public virtual RMA? RMA { get; set; }
+
     }
 }

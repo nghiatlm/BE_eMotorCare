@@ -5,6 +5,7 @@ using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
+using eMototCare.BLL.Services.EVCheckServices;
 using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
@@ -12,10 +13,13 @@ using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
+using eMototCare.BLL.Services.ServiceCenterSlotServices;
 using eMototCare.BLL.Services.StaffServices;
 using eMototCare.BLL.Services.VehiclePartItemServices;
 using eMototCare.BLL.Services.VehicleServices;
+using eMototCare.BLL.Services.VehicleStageServices;
 using Microsoft.Extensions.DependencyInjection;
+using eMototCare.BLL.Services.EVCheckDetailServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -35,11 +39,15 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPartTypeService, PartTypeService>();
             services.AddScoped<IMaintenanceStageService, MaintenanceStageService>();
             services.AddScoped<IMaintenanceStageDetailService, MaintenanceStageDetailService>();
-            services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IPartService, PartService>();
+            services.AddScoped<IEVCheckService, EVCheckService>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();
+            services.AddScoped<IEVCheckDetailService, EVCheckDetailService>();
 
+            services.AddScoped<IServiceCenterSlotService, ServiceCenterSlotService>();
+            services.AddScoped<IVehicleStageService, VehicleStageService>();
             return services;
         }
     }

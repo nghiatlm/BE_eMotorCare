@@ -75,6 +75,15 @@ namespace eMotoCare.BO.Entities
         [EnumDataType(typeof(ServiceType))]
         public ServiceType Type { get; set; }
 
+        [Column("checkin_qr_code", TypeName = "varchar(200)")]
+        public string? CheckinQRCode { get; set; }
+
+        [Column("service_center_slot_id")]
+        public Guid? ServiceCenterSlotId { get; set; }
+
+        [ForeignKey(nameof(ServiceCenterSlotId))]
+        public virtual ServiceCenterSlot? ServiceCenterSlot { get; set; }
+
         public virtual ICollection<Payment>? Payments { get; set; }
     }
 }

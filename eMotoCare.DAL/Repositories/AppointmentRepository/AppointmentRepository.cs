@@ -16,6 +16,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.AsNoTracking()
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
+                .Include(x => x.VehicleStage)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>

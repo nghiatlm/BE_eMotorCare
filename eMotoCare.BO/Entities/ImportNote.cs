@@ -38,7 +38,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("import_by_id")]
-        public Guid ImportById { get; set; }
+        public Guid? ImportById { get; set; }
 
         [ForeignKey(nameof(ImportById))]
         public virtual Staff? ImportBy { get; set; }

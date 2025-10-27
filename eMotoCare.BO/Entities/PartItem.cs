@@ -1,6 +1,7 @@
+using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
@@ -51,11 +52,16 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(Status))]
-        public Status Status { get; set; }
+        [EnumDataType(typeof(PartItemStatus))]
+        public PartItemStatus Status { get; set; }
 
         [Column("warranty_period")]
         public int? WarrantyPeriod { get; set; }
+
+        [Column("waranty_start_date")]
+        public DateTime? WarantyStartDate { get; set; }
+        [Column("waranty_end_date")]
+        public DateTime? WarantyEndDate { get; set; }
 
         public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
         public virtual ICollection<RMADetail>? RMADetails { get; set; }

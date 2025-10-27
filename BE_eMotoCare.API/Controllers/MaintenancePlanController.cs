@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.MaintenancePlanServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -20,6 +21,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? code,
             [FromQuery] string? description,
@@ -41,6 +43,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF, ROLE_CUSTOMER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _maintenancePlanService.GetByIdAsync(id);
@@ -53,6 +56,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Create([FromBody] MaintenancePlanRequest request)
         {
             var id = await _maintenancePlanService.CreateAsync(request);
@@ -62,6 +66,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _maintenancePlanService.DeleteAsync(id);
@@ -69,6 +74,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Update(Guid id, [FromBody] MaintenancePlanRequest request)
         {
             await _maintenancePlanService.UpdateAsync(id, request);

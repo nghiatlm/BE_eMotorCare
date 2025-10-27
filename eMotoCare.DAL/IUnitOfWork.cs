@@ -23,6 +23,7 @@ using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
 using eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository;
 using eMotoCare.DAL.Repositories.ServiceCenterRepository;
+using eMotoCare.DAL.Repositories.ServiceCenterSlotRepository;
 using eMotoCare.DAL.Repositories.StaffRepository;
 using eMotoCare.DAL.Repositories.VehiclePartItemRepository;
 using eMotoCare.DAL.Repositories.VehicleRepository;
@@ -60,6 +61,7 @@ namespace eMotoCare.DAL
         IVehiclePartItemRepository VehiclePartItems { get; }
         IVehicleRepository Vehicles { get; }
         IVehicleStageRepository VehicleStages { get; }
+        IServiceCenterSlotRepository ServiceCenterSlot { get; }
 
         void RemoveRange(List<EVCheckDetail> olds);
         Task<int> SaveAsync();

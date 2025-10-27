@@ -9,6 +9,8 @@
         MONTH_3,
         MONTH_24,
         MONTH_18,
-        MONTH_12
+        MONTH_12,
+        MONTH_30,
+        MONTH_42,
     }
 }

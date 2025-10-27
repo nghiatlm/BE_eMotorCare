@@ -12,6 +12,8 @@ namespace eMotoCare.BO.Entities
         [Key]
         [Column("customer_id")]
         public Guid Id { get; set; }
+        [Column("customer_code", TypeName = "varchar(100)")]
+        public string? CustomerCode { get; set; }
 
         [Column("first_name", TypeName = "nvarchar(300)")]
         public string? FirstName { get; set; }
