@@ -5,6 +5,8 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class AccountRequest
     {
+        [Required]
+        public string? FullName { get; set; }
         public string? Phone { get; set; }
 
         [EmailAddress]

@@ -1,4 +1,4 @@
-
+using System.ComponentModel.DataAnnotations;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Responses
@@ -7,6 +7,8 @@ namespace eMotoCare.BO.DTO.Responses
     {
         public Guid Id { get; set; }
 
+        [Required]
+        public string? FullName { get; set; }
         public string Phone { get; set; } = string.Empty;
 
         public string? Email { get; set; }
