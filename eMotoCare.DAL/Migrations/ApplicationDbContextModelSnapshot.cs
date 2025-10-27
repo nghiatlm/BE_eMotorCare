@@ -36,6 +36,10 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(200)")
                         .HasColumnName("email");
 
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("full_name");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("varchar(200)")

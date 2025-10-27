@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
@@ -12,6 +11,9 @@ namespace eMotoCare.BO.Entities
         [Key]
         [Column("account_id")]
         public Guid Id { get; set; }
+
+        [Column("full_name", TypeName = "nvarchar(300)")]
+        public string? FullName { get; set; }
 
         [Column("phone", TypeName = "varchar(15)")]
         public string Phone { get; set; } = string.Empty;

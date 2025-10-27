@@ -12,8 +12,8 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251025081756_initCreateDatabase")]
-    partial class initCreateDatabase
+    [Migration("20251027131023_initCreate")]
+    partial class initCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,10 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("varchar(200)")
                         .HasColumnName("email");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("full_name");
 
                     b.Property<string>("Password")
                         .IsRequired()
