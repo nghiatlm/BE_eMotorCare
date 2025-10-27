@@ -1,6 +1,5 @@
 ﻿
 
-using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Responses
@@ -10,7 +9,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid Id { get; set; }
         public PartResponse? Part { get; set; }
         public ExportNoteResponse? ExportNote { get; set; }
-        public ImportNote? ImportNote { get; set; }
+        public ImportNoteResponse? ImportNote { get; set; }
         public int Quantity { get; set; }
         public string SerialNumber { get; set; }
         public decimal Price { get; set; }

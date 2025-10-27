@@ -12,8 +12,8 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251024025527_initCreateDatabase")]
-    partial class initCreateDatabase
+    [Migration("20251027055613_initCreateDB")]
+    partial class initCreateDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -290,9 +290,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<Guid>("EVCheckDetailId")
-                        .HasColumnType("char(36)");
 
                     b.Property<int?>("EstimatedTime")
                         .HasColumnType("int")
@@ -577,7 +574,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("ImportById")
+                    b.Property<Guid?>("ImportById")
+                        .IsRequired()
                         .HasColumnType("char(36)")
                         .HasColumnName("import_by_id");
 
@@ -837,6 +835,10 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(300)")
+                        .HasColumnName("description");
+
                     b.Property<string>("Image")
                         .HasMaxLength(500)
                         .HasColumnType("varchar(500)")
@@ -908,6 +910,14 @@ namespace eMotoCare.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(200)")
                         .HasColumnName("status");
+
+                    b.Property<DateTime?>("WarantyEndDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("waranty_end_date");
+
+                    b.Property<DateTime?>("WarantyStartDate")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("waranty_start_date");
 
                     b.Property<int?>("WarrantyPeriod")
                         .HasColumnType("int")
@@ -1598,7 +1608,7 @@ namespace eMotoCare.DAL.Migrations
             modelBuilder.Entity("eMotoCare.BO.Entities.EVCheckDetail", b =>
                 {
                     b.HasOne("eMotoCare.BO.Entities.CampaignDetail", "CampaignDetail")
-                        .WithMany("EVCheckDetails")
+                        .WithMany()
                         .HasForeignKey("CampaignDetailId");
 
                     b.HasOne("eMotoCare.BO.Entities.EVCheck", "EVCheck")
@@ -1956,11 +1966,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("CampaignDetails");
-                });
-
-            modelBuilder.Entity("eMotoCare.BO.Entities.CampaignDetail", b =>
-                {
-                    b.Navigation("EVCheckDetails");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Customer", b =>

@@ -17,6 +17,7 @@ using eMototCare.BLL.Services.StaffServices;
 using eMototCare.BLL.Services.VehiclePartItemServices;
 using eMototCare.BLL.Services.VehicleServices;
 using Microsoft.Extensions.DependencyInjection;
+using eMototCare.BLL.Services.EVCheckDetailServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -41,6 +42,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IVehicleService, VehicleService>();
             services.AddScoped<IVehiclePartItemService, VehiclePartItemService>();
+            services.AddScoped<IEVCheckDetailService, EVCheckDetailService>();
 
             return services;
         }

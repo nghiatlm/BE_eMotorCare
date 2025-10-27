@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace eMotoCare.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initCreateDatabase : Migration
+    public partial class initCreateDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -230,6 +230,7 @@ namespace eMotoCare.DAL.Migrations
                     quantity = table.Column<int>(type: "int", nullable: false),
                     image = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    description = table.Column<string>(type: "nvarchar(300)", nullable: true),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -391,7 +392,6 @@ namespace eMotoCare.DAL.Migrations
                     campaign_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Description = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    EVCheckDetailId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     part_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     action_type = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -605,7 +605,9 @@ namespace eMotoCare.DAL.Migrations
                     price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    warranty_period = table.Column<int>(type: "int", nullable: true)
+                    warranty_period = table.Column<int>(type: "int", nullable: true),
+                    waranty_start_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    waranty_end_date = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
