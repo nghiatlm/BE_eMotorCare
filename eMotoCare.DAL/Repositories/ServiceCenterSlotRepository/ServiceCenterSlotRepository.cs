@@ -1,4 +1,5 @@
 ﻿using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
 
         public async Task<bool> HasOverlapAsync(
             Guid serviceCenterId,
-            DayOfWeek dayOfWeek,
+            DayOfWeeks dayOfWeek,
             TimeSpan start,
             TimeSpan end,
             Guid? excludeId = null

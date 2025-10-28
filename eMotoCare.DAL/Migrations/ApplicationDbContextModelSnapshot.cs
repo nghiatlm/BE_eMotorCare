@@ -1295,8 +1295,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("capacity");
 
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("int")
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)")
                         .HasColumnName("day_of_week");
 
                     b.Property<TimeSpan>("EndTime")

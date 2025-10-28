@@ -107,7 +107,10 @@ namespace eMotoCare.DAL.context
                 .Entity<MaintenanceStageDetail>()
                 .Property(x => x.ActionType)
                 .HasConversion(new EnumArrayToStringConverter<ActionType>());
-
+            modelBuilder
+                .Entity<ServiceCenterSlot>()
+                .Property(s => s.DayOfWeek)
+                .HasConversion<string>();
             base.OnModelCreating(modelBuilder);
         }
     }

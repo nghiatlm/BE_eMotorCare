@@ -3,6 +3,7 @@ using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.DAL;
 using eMotoCare.DAL.Repositories.ServiceCenterSlotRepository;
@@ -138,7 +139,7 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
 
             var dow = date.ToDateTime(TimeOnly.MinValue).DayOfWeek;
             var all = await _serviceCenterSlotRepository.GetByServiceCenterAsync(serviceCenterId);
-            var todaySlots = all.Where(s => s.IsActive && s.DayOfWeek == dow).ToList();
+            var todaySlots = all.Where(s => s.IsActive && s.DayOfWeek == (DayOfWeeks)dow).ToList();
 
             var result = new List<(ServiceCenterSlotResponse, int)>();
             foreach (var s in todaySlots)

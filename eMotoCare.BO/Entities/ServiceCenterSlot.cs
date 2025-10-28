@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
@@ -18,8 +19,9 @@ namespace eMotoCare.BO.Entities
         public virtual ServiceCenter? ServiceCenter { get; set; }
 
         [Required]
-        [Column("day_of_week")]
-        public DayOfWeek DayOfWeek { get; set; }
+        [Column("day_of_week", TypeName = "varchar(20)")]
+        [EnumDataType(typeof(DayOfWeeks))]
+        public DayOfWeeks DayOfWeek { get; set; }
 
         [Required]
         [Column("start_time")]
