@@ -48,8 +48,6 @@ namespace eMototCare.BLL.Services.AccountServices
                 );
 
                 var accountIds = items.Select(x => x.Id).ToList();
-
-                // ✅ Batch fetch hồ sơ
                 var staffs = await _unitOfWork.Staffs.GetByAccountIdsAsync(accountIds);
                 var staffByAcc = staffs.ToDictionary(s => s.AccountId, s => s);
 
@@ -61,10 +59,8 @@ namespace eMototCare.BLL.Services.AccountServices
                 {
                     var dto = _mapper.Map<AccountResponse>(acc);
 
-                    // ✅ Gắn hồ sơ theo role
                     switch (acc.RoleName)
                     {
-                        // Tùy enum của bạn: ROLE_MANAGER / ROLE_STAFF / ROLE_TECHINICIAN...
                         case RoleName.ROLE_TECHINICIAN:
                         case RoleName.ROLE_MANAGER:
                         case RoleName.ROLE_STAFF:
@@ -75,10 +71,6 @@ namespace eMototCare.BLL.Services.AccountServices
                         case RoleName.ROLE_CUSTOMER:
                             if (customerByAcc.TryGetValue(acc.Id, out var cu))
                                 dto.Customer = _mapper.Map<CustomerResponse>(cu);
-                            break;
-
-                        // ROLE_ADMIN hoặc role khác thì không gắn gì
-                        default:
                             break;
                     }
 
