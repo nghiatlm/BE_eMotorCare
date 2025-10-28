@@ -72,6 +72,13 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             await _context.SaveChangesAsync();
         }
 
+        public Task<List<Staff>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds) =>
+            _context
+                .Staffs.AsNoTracking()
+                .Include(s => s.ServiceCenter)
+                .Where(s => accountIds.Contains(s.AccountId))
+                .ToListAsync();
+
         public async Task CreateAsync(Staff entity)
         {
             _context.Staffs.AddAsync(entity);

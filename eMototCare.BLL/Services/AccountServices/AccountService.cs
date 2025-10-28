@@ -46,7 +46,45 @@ namespace eMototCare.BLL.Services.AccountServices
                     page,
                     pageSize
                 );
-                var rows = _mapper.Map<List<AccountResponse>>(items);
+
+                var accountIds = items.Select(x => x.Id).ToList();
+
+                // ✅ Batch fetch hồ sơ
+                var staffs = await _unitOfWork.Staffs.GetByAccountIdsAsync(accountIds);
+                var staffByAcc = staffs.ToDictionary(s => s.AccountId, s => s);
+
+                var customers = await _unitOfWork.Customers.GetByAccountIdsAsync(accountIds);
+                var customerByAcc = customers.ToDictionary(c => c.AccountId, c => c);
+
+                var rows = new List<AccountResponse>(items.Count);
+                foreach (var acc in items)
+                {
+                    var dto = _mapper.Map<AccountResponse>(acc);
+
+                    // ✅ Gắn hồ sơ theo role
+                    switch (acc.RoleName)
+                    {
+                        // Tùy enum của bạn: ROLE_MANAGER / ROLE_STAFF / ROLE_TECHINICIAN...
+                        case RoleName.ROLE_TECHINICIAN:
+                        case RoleName.ROLE_MANAGER:
+                        case RoleName.ROLE_STAFF:
+                            if (staffByAcc.TryGetValue(acc.Id, out var st))
+                                dto.Staff = _mapper.Map<StaffResponse>(st);
+                            break;
+
+                        case RoleName.ROLE_CUSTOMER:
+                            if (customerByAcc.TryGetValue(acc.Id, out var cu))
+                                dto.Customer = _mapper.Map<CustomerResponse>(cu);
+                            break;
+
+                        // ROLE_ADMIN hoặc role khác thì không gắn gì
+                        default:
+                            break;
+                    }
+
+                    rows.Add(dto);
+                }
+
                 return new PageResult<AccountResponse>(rows, pageSize, page, (int)total);
             }
             catch (AppException)

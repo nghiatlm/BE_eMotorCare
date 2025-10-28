@@ -58,5 +58,10 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
             return (items, total);
         }
 
+        public Task<List<Customer>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds) =>
+            _context
+                .Customers.AsNoTracking()
+                .Where(c => accountIds.Contains(c.AccountId))
+                .ToListAsync();
     }
 }

@@ -14,6 +14,8 @@ namespace eMotoCare.BO.DTO.Responses
         public string? Email { get; set; }
         public AccountStatus Stattus { get; set; }
         public RoleName RoleName { get; set; }
+        public CustomerResponse? Customer { get; set; }
+        public StaffResponse? Staff { get; set; }
         // public Customer? Customer { get; set; }
         // public Staff? Staff { get; set; }
     }

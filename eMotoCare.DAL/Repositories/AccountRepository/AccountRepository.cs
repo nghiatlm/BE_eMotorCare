@@ -71,5 +71,8 @@ namespace eMotoCare.DAL.Repositories.AccountRepository
 
             return (items, total);
         }
+
+        public Task<Staff?> GetByAccountIdAsync(Guid accountId) =>
+            _context.Staffs.AsNoTracking().FirstOrDefaultAsync(s => s.AccountId == accountId);
     }
 }

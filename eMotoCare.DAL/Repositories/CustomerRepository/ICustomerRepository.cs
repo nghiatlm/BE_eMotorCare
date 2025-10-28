@@ -15,5 +15,6 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
             int page,
             int pageSize
         );
+        Task<List<Customer>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds);
     }
 }
