@@ -17,11 +17,6 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
-
-        [Column("part_item_id")]
-        public Guid? PartItemId { get; set; }
-
-        [ForeignKey(nameof(PartItemId))]
-        public virtual PartItem? PartItem { get; set; }
+        public virtual ICollection<PartItem>? PartItems { get; set; }
     }
 }
