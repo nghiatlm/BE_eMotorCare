@@ -50,6 +50,10 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
 
+        [Column("import_note_status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(ImportNoteStatus))]
+        public ImportNoteStatus ImportNoteStatus { get; set; }
+
         public virtual ICollection<PartItem>? PartItems { get; set; }
     }
 }
