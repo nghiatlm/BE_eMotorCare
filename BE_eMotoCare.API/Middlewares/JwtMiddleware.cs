@@ -30,7 +30,9 @@ namespace BE_eMotoCare.API.Middlewares
             "/health",
             "/api/v1/customers",
             "/api/v1/vehicles",
-            "/api/v1/vehicle-part-items"
+            "/api/v1/vehicle-part-items",
+            "/api/v1/evchecks",
+            "/api/v1/ev_check_details",
         };
 
         public JwtMiddleware(
