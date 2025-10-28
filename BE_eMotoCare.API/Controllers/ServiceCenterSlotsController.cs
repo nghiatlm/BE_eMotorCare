@@ -1,6 +1,8 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using System.Net;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.DAL;
 using eMototCare.BLL.Services.ServiceCenterSlotServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,20 +15,54 @@ namespace BE_eMotoCare.API.Controllers
     public class ServiceCenterSlotsController : ControllerBase
     {
         private readonly IServiceCenterSlotService _serviceCenterSlotService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ServiceCenterSlotsController(IServiceCenterSlotService serviceCenterSlotService)
+        public ServiceCenterSlotsController(
+            IServiceCenterSlotService serviceCenterSlotService,
+            IUnitOfWork unitOfWork
+        )
         {
             _serviceCenterSlotService = serviceCenterSlotService;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(Guid serviceCenterId)
+        public async Task<IActionResult> GetAll([FromQuery] Guid serviceCenterId)
         {
             var items = await _serviceCenterSlotService.GetAllAsync(serviceCenterId);
+            var center = await _unitOfWork.ServiceCenters.GetByIdAsync(serviceCenterId);
+            if (center is null)
+            {
+                return NotFound(ApiResponse<object>.NotFound("Không tìm thấy ServiceCenter"));
+            }
+            var payload = new
+            {
+                servicecenter = new
+                {
+                    serviceCenterId = center.Id,
+                    serviceCente = new
+                    {
+                        name = center.Name,
+                        address = center.Address,
+                        phone = center.Phone,
+                        email = center.Email,
+                        Slot = items.Select(s => new
+                        {
+                            id = s.Id,
+                            dayOfWeek = s.DayOfWeek.ToString(),
+                            startTime = s.StartTime.ToString(@"hh\:mm"),
+                            endTime = s.EndTime.ToString(@"hh\:mm"),
+                            capacity = s.Capacity,
+                            isActive = s.IsActive,
+                        }),
+                    },
+                },
+            };
+
             return Ok(
-                ApiResponse<List<ServiceCenterSlotResponse>>.SuccessResponse(
-                    items,
-                    "Lấy danh sách slot thành công"
+                ApiResponse<object>.SuccessResponse(
+                    payload,
+                    "Lấy danh sách slot theo trung tâm thành công"
                 )
             );
         }
