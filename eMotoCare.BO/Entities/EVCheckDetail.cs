@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
@@ -54,7 +55,8 @@ namespace eMotoCare.BO.Entities
         public string? Result { get; set; }
 
         [Required]
-        [Column("remedies")]
+        [Column("remedies", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Remedies))]
         public Remedies Remedies { get; set; }
 
         [Column("unit")]
@@ -73,7 +75,8 @@ namespace eMotoCare.BO.Entities
         public decimal? TotalAmount { get; set; }
 
         [Required]
-        [Column("status")]
-        public Status Status { get; set; }
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(EVCheckDetailStatus))]
+        public EVCheckDetailStatus Status { get; set; }
     }
 }

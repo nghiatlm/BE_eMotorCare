@@ -19,7 +19,6 @@ namespace eMotoCare.BO.Entities
         public virtual Campaign? Campaign { get; set; }
 
         public string Description { get; set; }
-        public Guid EVCheckDetailId { get; set; }
 
         [Required]
         [Column("part_id")]
@@ -44,6 +43,5 @@ namespace eMotoCare.BO.Entities
         [Column("estimated_time")]
         public int? EstimatedTime { get; set; }
 
-        public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
     }
 }

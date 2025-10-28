@@ -18,6 +18,13 @@ namespace BE_eMotoCare.API.Configuration
             services.AddAutoMapper(typeof(PartTypeMapper));
             services.AddAutoMapper(typeof(VehicleMapper));
             services.AddAutoMapper(typeof(VehiclePartItemMapper));
+            services.AddAutoMapper(typeof(CampaignDetailMapper));
+            services.AddAutoMapper(typeof(CampaignMapper));
+            services.AddAutoMapper(typeof(PartItemMapper));
+            services.AddAutoMapper(typeof(ExportNoteMapper));
+            services.AddAutoMapper(typeof(ImportNoteMapper));
+            services.AddAutoMapper(typeof(EVCheckDetailMapper));
+
             services.AddAutoMapper(typeof(ServiceCenterSlotMapper));
             services.AddAutoMapper(typeof(EVCheckMapper));
             services.AddAutoMapper(typeof(VehicleStageMapper));
