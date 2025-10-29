@@ -19,6 +19,5 @@ namespace eMotoCare.BO.DTO.Requests
         public decimal? PricePart { get; set; }
         public decimal? PriceService { get; set; }
         public decimal? TotalAmount { get; set; }
-        public EVCheckDetailStatus Status { get; set; }
     }
 }

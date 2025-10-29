@@ -21,7 +21,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate,
@@ -42,7 +42,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Create([FromBody] EVCheckRequest request)
         {
             var id = await _evCheckService.CreateAsync(request);
@@ -52,7 +52,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _evCheckService.GetByIdAsync(id);
@@ -65,7 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _evCheckService.DeleteAsync(id);
@@ -73,7 +73,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckUpdateRequest request)
         {
             await _evCheckService.UpdateAsync(id, request);

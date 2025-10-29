@@ -35,6 +35,10 @@ namespace eMotoCare.BO.Entities
         [StringLength(2000)]
         public string? Description { get; set; }
 
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
+        public Status Status { get; set; }
+
         [InverseProperty(nameof(EVCheckDetail.MaintenanceStageDetail))]
         public virtual EVCheckDetail? EVCheckDetail { get; set; }
     }

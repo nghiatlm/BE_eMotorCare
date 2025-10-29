@@ -1,6 +1,7 @@
+using eMotoCare.BO.Common;
+using eMotoCare.BO.Enum;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using eMotoCare.BO.Common;
 
 namespace eMotoCare.BO.Entities
 {
@@ -57,6 +58,10 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(RMAId))]
         public virtual RMA? RMA { get; set; }
+
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
+        public Status Status { get; set; }
 
     }
 }
