@@ -10,6 +10,7 @@ using eMotoCare.DAL;
 using eMototCare.BLL.Services.PartTypeServices;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using eMotoCare.BO.Enum;
 
 namespace eMototCare.BLL.Services.PartServices
 {
@@ -66,7 +67,7 @@ namespace eMototCare.BLL.Services.PartServices
 
                 var entity = _mapper.Map<PartType>(req);
                 entity.Id = Guid.NewGuid();
-
+                entity.Status = Status.ACTIVE;
                 await _unitOfWork.PartTypes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 

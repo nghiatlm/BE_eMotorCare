@@ -13,6 +13,6 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
         Task DeleteAsync(Guid id);
         Task<MaintenancePlanResponse?> GetByIdAsync(Guid id);
         Task<PageResult<MaintenancePlanResponse>> GetPagedAsync(string? code, string? description, string? name, int? totalStage, Status? status, MaintenanceUnit[]? maintenanceUnit, int page = 1, int pageSize = 10);
-        Task UpdateAsync(Guid id, MaintenancePlanRequest req);
+        Task UpdateAsync(Guid id, MaintenancePlanUpdateRequest req);
     }
 }

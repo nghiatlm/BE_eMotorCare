@@ -81,6 +81,7 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
                 entity.Name = name;
+                entity.Status = Status.ACTIVE;
 
                 await _unitOfWork.MaintenancePlans.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -111,7 +112,8 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.MaintenancePlans.DeleteAsync(entity);
+                entity.Status = Status.IN_ACTIVE;
+                await _unitOfWork.MaintenancePlans.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted MaintenancePlan {Id}", id);
@@ -127,7 +129,7 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, MaintenancePlanRequest req)
+        public async Task UpdateAsync(Guid id, MaintenancePlanUpdateRequest req)
         {
             try
             {
