@@ -68,7 +68,8 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageRepository
             return await _context
                 .MaintenanceStages
                 .Include(x => x.MaintenancePlan)
-                .Include(x => x.MaintenanceStageDetails).ThenInclude(x => x.Part)
+                .Include(x => x.MaintenanceStageDetails)
+                    .ThenInclude(x => x.Part)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
@@ -76,6 +77,13 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageRepository
         {
             return await _context.MaintenanceStages
                 .Where(x => x.MaintenancePlanId == maintenancePlanId)
+                .ToListAsync();
+        }
+
+        public async Task<List<MaintenanceStage>> GetListByPlanIdAsync(Guid id)
+        {
+            return await _context.MaintenanceStages
+                .Where(x => x.MaintenancePlanId == id)
                 .ToListAsync();
         }
 

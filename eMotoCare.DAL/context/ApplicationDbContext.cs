@@ -108,6 +108,11 @@ namespace eMotoCare.DAL.context
                 .Property(x => x.ActionType)
                 .HasConversion(new EnumArrayToStringConverter<ActionType>());
 
+            modelBuilder
+                .Entity<EVCheckDetail>()
+                .Property(x => x.Remedies)
+                .HasConversion(new EnumArrayToStringConverter<Remedies>());
+
             base.OnModelCreating(modelBuilder);
         }
     }

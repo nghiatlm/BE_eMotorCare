@@ -20,7 +20,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
              Guid? eVCheckId,
              Guid? replacePartId,
              string? result,
-             Remedies? remedies,
              string? unit,
              decimal? quantity,
              decimal? pricePart,
@@ -82,11 +81,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
             {
                 q = q.Where(x =>
                     x.Result.Contains(result));
-            }
-
-            if (remedies.HasValue)
-            {
-                q = q.Where(x => x.Remedies == remedies.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(unit))
