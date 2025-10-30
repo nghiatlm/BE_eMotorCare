@@ -50,6 +50,10 @@ namespace eMotoCare.BO.Entities
         [Column("service_center_id")]
         public Guid ServiceCenterId { get; set; }
 
+        [Column("export_note_status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(ExportNoteStatus))]
+        public ExportNoteStatus ExportNoteStatus { get; set; }
+
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
 
