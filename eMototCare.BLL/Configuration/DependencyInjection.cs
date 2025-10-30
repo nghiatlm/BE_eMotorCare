@@ -5,13 +5,16 @@ using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
+using eMototCare.BLL.Services.EVCheckDetailServices;
 using eMototCare.BLL.Services.EVCheckServices;
 using eMototCare.BLL.Services.FirebaseServices;
+using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
+using eMototCare.BLL.Services.PriceServiceServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.ServiceCenterSlotServices;
 using eMototCare.BLL.Services.StaffServices;
@@ -19,8 +22,6 @@ using eMototCare.BLL.Services.VehiclePartItemServices;
 using eMototCare.BLL.Services.VehicleServices;
 using eMototCare.BLL.Services.VehicleStageServices;
 using Microsoft.Extensions.DependencyInjection;
-using eMototCare.BLL.Services.EVCheckDetailServices;
-using eMototCare.BLL.Services.ImportNoteServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -48,6 +49,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IEVCheckDetailService, EVCheckDetailService>();
             services.AddScoped<IServiceCenterSlotService, ServiceCenterSlotService>();
             services.AddScoped<IVehicleStageService, VehicleStageService>();
+            services.AddScoped<IPriceServiceService, PriceServiceService>();
             services.AddScoped<IImportNoteService, ImportNoteService>();
             return services;
         }

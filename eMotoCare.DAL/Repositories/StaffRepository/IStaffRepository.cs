@@ -13,7 +13,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             int page,
             int pageSize
         );
-
+        Task<List<Staff>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds);
         Task<bool> ExistsCodeAsync(string code);
         Task<bool> ExistsCitizenAsync(string citizenId);
         Task<Staff?> GetByIdAsync(Guid id);

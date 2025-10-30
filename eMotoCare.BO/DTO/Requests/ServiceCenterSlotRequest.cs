@@ -1,8 +1,11 @@
-﻿namespace eMotoCare.BO.DTO.Requests
+﻿using eMotoCare.BO.Enums;
+
+namespace eMotoCare.BO.DTO.Requests
 {
     public class ServiceCenterSlotRequest
     {
-        public DayOfWeek DayOfWeek { get; set; }
+        public DateOnly Date { get; set; }
+        public DayOfWeeks DayOfWeek { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
         public int Capacity { get; set; }

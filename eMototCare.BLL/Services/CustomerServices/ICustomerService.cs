@@ -12,5 +12,6 @@ namespace eMototCare.BLL.Services.CustomerServices
         Task<Guid> CreateAsync(CustomerRequest req);
         Task UpdateAsync(Guid id, CustomerRequest req);
         Task DeleteAsync(Guid id);
+        Task<object> GetPagedViewAsync(string? search, int page, int pageSize);
     }
 }

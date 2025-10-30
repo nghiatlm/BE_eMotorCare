@@ -21,18 +21,17 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _customerService.GetPagedAsync(search, page, pageSize);
+            var payload = await _customerService.GetPagedViewAsync(search, page, pageSize);
             return Ok(
-                ApiResponse<PageResult<CustomerResponse>>.SuccessResponse(
-                    data,
-                    "Lấy danh sách khách hàng thành công"
+                ApiResponse<object>.SuccessResponse(
+                    payload,
+                    "Lấy danh sách khách hàng (kèm xe/lịch/lịch sử/thay thế) thành công"
                 )
             );
         }

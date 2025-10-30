@@ -1,4 +1,5 @@
 ﻿using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
 
         public async Task<bool> HasOverlapAsync(
             Guid serviceCenterId,
-            DayOfWeek dayOfWeek,
+            DayOfWeeks dayOfWeek,
             TimeSpan start,
             TimeSpan end,
             Guid? excludeId = null
@@ -48,6 +49,32 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
                     && DateOnly.FromDateTime(a.AppointmentDate.Date) == date
                 )
                 .CountAsync();
+        }
+
+        public Task<List<ServiceCenterSlot>> GetByServiceCenterOnDateAsync(
+            Guid scId,
+            DateOnly date
+        ) =>
+            _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(x => x.ServiceCenterId == scId && x.Date == date && x.IsActive)
+                .OrderBy(x => x.StartTime)
+                .ToListAsync();
+
+        public async Task<bool> HasOverlapOnDateAsync(
+            Guid scId,
+            DateOnly date,
+            TimeSpan start,
+            TimeSpan end,
+            Guid? excludeId = null
+        )
+        {
+            var q = _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(x => x.ServiceCenterId == scId && x.Date == date);
+            if (excludeId.HasValue)
+                q = q.Where(x => x.Id != excludeId.Value);
+            return await q.AnyAsync(x => start < x.EndTime && end > x.StartTime);
         }
     }
 }
