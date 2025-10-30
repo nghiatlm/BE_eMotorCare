@@ -110,7 +110,9 @@ namespace eMotoCare.DAL.context
             modelBuilder
                 .Entity<ServiceCenterSlot>()
                 .Property(s => s.DayOfWeek)
-                .HasConversion<string>();
+                .HasConversion<string>()
+                .HasColumnType("varchar(16)");
+
             base.OnModelCreating(modelBuilder);
         }
     }

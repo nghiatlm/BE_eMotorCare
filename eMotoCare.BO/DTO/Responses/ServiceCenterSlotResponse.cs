@@ -6,6 +6,7 @@ namespace eMotoCare.BO.DTO.Responses
     {
         public Guid Id { get; set; }
         public Guid ServiceCenterId { get; set; }
+        public DateOnly Date { get; set; }
         public DayOfWeeks DayOfWeek { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }

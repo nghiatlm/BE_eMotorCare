@@ -61,7 +61,7 @@ namespace eMototCare.BLL.Services.AccountServices
 
                     switch (acc.RoleName)
                     {
-                        case RoleName.ROLE_TECHINICIAN:
+                        case RoleName.ROLE_TECHNICIAN:
                         case RoleName.ROLE_MANAGER:
                         case RoleName.ROLE_STAFF:
                             if (staffByAcc.TryGetValue(acc.Id, out var st))

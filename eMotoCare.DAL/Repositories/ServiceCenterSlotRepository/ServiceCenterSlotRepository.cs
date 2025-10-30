@@ -50,5 +50,31 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
                 )
                 .CountAsync();
         }
+
+        public Task<List<ServiceCenterSlot>> GetByServiceCenterOnDateAsync(
+            Guid scId,
+            DateOnly date
+        ) =>
+            _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(x => x.ServiceCenterId == scId && x.Date == date && x.IsActive)
+                .OrderBy(x => x.StartTime)
+                .ToListAsync();
+
+        public async Task<bool> HasOverlapOnDateAsync(
+            Guid scId,
+            DateOnly date,
+            TimeSpan start,
+            TimeSpan end,
+            Guid? excludeId = null
+        )
+        {
+            var q = _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(x => x.ServiceCenterId == scId && x.Date == date);
+            if (excludeId.HasValue)
+                q = q.Where(x => x.Id != excludeId.Value);
+            return await q.AnyAsync(x => start < x.EndTime && end > x.StartTime);
+        }
     }
 }

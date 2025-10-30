@@ -19,6 +19,10 @@ namespace eMotoCare.BO.Entities
         public virtual ServiceCenter? ServiceCenter { get; set; }
 
         [Required]
+        [Column("date")]
+        public DateOnly Date { get; set; }
+
+        [Required]
         [Column("day_of_week", TypeName = "varchar(20)")]
         [EnumDataType(typeof(DayOfWeeks))]
         public DayOfWeeks DayOfWeek { get; set; }

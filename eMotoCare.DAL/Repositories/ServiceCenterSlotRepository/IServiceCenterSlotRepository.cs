@@ -14,7 +14,14 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
             TimeSpan end,
             Guid? excludeId = null
         );
-
+        Task<List<ServiceCenterSlot>> GetByServiceCenterOnDateAsync(Guid scId, DateOnly date);
+        Task<bool> HasOverlapOnDateAsync(
+            Guid scId,
+            DateOnly date,
+            TimeSpan start,
+            TimeSpan end,
+            Guid? excludeId = null
+        );
         Task<int> CountBookingsAsync(Guid serviceCenterId, Guid slotId, DateOnly date);
     }
 }
