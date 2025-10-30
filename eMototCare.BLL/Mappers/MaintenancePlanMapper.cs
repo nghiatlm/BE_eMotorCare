@@ -13,6 +13,7 @@ namespace eMototCare.BLL.Mappers
         {
             CreateMap<MaintenancePlanRequest, MaintenancePlan>();
             CreateMap<MaintenancePlan, MaintenancePlanResponse>();
+            CreateMap<MaintenancePlanUpdateRequest, MaintenancePlan>();
         }
     }
 }

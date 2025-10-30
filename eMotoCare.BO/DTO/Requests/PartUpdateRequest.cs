@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eMotoCare.BO.DTO.Requests
 {
-    public class PartRequest
+    public class PartUpdateRequest
     {
         [Required]
         public Guid PartTypeId { get; set; }
@@ -18,6 +18,8 @@ namespace eMotoCare.BO.DTO.Requests
         public int Quantity { get; set; }
         [Column("image")]
         public string? Image { get; set; }
-        
+        [Required]
+        [EnumDataType(typeof(Status))]
+        public Status Status { get; set; }
     }
 }

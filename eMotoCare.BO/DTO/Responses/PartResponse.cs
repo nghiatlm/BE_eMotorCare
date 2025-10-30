@@ -1,6 +1,7 @@
 ﻿
 
 
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 
 
@@ -14,6 +15,6 @@ namespace eMotoCare.BO.DTO.Responses
         public string Name { get; set; }
         public int Quantity { get; set; }
         public string? Image { get; set; }
-        public PartStatus Status { get; set; }
+        public Status Status { get; set; }
     }
 }

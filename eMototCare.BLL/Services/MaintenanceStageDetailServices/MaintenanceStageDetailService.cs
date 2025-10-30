@@ -85,6 +85,7 @@ namespace eMototCare.BLL.Services.MaintenanceStageDetailServices
 
                 var entity = _mapper.Map<MaintenanceStageDetail>(req);
                 entity.Id = Guid.NewGuid();
+                entity.Status = Status.ACTIVE;
 
                 await _unitOfWork.MaintenanceStageDetails.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -115,7 +116,8 @@ namespace eMototCare.BLL.Services.MaintenanceStageDetailServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.MaintenanceStageDetails.DeleteAsync(entity);
+                entity.Status = Status.IN_ACTIVE;
+                await _unitOfWork.MaintenanceStageDetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted MaintenanceStageDetail {Id}", id);
@@ -131,7 +133,7 @@ namespace eMototCare.BLL.Services.MaintenanceStageDetailServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, MaintenanceStageDetailRequest req)
+        public async Task UpdateAsync(Guid id, MaintenanceStageDetailUpdateRequest req)
         {
             try
             {

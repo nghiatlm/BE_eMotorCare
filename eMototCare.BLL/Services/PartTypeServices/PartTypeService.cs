@@ -10,6 +10,7 @@ using eMotoCare.DAL;
 using eMototCare.BLL.Services.PartTypeServices;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using eMotoCare.BO.Enum;
 
 namespace eMototCare.BLL.Services.PartServices
 {
@@ -30,8 +31,8 @@ namespace eMototCare.BLL.Services.PartServices
             
             string? name,
             string? description,
-            int page = 1,
-            int pageSize = 10
+            int page,
+            int pageSize
         )
         {
             try
@@ -66,7 +67,7 @@ namespace eMototCare.BLL.Services.PartServices
 
                 var entity = _mapper.Map<PartType>(req);
                 entity.Id = Guid.NewGuid();
-
+                entity.Status = Status.ACTIVE;
                 await _unitOfWork.PartTypes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -96,7 +97,8 @@ namespace eMototCare.BLL.Services.PartServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.PartTypes.DeleteAsync(entity);
+                entity.Status = Status.IN_ACTIVE;
+                await _unitOfWork.PartTypes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted PartType {Id}", id);
@@ -112,7 +114,7 @@ namespace eMototCare.BLL.Services.PartServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, PartTypeRequest req)
+        public async Task UpdateAsync(Guid id, PartTypeUpdateRequest req)
         {
             try
             {

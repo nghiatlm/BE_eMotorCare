@@ -73,7 +73,7 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] MaintenanceStageDetailRequest request)
+        public async Task<IActionResult> Update(Guid id, [FromBody] MaintenanceStageDetailUpdateRequest request)
         {
             await _maintenanceStageDetailService.UpdateAsync(id, request);
             return Ok(

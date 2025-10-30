@@ -1,6 +1,9 @@
 ﻿
 
 using AutoMapper;
+using eMotoCare.BO.DTO.Requests;
+using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Entities;
 
 namespace eMototCare.BLL.Mappers
 {
@@ -8,7 +11,9 @@ namespace eMototCare.BLL.Mappers
     {
         public ImportNoteMapper()
         {
-            CreateMap<eMotoCare.BO.Entities.ImportNote, eMotoCare.BO.DTO.Responses.ImportNoteResponse>();
+            CreateMap<ImportNote, ImportNoteResponse>();
+            CreateMap<ImportNoteRequest, ImportNote>();
+            CreateMap<ImportNoteUpdateRequest, ImportNote>();
         }
     }
 }
