@@ -12,7 +12,7 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
         Task<Guid> CreateAsync(EVCheckDetailRequest req);
         Task DeleteAsync(Guid id);
         Task<EVCheckDetailResponse?> GetByIdAsync(Guid id);
-        Task<PageResult<EVCheckDetailResponse>> GetPagedAsync(Guid? maintenanceStageDetailId, Guid? campaignDetailId, Guid? partItemId, Guid? eVCheckId, Guid? replacePartId, string? result, Remedies? remedies, string? unit, decimal? quantity, decimal? pricePart, decimal? priceService, decimal? totalAmount, EVCheckDetailStatus? status, int page = 1, int pageSize = 10);
-        Task UpdateAsync(Guid id, EVCheckDetailRequest req);
+        Task<PageResult<EVCheckDetailResponse>> GetPagedAsync(Guid? maintenanceStageDetailId, Guid? campaignDetailId, Guid? partItemId, Guid? eVCheckId, Guid? replacePartId, string? result, Remedies? remedies, string? unit, decimal? quantity, decimal? pricePart, decimal? priceService, decimal? totalAmount, EVCheckDetailStatus? status, int page, int pageSize);
+        Task UpdateAsync(Guid id, EVCheckDetailUpdateRequest req);
     }
 }

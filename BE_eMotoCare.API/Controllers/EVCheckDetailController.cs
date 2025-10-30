@@ -22,7 +22,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] Guid? maintenanceStageDetailId,
             [FromQuery] Guid? campaignDetailId,
@@ -65,7 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _eVCheckDetailService.GetByIdAsync(id);
@@ -78,7 +78,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> Create([FromBody] EVCheckDetailRequest request)
         {
             var id = await _eVCheckDetailService.CreateAsync(request);
@@ -88,7 +88,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _eVCheckDetailService.DeleteAsync(id);
@@ -96,8 +96,8 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckDetailRequest request)
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckDetailUpdateRequest request)
         {
             await _eVCheckDetailService.UpdateAsync(id, request);
             return Ok(

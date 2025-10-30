@@ -42,8 +42,8 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
              decimal? priceService,
              decimal? totalAmount,
              EVCheckDetailStatus? status,
-             int page = 1,
-             int pageSize = 10
+             int page,
+             int pageSize
         )
         {
             try
@@ -120,7 +120,8 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.EVCheckDetails.DeleteAsync(entity);
+                entity.Status = EVCheckDetailStatus.CANCELED;
+                await _unitOfWork.EVCheckDetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted EVCheckDetail {Id}", id);
@@ -136,7 +137,7 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, EVCheckDetailRequest req)
+        public async Task UpdateAsync(Guid id, EVCheckDetailUpdateRequest req)
         {
             try
             {

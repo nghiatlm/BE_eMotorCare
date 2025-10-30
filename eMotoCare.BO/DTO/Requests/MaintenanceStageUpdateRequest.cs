@@ -1,13 +1,13 @@
 ﻿
 
-using eMotoCare.BO.Entities;
+
 using eMotoCare.BO.Enum;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eMotoCare.BO.DTO.Requests
 {
-    public class MaintenanceStageRequest
+    public class MaintenanceStageUpdateRequest
     {
         [Required]
         public Guid MaintenancePlanId { get; set; }
@@ -28,5 +28,8 @@ namespace eMotoCare.BO.DTO.Requests
 
         public int? EstimatedTime { get; set; }
 
+        [Required]
+        [EnumDataType(typeof(Status))]
+        public Status Status { get; set; }
     }
 }

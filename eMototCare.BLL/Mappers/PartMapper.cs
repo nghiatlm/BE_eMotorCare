@@ -14,6 +14,7 @@ namespace eMototCare.BLL.Mappers
             CreateMap<Part, PartMaintenanceStageDetailResponse>();
             CreateMap<Part, PartResponse>();
             CreateMap<PartRequest, Part>();
+            CreateMap<PartUpdateRequest, Part>();
         }
     }
 }
