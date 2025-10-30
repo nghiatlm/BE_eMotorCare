@@ -97,7 +97,8 @@ namespace eMototCare.BLL.Services.PartServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.PartTypes.DeleteAsync(entity);
+                entity.Status = Status.IN_ACTIVE;
+                await _unitOfWork.PartTypes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted PartType {Id}", id);
@@ -113,7 +114,7 @@ namespace eMototCare.BLL.Services.PartServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, PartTypeRequest req)
+        public async Task UpdateAsync(Guid id, PartTypeUpdateRequest req)
         {
             try
             {

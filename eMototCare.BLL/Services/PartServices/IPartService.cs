@@ -13,7 +13,7 @@ namespace eMototCare.BLL.Services.PartServices
         Task<Guid> CreateAsync(PartRequest req);
         Task DeleteAsync(Guid id);
         Task<PartResponse?> GetByIdAsync(Guid id);
-        Task<PageResult<PartResponse>> GetPagedAsync(Guid? partTypeId, string? code, string? name, PartStatus? status, int? quantity, int page = 1, int pageSize = 10);
-        Task UpdateAsync(Guid id, PartRequest req);
+        Task<PageResult<PartResponse>> GetPagedAsync(Guid? partTypeId, string? code, string? name, Status? status, int? quantity, int page = 1, int pageSize = 10);
+        Task UpdateAsync(Guid id, PartUpdateRequest req);
     }
 }

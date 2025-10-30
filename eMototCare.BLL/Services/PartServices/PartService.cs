@@ -32,7 +32,7 @@ namespace eMototCare.BLL.Services.PartServices
             Guid? partTypeId,
             string? code,
             string? name,
-            PartStatus? status,
+            Status? status,
             int? quantity,
             int page = 1,
             int pageSize = 10
@@ -77,6 +77,7 @@ namespace eMototCare.BLL.Services.PartServices
                 var entity = _mapper.Map<Part>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
+                entity.Status = Status.ACTIVE;
 
                 await _unitOfWork.Parts.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -107,7 +108,8 @@ namespace eMototCare.BLL.Services.PartServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.Parts.DeleteAsync(entity);
+                entity.Status = Status.IN_ACTIVE;
+                await _unitOfWork.Parts.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted Part {Id}", id);
@@ -123,7 +125,7 @@ namespace eMototCare.BLL.Services.PartServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, PartRequest req)
+        public async Task UpdateAsync(Guid id, PartUpdateRequest req)
         {
             try
             {

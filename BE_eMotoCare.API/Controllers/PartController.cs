@@ -27,7 +27,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? partTypeId,
             [FromQuery] string? code,
             [FromQuery] string? name,
-            [FromQuery] PartStatus? status,
+            [FromQuery] Status? status,
             [FromQuery] int? quantity,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
@@ -75,7 +75,7 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] PartRequest request)
+        public async Task<IActionResult> Update(Guid id, [FromBody] PartUpdateRequest request)
         {
             await _partService.UpdateAsync(id, request);
             return Ok(
