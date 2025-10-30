@@ -1,4 +1,5 @@
 
+using eMotoCare.BO.Enum;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,5 +25,9 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(PartTypeId))]
         public virtual PartType? PartType { get; set; }
+
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(Status))]
+        public Status Status { get; set; }
     }
 }

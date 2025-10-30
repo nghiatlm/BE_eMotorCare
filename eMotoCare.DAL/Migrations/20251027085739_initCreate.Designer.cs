@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251027085739_initCreate")]
+    partial class initCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,10 +38,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("varchar(200)")
                         .HasColumnName("email");
-
-                    b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(300)")
-                        .HasColumnName("full_name");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -298,9 +297,6 @@ namespace eMotoCare.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<Guid>("EVCheckDetailId")
-                        .HasColumnType("char(36)");
-
                     b.Property<int?>("EstimatedTime")
                         .HasColumnType("int")
                         .HasColumnName("estimated_time");
@@ -481,6 +477,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("longtext")
                         .HasColumnName("result");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("status");
 
                     b.Property<decimal?>("TotalAmount")
@@ -583,6 +582,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<Guid?>("ImportById")
+                        .IsRequired()
                         .HasColumnType("char(36)")
                         .HasColumnName("import_by_id");
 
@@ -1293,6 +1294,8 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("capacity");
 
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int")
                         .HasColumnName("day_of_week");
 
                     b.Property<TimeSpan>("EndTime")
@@ -1661,6 +1664,7 @@ namespace eMotoCare.DAL.Migrations
             modelBuilder.Entity("eMotoCare.BO.Entities.EVCheckDetail", b =>
                 {
                     b.HasOne("eMotoCare.BO.Entities.CampaignDetail", "CampaignDetail")
+                        .WithMany()
                         .HasForeignKey("CampaignDetailId");
 
                     b.HasOne("eMotoCare.BO.Entities.EVCheck", "EVCheck")
@@ -2029,11 +2033,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("Appointments");
 
                     b.Navigation("CampaignDetails");
-                });
-
-            modelBuilder.Entity("eMotoCare.BO.Entities.CampaignDetail", b =>
-                {
-                    b.Navigation("EVCheckDetails");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Customer", b =>

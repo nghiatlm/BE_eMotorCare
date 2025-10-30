@@ -2,8 +2,7 @@
 
 namespace eMotoCare.BO.Enums
 {
-    public enum PartItemStatus
+    public enum ExportNoteStatus
     {
-        ACTIVE
     }
 }

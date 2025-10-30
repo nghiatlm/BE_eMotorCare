@@ -10,8 +10,6 @@ namespace eMotoCare.BO.DTO.Requests
     public class EVCheckRequest
     {
         [Required]
-        public DateTime CheckDate { get; set; }
-        [Required]
         public decimal? TotalAmout { get; set; }
         [Required]
         public int Odometer { get; set; }
