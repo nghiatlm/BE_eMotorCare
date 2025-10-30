@@ -34,8 +34,8 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
             int? totalStage,
             Status? status,
             MaintenanceUnit[]? maintenanceUnit,
-            int page = 1,
-            int pageSize = 10
+            int page,
+            int pageSize
         )
         {
             try

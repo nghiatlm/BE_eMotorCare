@@ -11,7 +11,7 @@ namespace eMototCare.BLL.Services.MaintenanceStageServices
         Task<Guid> CreateAsync(MaintenanceStageRequest req);
         Task DeleteAsync(Guid id);
         Task<MaintenanceStageResponse?> GetByIdAsync(Guid id);
-        Task<PageResult<MaintenanceStageResponse>> GetPagedAsync(Guid? maintenancePlanId, string? description, DurationMonth? durationMonth, Mileage? mileage, string? name, Status? status, int page = 1, int pageSize = 10);
+        Task<PageResult<MaintenanceStageResponse>> GetPagedAsync(Guid? maintenancePlanId, string? description, DurationMonth? durationMonth, Mileage? mileage, string? name, Status? status, int page, int pageSize);
         Task UpdateAsync(Guid id, MaintenanceStageUpdateRequest req);
     }
 }

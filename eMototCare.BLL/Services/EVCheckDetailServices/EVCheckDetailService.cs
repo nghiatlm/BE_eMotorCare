@@ -42,8 +42,8 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
              decimal? priceService,
              decimal? totalAmount,
              EVCheckDetailStatus? status,
-             int page = 1,
-             int pageSize = 10
+             int page,
+             int pageSize
         )
         {
             try

@@ -31,8 +31,8 @@ namespace eMototCare.BLL.Services.PartServices
             
             string? name,
             string? description,
-            int page = 1,
-            int pageSize = 10
+            int page,
+            int pageSize
         )
         {
             try

@@ -32,8 +32,8 @@ namespace eMototCare.BLL.Services.MaintenanceStageServices
             Mileage? mileage,
             string? name,
             Status? status,
-            int page = 1,
-            int pageSize = 10
+            int page,
+            int pageSize
         )
         {
             try
