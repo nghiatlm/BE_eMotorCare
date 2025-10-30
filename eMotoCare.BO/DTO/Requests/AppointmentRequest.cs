@@ -14,6 +14,9 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid? VehicleStageId { get; set; }
 
         [Required]
+        public Guid ServiceCenterSlotId { get; set; }
+
+        [Required]
         [StringLength(50)]
         public string TimeSlot { get; set; } = default!;
 
