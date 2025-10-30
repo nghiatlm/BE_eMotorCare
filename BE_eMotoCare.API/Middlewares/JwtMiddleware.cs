@@ -39,6 +39,9 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/price-services",
             "/api/v1/maintenance-stages",
             "/api/v1/vehicle-stages",
+            "/api/v1/vehicle-part-items",
+            "/api/v1/evchecks",
+            "/api/v1/ev_check_details",
         };
 
         public JwtMiddleware(
