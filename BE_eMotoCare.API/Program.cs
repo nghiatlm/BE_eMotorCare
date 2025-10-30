@@ -1,12 +1,19 @@
-using System.Text.Json.Serialization;
-using BE_eMotoCare.API.Configuration;
+﻿using BE_eMotoCare.API.Configuration;
 using BE_eMotoCare.API.Middlewares;
 using eMotoCare.BO.Common;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
+using RealTime;
+using RealTime.Hubs;
+using RealTime.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 //builder.WebHost.UseUrls("http://0.0.0.0:80");
+// Add SignalR
+builder.Services.AddSignalR();
+// Add NotifierService
+builder.Services.AddScoped<INotifierService, NotifierService>();
 
 var dbSection = builder.Configuration.GetSection("Database");
 var server = dbSection["Server"];
@@ -78,7 +85,7 @@ app.UseHttpsRedirection();
 
 app.UseAppExceptionHandler();
 app.UseCors("AllowExpoApp");
-
+app.MapHub<NotificationHub>("/hubs/notify");
 app.UseMiddleware<JwtMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
