@@ -13,44 +13,53 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
-namespace eMototCare.BLL.Services.PartServices
+namespace eMototCare.BLL.Services.ImportNoteServices
 {
-    public class PartService : IPartService
+    public class ImportNoteService : IImportNoteService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ILogger<PartService> _logger;
-
-        public PartService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PartService> logger)
+        private readonly ILogger<ImportNoteService> _logger;
+        public ImportNoteService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ImportNoteService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
 
-        public async Task<PageResult<PartResponse>> GetPagedAsync(
-            Guid? partTypeId,
-            string? code,
-            string? name,
-            Status? status,
-            int? quantity,
-            int page,
-            int pageSize
+        public async Task<PageResult<ImportNoteResponse>> GetPagedAsync(
+             string? code,
+             DateTime? fromDate,
+             DateTime? toDate,
+             string? importFrom,
+             string? supplier,
+             ImportType? importType,
+             decimal? totalAmount,
+             Guid? importById,
+             Guid? serviceCenterId,
+             ImportNoteStatus? importNoteStatus,
+             int page,
+             int pageSize
         )
         {
             try
             {
-                var (items, total) = await _unitOfWork.Parts.GetPagedAsync(
-                    partTypeId, 
-                    code, 
-                    name, 
-                    status, 
-                    quantity, 
-                    page, 
-                    pageSize
+                var (items, total) = await _unitOfWork.ImportNotes.GetPagedAsync(
+                code,
+                fromDate,
+                toDate,
+                importFrom,
+                supplier,
+                importType,
+                totalAmount,
+                importById,
+                serviceCenterId,
+                importNoteStatus,
+                page,
+                pageSize
                 );
-                var rows = _mapper.Map<List<PartResponse>>(items);
-                return new PageResult<PartResponse>(rows, pageSize, page, (int)total);
+                var rows = _mapper.Map<List<ImportNoteResponse>>(items);
+                return new PageResult<ImportNoteResponse>(rows, pageSize, page, (int)total);
             }
             catch (AppException)
             {
@@ -58,31 +67,31 @@ namespace eMototCare.BLL.Services.PartServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetPaged Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetPaged ImportNote failed: {Message}", ex.Message);
                 //throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
                 throw new AppException(ex.Message);
             }
         }
 
-        public async Task<Guid> CreateAsync(PartRequest req)
+        public async Task<Guid> CreateAsync(ImportNoteRequest req)
         {
 
             try
             {
                 var code = req.Code.Trim();
 
-                if (await _unitOfWork.Parts.ExistsCodeAsync(code))
+                if (await _unitOfWork.ImportNotes.ExistsCodeAsync(code))
                     throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
-                var entity = _mapper.Map<Part>(req);
+                var entity = _mapper.Map<ImportNote>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
-                entity.Status = Status.ACTIVE;
+                entity.ImportNoteStatus = ImportNoteStatus.RECEIVING;
 
-                await _unitOfWork.Parts.CreateAsync(entity);
+                await _unitOfWork.ImportNotes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Created Part");
+                _logger.LogInformation("Created ImportNote");
                 return entity.Id;
 
             }
@@ -92,7 +101,7 @@ namespace eMototCare.BLL.Services.PartServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Create Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Create ImportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
@@ -102,17 +111,17 @@ namespace eMototCare.BLL.Services.PartServices
             try
             {
                 var entity =
-                    await _unitOfWork.Parts.GetByIdAsync(id)
+                    await _unitOfWork.ImportNotes.GetByIdAsync(id)
                     ?? throw new AppException(
                         "Không tìm thấy Part",
                         HttpStatusCode.NotFound
                     );
 
-                entity.Status = Status.IN_ACTIVE;
-                await _unitOfWork.Parts.UpdateAsync(entity);
+                entity.ImportNoteStatus = ImportNoteStatus.CANCELLED;
+                await _unitOfWork.ImportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Deleted Part {Id}", id);
+                _logger.LogInformation("Deleted ImportNote {Id}", id);
             }
             catch (AppException)
             {
@@ -120,26 +129,26 @@ namespace eMototCare.BLL.Services.PartServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Delete ImportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
 
-        public async Task UpdateAsync(Guid id, PartUpdateRequest req)
+        public async Task UpdateAsync(Guid id, ImportNoteUpdateRequest req)
         {
             try
             {
                 var entity =
-                    await _unitOfWork.Parts.GetByIdAsync(id)
+                    await _unitOfWork.ImportNotes.GetByIdAsync(id)
                     ?? throw new AppException(
-                        "Không tìm thấy Part",
+                        "Không tìm thấy ImportNotes",
                         HttpStatusCode.NotFound
                     );
 
                 var code = req.Code.Trim();
                 if (
                     !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
-                    && await _unitOfWork.Parts.ExistsCodeAsync(code)
+                    && await _unitOfWork.ImportNotes.ExistsCodeAsync(code)
                 )
                     throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
@@ -147,10 +156,10 @@ namespace eMototCare.BLL.Services.PartServices
                 _mapper.Map(req, entity);
                 entity.Code = code;
 
-                await _unitOfWork.Parts.UpdateAsync(entity);
+                await _unitOfWork.ImportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Updated Part {Id}", id);
+                _logger.LogInformation("Updated ImportNote {Id}", id);
             }
             catch (AppException)
             {
@@ -158,22 +167,22 @@ namespace eMototCare.BLL.Services.PartServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Update Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Update ImportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
 
 
         }
 
-        public async Task<PartResponse?> GetByIdAsync(Guid id)
+        public async Task<ImportNoteResponse?> GetByIdAsync(Guid id)
         {
             try
             {
-                var entity = await _unitOfWork.Parts.GetByIdAsync(id);
+                var entity = await _unitOfWork.ImportNotes.GetByIdAsync(id);
                 if (entity is null)
-                    throw new AppException("Không tìm thấy Part", HttpStatusCode.NotFound);
+                    throw new AppException("Không tìm thấy ImportNote", HttpStatusCode.NotFound);
 
-                return _mapper.Map<PartResponse>(entity);
+                return _mapper.Map<ImportNoteResponse>(entity);
             }
             catch (AppException)
             {
@@ -181,7 +190,7 @@ namespace eMototCare.BLL.Services.PartServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetById Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetById ImportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

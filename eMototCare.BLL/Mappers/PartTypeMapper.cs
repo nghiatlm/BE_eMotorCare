@@ -12,6 +12,7 @@ namespace eMototCare.BLL.Mappers
         public PartTypeMapper()
         {
             CreateMap<PartTypeRequest, PartType>();
+            CreateMap<PartTypeUpdateRequest, PartType>();
             CreateMap<PartType, PartTypeResponse>();
         }
     }

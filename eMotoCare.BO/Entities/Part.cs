@@ -41,8 +41,8 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(PartStatus))]
-        public PartStatus Status { get; set; }
+        [EnumDataType(typeof(Status))]
+        public Status Status { get; set; }
         public virtual ICollection<PartItem>? PartItems { get; set; }
         public virtual ICollection<CampaignDetail>? CampaignDetails { get; set; }
         public virtual ICollection<MaintenanceStageDetail>? MaintenanceStageDetails { get; set; }

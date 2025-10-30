@@ -13,6 +13,7 @@ namespace eMototCare.BLL.Mappers
         {
             CreateMap<EVCheckDetail, EVCheckDetailResponse>();
             CreateMap<EVCheckDetailRequest, EVCheckDetail>();
+            CreateMap<EVCheckDetailUpdateRequest, EVCheckDetail>();
         }
     }
 }

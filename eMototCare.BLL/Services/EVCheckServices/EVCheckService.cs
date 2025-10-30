@@ -157,7 +157,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.EVChecks.DeleteAsync(entity);
+                entity.Status = EVCheckStatus.CANCELLED;
+                await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Deleted EVCheck {Id}", id);
