@@ -16,5 +16,14 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
             int pageSize
         );
         Task<List<Customer>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds);
+        Task<(
+            List<Appointment> appointments,
+            List<EVCheck> evChecks,
+            List<EVCheckDetail> evCheckDetails,
+            List<Vehicle> vehicles,
+            List<Model> models,
+            List<MaintenanceStage> stages,
+            List<VehiclePartItem> vehiclePartItems
+        )> GetCustomerDetailGraphsAsync(IEnumerable<Guid> customerIds);
     }
 }

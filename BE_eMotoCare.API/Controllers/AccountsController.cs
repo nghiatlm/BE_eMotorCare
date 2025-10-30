@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.AccountService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +12,7 @@ namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
     [Route("api/v1/admin/users")]
-    //[Authorize(Roles = "ROLE_ADMIN")]
+    [Authorize(Roles = "ROLE_ADMIN")]
     public class AccountsController : ControllerBase
     {
         private readonly IAccountService _accountService;

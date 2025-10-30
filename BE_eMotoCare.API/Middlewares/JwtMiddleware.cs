@@ -16,33 +16,7 @@ namespace BE_eMotoCare.API.Middlewares
         private readonly ILogger<JwtMiddleware> _logger;
         private readonly JwtSettings _jwtSettings;
 
-        private static readonly string[] _excludedPaths = new[]
-        {
-            "/api/v1/auths/login",
-            "/api/v1/admin/service-centers",
-            "/api/v1/admin/users",
-            "/api/v1/auths/register",
-            "/api/v1/public",
-            "/api/v1/appointments",
-            "/api/v1/admin/staffs",
-            "/api/v1/auths/verify-sms-otp",
-            "/swagger",
-            "/health",
-            "/api/v1/customers",
-            "/api/v1/maintenance-plans",
-            "/api/v1/maintenance-stage-details",
-            "/api/v1/part-types",
-            "/api/v1/parts",
-            "/api/v1/evchecks",
-            "/api/v1/vehicles",
-            "/api/v1/vehicle-part-items",
-            "/api/v1/price-services",
-            "/api/v1/maintenance-stages",
-            "/api/v1/vehicle-stages",
-            "/api/v1/vehicle-part-items",
-            "/api/v1/evchecks",
-            "/api/v1/ev_check_details",
-        };
+        private static readonly string[] _excludedPaths = new[] { "/swagger", "/health" };
 
         public JwtMiddleware(
             RequestDelegate next,
