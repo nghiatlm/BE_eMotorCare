@@ -39,9 +39,19 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpGet("{id}")]
         //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> GetById(Guid id, [FromQuery] Guid? accountId)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _customerService.GetByIdAsync(id, accountId);
+            var item = await _customerService.GetByIdAsync(id);
+            return Ok(
+                ApiResponse<CustomerResponse>.SuccessResponse(item, "Lấy khách hàng thành công")
+            );
+        }
+
+        [HttpGet("account/{accountId}")]
+        [Authorize]
+        public async Task<IActionResult> GetAccountIdAsync(Guid accountId)
+        {
+            var item = await _customerService.GetAccountIdAsync(accountId);
             return Ok(
                 ApiResponse<CustomerResponse>.SuccessResponse(item, "Lấy khách hàng thành công")
             );

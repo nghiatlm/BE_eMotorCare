@@ -12,6 +12,6 @@ namespace eMototCare.BLL.Services.CustomerServices
         Task<Guid> CreateAsync(CustomerRequest req);
         Task UpdateAsync(Guid id, CustomerRequest req);
         Task DeleteAsync(Guid id);
-        Task<CustomerResponse?> GetByIdAsync(Guid id, Guid? accountId = null);
+        Task<CustomerResponse?> GetAccountIdAsync(Guid id);
     }
 }

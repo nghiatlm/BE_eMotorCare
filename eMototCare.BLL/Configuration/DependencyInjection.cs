@@ -51,6 +51,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IVehicleStageService, VehicleStageService>();
             services.AddScoped<IPriceServiceService, PriceServiceService>();
             services.AddScoped<IImportNoteService, ImportNoteService>();
+
             return services;
         }
     }

@@ -50,7 +50,28 @@ namespace eMototCare.BLL.Services.CustomerServices
             }
         }
 
-        public async Task<CustomerResponse?> GetByIdAsync(Guid id, Guid? accountId = null)
+        public async Task<CustomerResponse?> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var entity =
+                    await _unitOfWork.Customers.GetByIdAsync(id)
+                    ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
+
+                return _mapper.Map<CustomerResponse>(entity);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetById Customer failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<CustomerResponse?> GetAccountIdAsync(Guid id, Guid? accountId = null)
         {
             try
             {
@@ -174,9 +195,25 @@ namespace eMototCare.BLL.Services.CustomerServices
             }
         }
 
-        public async Task<CustomerResponse?> GetByIdAsync(Guid id)
+        public async Task<CustomerResponse?> GetAccountIdAsync(Guid id)
         {
-            return await GetByIdAsync(id, null);
+            try
+            {
+                var cus = await _unitOfWork.Customers.GetAccountIdAsync(id);
+                if (cus == null)
+                    throw new AppException("Người dùng không tồn tại", HttpStatusCode.Forbidden);
+
+                return _mapper.Map<CustomerResponse>(cus);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete Customer failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
     }
 }
