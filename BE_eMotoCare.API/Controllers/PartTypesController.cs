@@ -20,7 +20,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? name,
             [FromQuery] string? description,
@@ -38,7 +38,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _partTypeService.GetByIdAsync(id);
@@ -51,7 +51,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Create([FromBody] PartTypeRequest request)
         {
             var id = await _partTypeService.CreateAsync(request);
@@ -61,7 +61,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _partTypeService.DeleteAsync(id);
@@ -69,7 +69,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Update(Guid id, [FromBody] PartTypeUpdateRequest request)
         {
             await _partTypeService.UpdateAsync(id, request);

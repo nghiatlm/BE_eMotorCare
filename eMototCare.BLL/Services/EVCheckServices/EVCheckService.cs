@@ -76,7 +76,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 await _unitOfWork.EVChecks.CreateAsync(entity);
 
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
-
+                if (appointment == null)
+                    throw new AppException("Appointment not found", HttpStatusCode.NotFound);
                 if (appointment.Type == ServiceType.MAINTENACE_TYPE)
                 {
                     var vehicleStages = appointment.VehicleStage;
@@ -98,7 +99,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             Id = Guid.NewGuid(),
                             EVCheckId = entity.Id,
                             MaintenanceStageDetailId = detail.Id,
-                            Remedies = null,
+                            Remedies = Remedies.NONE,
                             PartItemId = matchedVehiclePartItem.PartItemId,
                             Status = EVCheckDetailStatus.IN_PROGRESS,
                         };
