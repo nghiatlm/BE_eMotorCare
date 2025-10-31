@@ -14,7 +14,7 @@ namespace eMotoCare.BO.DTO.Responses
         public EVCheckResponse? EVCheck { get; set; }
         public PartItemResponse? ReplacePart { get; set; }
         public string? Result { get; set; }
-        public Remedies[] Remedies { get; set; }
+        public Remedies Remedies { get; set; }
         public string? Unit { get; set; }
         public decimal? Quantity { get; set; }
         public decimal? PricePart { get; set; }
