@@ -2,7 +2,7 @@
 {
     public enum ServiceType
     {
-        MAINTENACE_TYPE,
+        MAINTENANCE_TYPE,
         REPAIR_TYPE,
         WARRANTY_TYPE,
     }
