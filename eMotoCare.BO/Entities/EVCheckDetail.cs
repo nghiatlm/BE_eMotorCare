@@ -56,7 +56,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("remedies", TypeName = "varchar(200)")]
-        public Remedies[] Remedies { get; set; }
+        public Remedies? Remedies { get; set; }
 
         [Column("unit")]
         public string? Unit { get; set; }

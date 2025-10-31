@@ -156,9 +156,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             Id = Guid.NewGuid(),
                             EVCheckId = entity.Id,
                             MaintenanceStageDetailId = detail.Id,
-                            Remedies = detail.ActionType?
-                                                .Select(a => (Remedies)a)
-                                                .ToArray() ?? Array.Empty<Remedies>(),
+                            Remedies = null,
                             PartItemId = matchedVehiclePartItem.PartItemId,
                             Status = EVCheckDetailStatus.IN_PROGRESS,
                         };

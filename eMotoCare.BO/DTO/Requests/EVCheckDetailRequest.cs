@@ -13,7 +13,7 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid EVCheckId { get; set; }
         public Guid? ReplacePartId { get; set; }
         public string? Result { get; set; }
-        public Remedies[] Remedies { get; set; }
+        public Remedies? Remedies { get; set; }
         public string? Unit { get; set; }
         public decimal? Quantity { get; set; }
         public decimal? PricePart { get; set; }
