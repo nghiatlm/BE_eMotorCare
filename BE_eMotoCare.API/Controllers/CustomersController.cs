@@ -48,7 +48,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("account/{accountId}")]
-        [Authorize]
+        [Authorize(Roles = "ROLE_CUSTOMER")]
         public async Task<IActionResult> GetAccountIdAsync(Guid accountId)
         {
             var item = await _customerService.GetAccountIdAsync(accountId);
