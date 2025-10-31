@@ -6,22 +6,26 @@ using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BE_eMotoCare.API.Realtime.Services;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/maintenance-plans")]
     [ApiController]
-    public class MaintenancePlanController : ControllerBase
+    public class MaintenancePlansController : ControllerBase
     {
         private readonly IMaintenancePlanService _maintenancePlanService;
+        private readonly INotifierService _notifier;
 
-        public MaintenancePlanController(IMaintenancePlanService maintenancePlanService)
+        public MaintenancePlansController(IMaintenancePlanService maintenancePlanService, INotifierService notifier)
         {
             _maintenancePlanService = maintenancePlanService;
+            _notifier = notifier;
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? code,
             [FromQuery] string? description,
@@ -43,7 +47,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF, ROLE_CUSTOMER")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _maintenancePlanService.GetByIdAsync(id);
@@ -70,6 +74,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _maintenancePlanService.DeleteAsync(id);
+            await _notifier.NotifyDeleteAsync("MaintenancePlan", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá Maintenance Plan thành công"));
         }
 
@@ -78,6 +83,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] MaintenancePlanUpdateRequest request)
         {
             await _maintenancePlanService.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync("MaintenancePlan", new { Id = id });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Maintenance Plan thành công")
             );

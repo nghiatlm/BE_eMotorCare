@@ -22,6 +22,9 @@ using eMototCare.BLL.Services.VehiclePartItemServices;
 using eMototCare.BLL.Services.VehicleServices;
 using eMototCare.BLL.Services.VehicleStageServices;
 using Microsoft.Extensions.DependencyInjection;
+using eMototCare.BLL.Services.EVCheckDetailServices;
+using eMototCare.BLL.Services.ImportNoteServices;
+using eMototCare.BLL.Services.ExportServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -51,6 +54,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IVehicleStageService, VehicleStageService>();
             services.AddScoped<IPriceServiceService, PriceServiceService>();
             services.AddScoped<IImportNoteService, ImportNoteService>();
+            services.AddScoped<IExportService, ExportService>();
             return services;
         }
     }

@@ -11,10 +11,10 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/part-types")]
     [ApiController]
-    public class PartTypeController : ControllerBase
+    public class PartTypesController : ControllerBase
     {
         private readonly IPartTypeService _partTypeService;
-        public PartTypeController(IPartTypeService partTypeService)
+        public PartTypesController(IPartTypeService partTypeService)
         {
             _partTypeService = partTypeService;
         }

@@ -113,6 +113,11 @@ namespace eMotoCare.DAL.context
                 .HasConversion<string>()
                 .HasColumnType("varchar(16)");
 
+            modelBuilder
+                .Entity<EVCheckDetail>()
+                .Property(x => x.Remedies)
+                .HasConversion(new EnumArrayToStringConverter<Remedies>());
+
             base.OnModelCreating(modelBuilder);
         }
     }

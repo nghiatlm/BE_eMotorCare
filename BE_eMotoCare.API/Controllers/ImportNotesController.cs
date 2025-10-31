@@ -13,11 +13,11 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/import-notes")]
     [ApiController]
-    public class ImportNoteController : ControllerBase
+    public class ImportNotesController : ControllerBase
     {
         private readonly IImportNoteService _importNoteService;
 
-        public ImportNoteController(IImportNoteService importNoteService)
+        public ImportNotesController(IImportNoteService importNoteService)
         {
             _importNoteService = importNoteService;
         }
@@ -61,7 +61,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _importNoteService.GetByIdAsync(id);
@@ -74,7 +74,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> Create([FromBody] ImportNoteRequest request)
         {
             var id = await _importNoteService.CreateAsync(request);
@@ -84,7 +84,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _importNoteService.DeleteAsync(id);
@@ -92,7 +92,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ImportNoteUpdateRequest request)
         {
             await _importNoteService.UpdateAsync(id, request);

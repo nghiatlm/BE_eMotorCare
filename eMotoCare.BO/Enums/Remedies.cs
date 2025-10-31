@@ -4,6 +4,6 @@
     {
         REPAIR,
         REPLACE,
-        CHECK,
+        CHECK
     }
 }

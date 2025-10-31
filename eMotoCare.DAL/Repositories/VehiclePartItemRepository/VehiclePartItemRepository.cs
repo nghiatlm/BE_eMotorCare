@@ -71,5 +71,15 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
 
             return (items, total);
         }
+
+        public async Task<List<VehiclePartItem>> GetListByVehicleIdAsync(Guid id)
+        {
+            return await _context
+                .VehiclePartItems.AsNoTracking()
+                .Include(x => x.PartItem)
+                    .ThenInclude(x => x.Part)
+                .Where(x => x.VehicleId == id)
+                .ToListAsync();
+        }
     }
 }
