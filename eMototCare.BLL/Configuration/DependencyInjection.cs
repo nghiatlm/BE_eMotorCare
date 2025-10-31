@@ -1,3 +1,4 @@
+using eMotoCare.BO.Common.src;
 using eMototCare.BLL.HashPasswords;
 using eMototCare.BLL.JwtServices;
 using eMototCare.BLL.Services.AccountService;
@@ -18,6 +19,7 @@ using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
+using eMototCare.BLL.Services.PayosServices;
 using eMototCare.BLL.Services.PriceServiceServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
 using eMototCare.BLL.Services.ServiceCenterSlotServices;
@@ -57,6 +59,8 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IImportNoteService, ImportNoteService>();
             services.AddScoped<IExportService, ExportService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IPayosService, PayosService>();
+            services.AddScoped<Utils>();
             return services;
         }
     }

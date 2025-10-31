@@ -29,6 +29,7 @@ namespace BE_eMotoCare.API.Configuration
             services.AddAutoMapper(typeof(EVCheckMapper));
             services.AddAutoMapper(typeof(VehicleStageMapper));
             services.AddAutoMapper(typeof(PriceServiceMapper));
+            services.AddAutoMapper(typeof(PaymentMapper));
             return services;
         }
     }
