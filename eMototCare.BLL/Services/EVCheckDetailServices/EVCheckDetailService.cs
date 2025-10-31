@@ -35,7 +35,6 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
              Guid? eVCheckId,
              Guid? replacePartId,
              string? result,
-             Remedies? remedies,
              string? unit,
              decimal? quantity,
              decimal? pricePart,
@@ -55,7 +54,6 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                                                                 eVCheckId,
                                                                 replacePartId,
                                                                 result,
-                                                                remedies,
                                                                 unit,
                                                                 quantity,
                                                                 pricePart,
@@ -89,7 +87,7 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
 
                 var entity = _mapper.Map<EVCheckDetail>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Status = EVCheckDetailStatus.INPROGRESS;
+                entity.Status = EVCheckDetailStatus.IN_PROGRESS;
 
                 await _unitOfWork.EVCheckDetails.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();

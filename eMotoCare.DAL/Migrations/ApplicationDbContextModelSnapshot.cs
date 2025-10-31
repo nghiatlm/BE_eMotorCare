@@ -396,7 +396,7 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("Odometer")
+                    b.Property<int?>("Odometer")
                         .HasColumnType("int")
                         .HasColumnName("odometer");
 
@@ -936,7 +936,7 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(100)")
                         .HasColumnName("serial_number");
 
-                    b.Property<Guid>("ServiceCenterInventoryId")
+                    b.Property<Guid?>("ServiceCenterInventoryId")
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_inventory_id");
 
@@ -1876,9 +1876,7 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasOne("eMotoCare.BO.Entities.ServiceCenterInventory", "ServiceCenterInventory")
                         .WithMany("PartItems")
-                        .HasForeignKey("ServiceCenterInventoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ServiceCenterInventoryId");
 
                     b.Navigation("ExportNote");
 

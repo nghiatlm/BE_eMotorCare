@@ -83,5 +83,15 @@ namespace eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository
                 .Include(x => x.Part)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<List<MaintenanceStageDetail>> GetByMaintenanceStageIdAsync(Guid maintenanceStageId)
+        {
+            return await _context
+                .MaintenanceStageDetails
+                .AsNoTracking()
+                .Include(x => x.Part)
+                .Where(x => x.MaintenanceStageId == maintenanceStageId)
+                .ToListAsync();
+        }
     }
 }

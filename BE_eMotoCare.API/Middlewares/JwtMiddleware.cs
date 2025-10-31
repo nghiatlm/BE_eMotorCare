@@ -22,6 +22,7 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/auths/register",
             "/api/v1/public",
             "/api/v1/auths/verify-sms-otp",
+            "/api/v1/auths/verify-otp/staff",
             "/swagger",
             "/health",
         };

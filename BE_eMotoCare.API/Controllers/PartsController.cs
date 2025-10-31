@@ -7,18 +7,21 @@ using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.PartServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using BE_eMotoCare.API.Realtime.Services;
 
 namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/parts")]
     [ApiController]
-    public class PartController : ControllerBase
+    public class PartsController : ControllerBase
     {
         private readonly IPartService _partService;
+        private readonly INotifierService _notifier;
 
-        public PartController(IPartService partService)
+        public PartsController(IPartService partService, INotifierService notifier)
         {
             _partService = partService;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -70,6 +73,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _partService.DeleteAsync(id);
+            await _notifier.NotifyDeleteAsync("Part", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá Part thành công"));
         }
 
@@ -78,6 +82,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] PartUpdateRequest request)
         {
             await _partService.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync("Part", new { Id = id });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Part thành công")
             );

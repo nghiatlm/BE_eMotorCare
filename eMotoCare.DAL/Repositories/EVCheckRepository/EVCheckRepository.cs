@@ -27,8 +27,21 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
 
             var q = _context.EVChecks
                 .Include(x => x.Appointment)
+                    .ThenInclude(a => a.Customer)
+                .Include(x => x.Appointment)
+                    .ThenInclude(a => a.ServiceCenter)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
+                    .ThenInclude(ms => ms.MaintenanceStageDetail)
+                        .ThenInclude(m => m.Part)
+                .Include(x => x.EVCheckDetails)
+                    .ThenInclude(ms => ms.CampaignDetail)
+                .Include(x => x.EVCheckDetails)
+                    .ThenInclude(ms => ms.PartItem)
+                .Include(x => x.EVCheckDetails)
+                    .ThenInclude(ms => ms.ReplacePart)
+
+
                 .AsNoTracking()
                 .AsQueryable();
             

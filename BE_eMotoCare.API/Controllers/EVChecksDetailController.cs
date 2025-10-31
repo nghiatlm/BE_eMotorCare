@@ -12,11 +12,11 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/ev-check-details")]
     [ApiController]
-    public class EVCheckDetailController : ControllerBase
+    public class EVChecksDetailController : ControllerBase
     {
         private readonly IEVCheckDetailService _eVCheckDetailService;
 
-        public EVCheckDetailController(IEVCheckDetailService eVCheckDetailService)
+        public EVChecksDetailController(IEVCheckDetailService eVCheckDetailService)
         {
             _eVCheckDetailService = eVCheckDetailService;
         }
@@ -30,7 +30,6 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? eVCheckId,
             [FromQuery] Guid? replacePartId,
             [FromQuery] string? result,
-            [FromQuery] Remedies? remedies,
             [FromQuery] string? unit,
             [FromQuery] decimal? quantity,
             [FromQuery] decimal? pricePart,
@@ -47,7 +46,6 @@ namespace BE_eMotoCare.API.Controllers
                                                                 eVCheckId, 
                                                                 replacePartId, 
                                                                 result, 
-                                                                remedies, 
                                                                 unit, 
                                                                 quantity, 
                                                                 pricePart, 

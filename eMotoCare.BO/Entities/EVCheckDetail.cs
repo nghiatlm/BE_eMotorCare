@@ -54,10 +54,8 @@ namespace eMotoCare.BO.Entities
         [Column("result")]
         public string? Result { get; set; }
 
-        [Required]
         [Column("remedies", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(Remedies))]
-        public Remedies Remedies { get; set; }
+        public Remedies? Remedies { get; set; }
 
         [Column("unit")]
         public string? Unit { get; set; }

@@ -11,11 +11,11 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/maintenance-stage-details")]
     [ApiController]
-    public class MaintenanceStageDetailController : ControllerBase
+    public class MaintenanceStageDetailsController : ControllerBase
     {
         private readonly IMaintenanceStageDetailService _maintenanceStageDetailService;
 
-        public MaintenanceStageDetailController(IMaintenanceStageDetailService maintenanceStageDetailService)
+        public MaintenanceStageDetailsController(IMaintenanceStageDetailService maintenanceStageDetailService)
         {
             _maintenanceStageDetailService = maintenanceStageDetailService;
         }

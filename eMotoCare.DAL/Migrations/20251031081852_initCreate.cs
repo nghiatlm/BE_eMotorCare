@@ -673,7 +673,7 @@ namespace eMotoCare.DAL.Migrations
                     warranty_period = table.Column<int>(type: "int", nullable: true),
                     waranty_start_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     waranty_end_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    service_center_inventory_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                    service_center_inventory_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
@@ -698,8 +698,7 @@ namespace eMotoCare.DAL.Migrations
                         name: "FK_part_item_service_center_inventory_service_center_inventory_~",
                         column: x => x.service_center_inventory_id,
                         principalTable: "service_center_inventory",
-                        principalColumn: "service_center_inventory_id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "service_center_inventory_id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -810,7 +809,7 @@ namespace eMotoCare.DAL.Migrations
                     total_amout = table.Column<decimal>(type: "decimal(65,30)", nullable: true),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    odometer = table.Column<int>(type: "int", nullable: false),
+                    odometer = table.Column<int>(type: "int", nullable: true),
                     appointment_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     task_executor_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),

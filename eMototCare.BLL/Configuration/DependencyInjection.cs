@@ -5,9 +5,13 @@ using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
+using eMototCare.BLL.Services.EmailServices;
+using eMototCare.BLL.Services.EVCheckDetailServices;
 using eMototCare.BLL.Services.EVCheckDetailServices;
 using eMototCare.BLL.Services.EVCheckServices;
+using eMototCare.BLL.Services.ExportServices;
 using eMototCare.BLL.Services.FirebaseServices;
+using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
@@ -51,7 +55,8 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IVehicleStageService, VehicleStageService>();
             services.AddScoped<IPriceServiceService, PriceServiceService>();
             services.AddScoped<IImportNoteService, ImportNoteService>();
-
+            services.AddScoped<IExportService, ExportService>();
+            services.AddScoped<IEmailService, EmailService>();
             return services;
         }
     }

@@ -1,14 +1,28 @@
-using System.Text.Json.Serialization;
-using BE_eMotoCare.API.Configuration;
+﻿using BE_eMotoCare.API.Configuration;
 using BE_eMotoCare.API.Middlewares;
 using eMotoCare.BO.Common;
 using eMotoCare.DAL.context;
 using eMototCare.BLL.Services.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
+using BE_eMotoCare.API.Realtime.Hubs;
+using BE_eMotoCare.API.Realtime.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //builder.WebHost.UseUrls("http://0.0.0.0:80");
+// Add SignalR
+builder.Services.AddSignalR();
+// Add NotifierService
+builder.Services.AddScoped<INotifierService, NotifierService>();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
+var mailSection = builder.Configuration.GetSection("MailSettings");
+var fromEmail = mailSection["FromEmail"];
+var fromName = mailSection["FromName"];
+var mailPassword = mailSection["Password"];
+var mailHost = mailSection["Host"];
+var mailPort = int.TryParse(mailSection["Port"], out var parsedPort) ? parsedPort : 587;
 
 var dbSection = builder.Configuration.GetSection("Database");
 var server = dbSection["Server"];
@@ -57,6 +71,7 @@ builder
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddCors(options =>
 {
@@ -79,7 +94,7 @@ app.UseHttpsRedirection();
 
 app.UseAppExceptionHandler();
 app.UseCors("AllowExpoApp");
-
+app.MapHub<NotificationHub>("/hubs/notify");
 app.UseMiddleware<JwtMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -4,7 +4,6 @@ using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
-using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
@@ -13,53 +12,54 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
-namespace eMototCare.BLL.Services.ImportNoteServices
+namespace eMototCare.BLL.Services.ExportServices
 {
-    public class ImportNoteService : IImportNoteService
+    public class ExportService : IExportService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILogger<ExportService> _logger;
         private readonly IMapper _mapper;
-        private readonly ILogger<ImportNoteService> _logger;
-        public ImportNoteService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ImportNoteService> logger)
+
+        public ExportService(IUnitOfWork unitOfWork, ILogger<ExportService> logger, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _logger = logger;
+            _mapper = mapper;
         }
 
-        public async Task<PageResult<ImportNoteResponse>> GetPagedAsync(
+        public async Task<PageResult<ExportNoteResponse>> GetPagedAsync(
              string? code,
              DateTime? fromDate,
              DateTime? toDate,
-             string? importFrom,
-             string? supplier,
-             ImportType? importType,
-             decimal? totalAmount,
-             Guid? importById,
+             ExportType? exportType,
+             string? exportTo,
+             int? totalQuantity,
+             decimal? totalValue,
+             Guid? exportById,
              Guid? serviceCenterId,
-             ImportNoteStatus? importNoteStatus,
+             ExportNoteStatus? exportNoteStatus,
              int page,
              int pageSize
         )
         {
             try
             {
-                var (items, total) = await _unitOfWork.ImportNotes.GetPagedAsync(
+                var (items, total) = await _unitOfWork.ExportNotes.GetPagedAsync(
                 code,
                 fromDate,
                 toDate,
-                importFrom,
-                supplier,
-                importType,
-                totalAmount,
-                importById,
+                exportType,
+                exportTo,
+                totalQuantity,
+                totalValue,
+                exportById,
                 serviceCenterId,
-                importNoteStatus,
+                exportNoteStatus,
                 page,
                 pageSize
                 );
-                var rows = _mapper.Map<List<ImportNoteResponse>>(items);
-                return new PageResult<ImportNoteResponse>(rows, pageSize, page, (int)total);
+                var rows = _mapper.Map<List<ExportNoteResponse>>(items);
+                return new PageResult<ExportNoteResponse>(rows, pageSize, page, (int)total);
             }
             catch (AppException)
             {
@@ -67,32 +67,32 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetPaged ImportNote failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetPaged Export Note failed: {Message}", ex.Message);
                 //throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
                 throw new AppException(ex.Message);
             }
         }
 
-        public async Task<Guid> CreateAsync(ImportNoteRequest req)
+        public async Task<Guid> CreateAsync(ExportNoteRequest req)
         {
 
             try
             {
                 var code = req.Code.Trim();
 
-                if (await _unitOfWork.ImportNotes.ExistsCodeAsync(code))
+                if (await _unitOfWork.ExportNotes.ExistsCodeAsync(code))
                     throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
-                var entity = _mapper.Map<ImportNote>(req);
+                var entity = _mapper.Map<ExportNote>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
-                entity.ImportNoteStatus = ImportNoteStatus.RECEIVING;
-                entity.ImportDate = DateTime.UtcNow;
+                entity.ExportNoteStatus = ExportNoteStatus.PENDING;
+                entity.ExportDate = DateTime.UtcNow;
 
-                await _unitOfWork.ImportNotes.CreateAsync(entity);
+                await _unitOfWork.ExportNotes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Created ImportNote");
+                _logger.LogInformation("Created Export Note");
                 return entity.Id;
 
             }
@@ -102,7 +102,7 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Create ImportNote failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Create Export Note failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
@@ -112,17 +112,17 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             try
             {
                 var entity =
-                    await _unitOfWork.ImportNotes.GetByIdAsync(id)
+                    await _unitOfWork.ExportNotes.GetByIdAsync(id)
                     ?? throw new AppException(
-                        "Không tìm thấy Part",
+                        "Không tìm thấy ExportNote",
                         HttpStatusCode.NotFound
                     );
 
-                entity.ImportNoteStatus = ImportNoteStatus.CANCELLED;
-                await _unitOfWork.ImportNotes.UpdateAsync(entity);
+                entity.ExportNoteStatus = ExportNoteStatus.CANCELLED;
+                await _unitOfWork.ExportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Deleted ImportNote {Id}", id);
+                _logger.LogInformation("Deleted ExportNote {Id}", id);
             }
             catch (AppException)
             {
@@ -130,26 +130,26 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete ImportNote failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Delete ExportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
 
-        public async Task UpdateAsync(Guid id, ImportNoteUpdateRequest req)
+        public async Task UpdateAsync(Guid id, ExportNoteUpdateRequest req)
         {
             try
             {
                 var entity =
-                    await _unitOfWork.ImportNotes.GetByIdAsync(id)
+                    await _unitOfWork.ExportNotes.GetByIdAsync(id)
                     ?? throw new AppException(
-                        "Không tìm thấy ImportNotes",
+                        "Không tìm thấy ExportNote",
                         HttpStatusCode.NotFound
                     );
 
                 var code = req.Code.Trim();
                 if (
                     !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
-                    && await _unitOfWork.ImportNotes.ExistsCodeAsync(code)
+                    && await _unitOfWork.ExportNotes.ExistsCodeAsync(code)
                 )
                     throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
@@ -157,10 +157,10 @@ namespace eMototCare.BLL.Services.ImportNoteServices
                 _mapper.Map(req, entity);
                 entity.Code = code;
 
-                await _unitOfWork.ImportNotes.UpdateAsync(entity);
+                await _unitOfWork.ExportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Updated ImportNote {Id}", id);
+                _logger.LogInformation("Updated ExportNote {Id}", id);
             }
             catch (AppException)
             {
@@ -168,22 +168,22 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Update ImportNote failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Update ExportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
 
 
         }
 
-        public async Task<ImportNoteResponse?> GetByIdAsync(Guid id)
+        public async Task<ExportNoteResponse?> GetByIdAsync(Guid id)
         {
             try
             {
-                var entity = await _unitOfWork.ImportNotes.GetByIdAsync(id);
+                var entity = await _unitOfWork.ExportNotes.GetByIdAsync(id);
                 if (entity is null)
-                    throw new AppException("Không tìm thấy ImportNote", HttpStatusCode.NotFound);
+                    throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
 
-                return _mapper.Map<ImportNoteResponse>(entity);
+                return _mapper.Map<ExportNoteResponse>(entity);
             }
             catch (AppException)
             {
@@ -191,7 +191,7 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetById ImportNote failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetById ExportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

@@ -17,5 +17,6 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
         );
 
         Task<VehiclePartItem?> GetByIdAsync(Guid id);
+        Task<List<VehiclePartItem>> GetListByVehicleIdAsync(Guid id);
     }
 }

@@ -9,7 +9,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
-using Microsoft.AspNetCore.Mvc;
+using eMotoCare.BO.Enum;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -76,59 +76,38 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 await _unitOfWork.EVChecks.CreateAsync(entity);
 
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
-                if (appointment?.VehicleStage == null)
-                    throw new AppException("VehicleStage not found", HttpStatusCode.NotFound);
 
-                var vehicleStage = appointment.VehicleStage;
-
-                var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStage.VehicleId);
-                if (vehicle == null)
-                    throw new AppException("Vehicle not found", HttpStatusCode.NotFound);
-
-                var model = vehicle.Model;
-
-                var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(model.MaintenancePlanId);
-                if (plan == null)
-                    throw new AppException("Maintenance plan not found", HttpStatusCode.NotFound);
-
-
-                var allVehicleStages = (await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicle.Id)).ToList();
-                if (!allVehicleStages.Any())
-                    throw new AppException("No vehicle stages found", HttpStatusCode.NotFound);
-
-                var matchedStage = allVehicleStages
-                                    .Where(vs => vs.ActualMaintenanceMileage <= entity.Odometer)
-                                    .OrderByDescending(vs => vs.ActualMaintenanceMileage)
-                                    .FirstOrDefault();
-
-                if (matchedStage == null)
-                    throw new AppException("No matching maintenance stage for Odo", HttpStatusCode.NotFound);
-
-                var nextStage = allVehicleStages
-                                    .Where(vs => vs.ActualMaintenanceMileage > entity.Odometer)
-                                    .OrderBy(vs => vs.ActualMaintenanceMileage)
-                                    .FirstOrDefault();
-
-                foreach (var vs in allVehicleStages)
+                if (appointment.Type == ServiceType.MAINTENACE_TYPE)
                 {
-                    if (vs.ActualMaintenanceMileage <= entity.Odometer)
+                    var vehicleStages = appointment.VehicleStage;
+                    var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStages.VehicleId);
+                    var allVehiclePartItems = await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(vehicleDetail.Id);
+                    var latestVehiclePartItems = allVehiclePartItems
+                                                .GroupBy(vpi => vpi.PartItem.PartId)
+                                                .Select(g => g.OrderByDescending(x => x.InstallDate).First())
+                                                .ToList();
+                    var maintenanceStageDetails = await _unitOfWork.MaintenanceStageDetails.GetByMaintenanceStageIdAsync(vehicleStages.MaintenanceStageId);
+                    foreach (var detail in maintenanceStageDetails)
                     {
-                        if (vs.Status != VehicleStageStatus.COMPLETED)
-                            vs.Status = VehicleStageStatus.EXPIRED;
-                    }
-                    else if (nextStage != null && vs.Id == nextStage.Id)
-                    {
-                        vs.Status = VehicleStageStatus.UPCOMING;
-                    }
-                    else
-                    {
-                        vs.Status = VehicleStageStatus.NO_START;
-                    }
+                        // Tìm VehiclePartItem tương thích với PartId trong MaintenanceStageDetail
+                        var matchedVehiclePartItem = latestVehiclePartItems
+                            .FirstOrDefault(vpi => vpi.PartItem.PartId == detail.PartId);
 
-                    _unitOfWork.VehicleStages.Update(vs);
+                        var evCheckDetail = new EVCheckDetail
+                        {
+                            Id = Guid.NewGuid(),
+                            EVCheckId = entity.Id,
+                            MaintenanceStageDetailId = detail.Id,
+                            Remedies = null,
+                            PartItemId = matchedVehiclePartItem.PartItemId,
+                            Status = EVCheckDetailStatus.IN_PROGRESS,
+                        };
+
+                        await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                    }
                 }
 
-
+                
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Created EVCheck");
@@ -189,6 +168,66 @@ namespace eMototCare.BLL.Services.EVCheckServices
 
                 _mapper.Map(req, entity);
 
+                var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
+                if (appointment?.VehicleStage == null)
+                    throw new AppException("VehicleStage not found", HttpStatusCode.NotFound);
+
+                var vehicleStage = appointment.VehicleStage;
+
+                var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStage.VehicleId);
+                if (vehicle == null)
+                    throw new AppException("Vehicle not found", HttpStatusCode.NotFound);
+
+                var model = vehicle.Model;
+
+                var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(model.MaintenancePlanId);
+                if (plan == null)
+                    throw new AppException("Maintenance plan not found", HttpStatusCode.NotFound);
+
+                var maintenanceStages = await _unitOfWork.MaintenanceStages.GetListByPlanIdAsync(plan.Id);
+                if (!maintenanceStages.Any())
+                    throw new AppException("No maintenance stages found", HttpStatusCode.NotFound);
+
+
+                var allVehicleStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicle.Id);
+                if (!allVehicleStages.Any())
+                    throw new AppException("No vehicle stages found", HttpStatusCode.NotFound);
+
+                var matchedStage = maintenanceStages
+                                    .Where(vs => (int)vs.Mileage <= entity.Odometer)
+                                    .OrderByDescending(vs => (int)vs.Mileage)
+                                    .FirstOrDefault();
+
+                if (matchedStage == null)
+                    throw new AppException("No matching maintenance stage for Odo", HttpStatusCode.NotFound);
+
+                var nextStage = maintenanceStages
+                                    .Where(vs => (int)vs.Mileage > entity.Odometer)
+                                    .OrderBy(vs => (int)vs.Mileage)
+                                    .FirstOrDefault();
+
+                foreach (var vs in allVehicleStages)
+                {
+                    var stage = maintenanceStages.FirstOrDefault(ms => ms.Id == vs.MaintenanceStageId);
+                    if (stage == null)
+                        continue;
+
+                    if ((int)stage.Mileage <= entity.Odometer)
+                    {
+                        if (vs.Status != VehicleStageStatus.COMPLETED)
+                            vs.Status = VehicleStageStatus.EXPIRED;
+                    }
+                    else if (nextStage != null && stage.Id == nextStage.Id)
+                    {
+                        vs.Status = VehicleStageStatus.UPCOMING;
+                    }
+                    else
+                    {
+                        vs.Status = VehicleStageStatus.NO_START;
+                    }
+
+                    _unitOfWork.VehicleStages.Update(vs);
+                }
 
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
