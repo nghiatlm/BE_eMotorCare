@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
@@ -14,10 +15,15 @@ namespace BE_eMotoCare.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
+        private readonly INotifierService _notifier;
 
-        public AppointmentsController(IAppointmentService appointmentService)
+        public AppointmentsController(
+            IAppointmentService appointmentService,
+            INotifierService notifier
+        )
         {
             _appointmentService = appointmentService;
+            _notifier = notifier;
         }
 
         [HttpGet("available-slots")]
@@ -36,7 +42,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] AppointmentStatus? status,
@@ -75,7 +81,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,c")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
         public async Task<IActionResult> Create([FromBody] AppointmentRequest request)
         {
             var id = await _appointmentService.CreateAsync(request);
@@ -87,6 +93,20 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] AppointmentRequest request)
         {
             await _appointmentService.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync(
+                "Appointment",
+                new
+                {
+                    Id = id,
+                    request.Status,
+                    request.Type,
+                    request.AppointmentDate,
+                    request.TimeSlot,
+                    request.ServiceCenterId,
+                    request.CustomerId,
+                    request.VehicleStageId,
+                }
+            );
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật lịch hẹn thành công"));
         }
 
