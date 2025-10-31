@@ -6,6 +6,7 @@ namespace eMotoCare.BO.Enums
         ROLE_MANAGER,
         ROLE_STAFF,
         ROLE_TECHNICIAN,
-        ROLE_CUSTOMER
+        ROLE_CUSTOMER,
+        ROLE_STOREKEEPER
     }
 }

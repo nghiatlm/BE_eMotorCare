@@ -25,7 +25,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? code,
             [FromQuery] DateTime? fromDate,
@@ -63,7 +63,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _exportService.GetByIdAsync(id);
@@ -76,7 +76,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Create([FromBody] ExportNoteRequest request)
         {
             var id = await _exportService.CreateAsync(request);
@@ -86,7 +86,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _exportService.DeleteAsync(id);
@@ -95,7 +95,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ExportNoteUpdateRequest request)
         {
             await _exportService.UpdateAsync(id, request);

@@ -4,6 +4,7 @@
     {
         REPAIR,
         REPLACE,
-        CHECK
+        CHECK,
+        NONE
     }
 }
