@@ -16,7 +16,7 @@ namespace eMotoCare.BO.DTO.Responses
         public DateTime WarrantyExpiry { get; set; }
         public Guid ModelId { get; set; }
         public Guid? CustomerId { get; set; }
-
+        public string? ModelName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

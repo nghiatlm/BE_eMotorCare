@@ -21,17 +21,18 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
+        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var payload = await _customerService.GetPagedViewAsync(search, page, pageSize);
+            var data = await _customerService.GetPagedAsync(search, page, pageSize);
             return Ok(
-                ApiResponse<object>.SuccessResponse(
-                    payload,
-                    "Lấy danh sách khách hàng (kèm xe/lịch/lịch sử/thay thế) thành công"
+                ApiResponse<PageResult<CustomerResponse>>.SuccessResponse(
+                    data,
+                    "Lấy danh sách khách hàng thành công"
                 )
             );
         }
@@ -46,8 +47,18 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
+        [HttpGet("account/{accountId}")]
+        [Authorize(Roles = "ROLE_CUSTOMER")]
+        public async Task<IActionResult> GetAccountIdAsync(Guid accountId)
+        {
+            var item = await _customerService.GetAccountIdAsync(accountId);
+            return Ok(
+                ApiResponse<CustomerResponse>.SuccessResponse(item, "Lấy khách hàng thành công")
+            );
+        }
+
         [HttpPost]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_USER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_USER")]
         public async Task<IActionResult> Create([FromBody] CustomerRequest request)
         {
             var id = await _customerService.CreateAsync(request);

@@ -2,6 +2,7 @@
 using BE_eMotoCare.API.Middlewares;
 using eMotoCare.BO.Common;
 using eMotoCare.DAL.context;
+using eMototCare.BLL.Services.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
 using BE_eMotoCare.API.Realtime.Hubs;
 using BE_eMotoCare.API.Realtime.Services;
@@ -52,11 +53,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             )
     );
 });
+builder.Services.AddHostedService<TimeoutService>();
 
 //DI
-
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
-
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAppDI();
 builder.Services.MapperInjection();

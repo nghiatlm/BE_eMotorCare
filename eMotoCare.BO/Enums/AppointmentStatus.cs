@@ -5,8 +5,8 @@
         PENDING,
         APPROVED,
         CHECKED_IN,
-        IN_SERVICE,
-        COMPLETED,
+        QUOTE_APPROVED,
+        REPAIR_COMPLETED,
         CANCELED,
     }
 }

@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.AppointmentServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -35,6 +36,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] AppointmentStatus? status,
@@ -63,6 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _service.GetByIdAsync(id);
@@ -72,6 +75,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> Create([FromBody] AppointmentRequest request)
         {
             var id = await _service.CreateAsync(request);
@@ -79,6 +83,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> Update(Guid id, [FromBody] AppointmentRequest request)
         {
             await _service.UpdateAsync(id, request);
@@ -86,6 +91,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _service.DeleteAsync(id);
@@ -93,6 +99,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost("{id}/approve")]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> Approve(Guid id, [FromQuery] Guid staffId)
         {
             await _service.ApproveAsync(id, staffId);
@@ -100,6 +107,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}/getcode")]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> GetCheckinCode(Guid id)
         {
             var code = await _service.GetCheckinCodeAsync(id);
@@ -109,6 +117,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost("checkin/by-code")]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> CheckInByCode([FromBody] CheckInRequest req)
         {
             await _service.CheckInByCodeAsync(req.Code);

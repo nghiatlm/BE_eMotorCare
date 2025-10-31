@@ -104,7 +104,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                     && (
                         a.Status == AppointmentStatus.PENDING
                         || a.Status == AppointmentStatus.APPROVED
-                        || a.Status == AppointmentStatus.IN_SERVICE
+                        || a.Status == AppointmentStatus.CHECKED_IN
                     )
                 )
                 .GroupBy(a => a.ServiceCenterSlotId!.Value)
@@ -170,7 +170,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                     && (
                         a.Status == AppointmentStatus.PENDING
                         || a.Status == AppointmentStatus.APPROVED
-                        || a.Status == AppointmentStatus.IN_SERVICE
+                        || a.Status == AppointmentStatus.CHECKED_IN
                     )
                 )
                 .CountAsync();
