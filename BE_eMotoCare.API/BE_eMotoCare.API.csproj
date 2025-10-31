@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\eMototCare.BLL\eMototCare.BLL.csproj" />
-    <ProjectReference Include="..\RealTime\RealTime.csproj" />
   </ItemGroup>
 
 </Project>

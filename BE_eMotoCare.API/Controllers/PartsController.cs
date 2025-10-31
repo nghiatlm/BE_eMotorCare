@@ -7,7 +7,7 @@ using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.PartServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RealTime.Services;
+using BE_eMotoCare.API.Realtime.Services;
 
 namespace BE_eMotoCare.API.Controllers
 {

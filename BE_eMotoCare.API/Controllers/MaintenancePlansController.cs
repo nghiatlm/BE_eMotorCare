@@ -6,7 +6,7 @@ using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RealTime.Services;
+using BE_eMotoCare.API.Realtime.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace BE_eMotoCare.API.Controllers
