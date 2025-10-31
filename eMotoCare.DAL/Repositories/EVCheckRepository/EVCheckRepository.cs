@@ -28,6 +28,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
             var q = _context.EVChecks
                 .Include(x => x.Appointment)
                     .ThenInclude(a => a.Customer)
+                        .ThenInclude(a => a.Account)
                 .Include(x => x.Appointment)
                     .ThenInclude(a => a.ServiceCenter)
                 .Include(x => x.TaskExecutor)

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using BE_eMotoCare.API.Realtime.Hubs;
 using BE_eMotoCare.API.Realtime.Services;
 using System.Text.Json.Serialization;
+using Net.payOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +55,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     );
 });
 builder.Services.AddHostedService<TimeoutService>();
+
+var PayOS = builder.Configuration.GetSection("PAYOS");
+var ClientId = PayOS["CLIENT_ID"];
+var APILEY = PayOS["API_KEY"];
+var CHECKSUMKEY = PayOS["CHECKSUM_KEY"];
+PayOS payOS = new PayOS(ClientId,
+                    APILEY,
+                    CHECKSUMKEY);
+builder.Services.AddSingleton(payOS);
 
 //DI
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));

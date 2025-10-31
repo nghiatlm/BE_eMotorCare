@@ -1,12 +1,13 @@
+using eMotoCare.BO.Common;
+using eMotoCare.BO.DTO.ApiResponse;
+using FirebaseAdmin.Messaging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
-using eMotoCare.BO.Common;
-using eMotoCare.BO.DTO.ApiResponse;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace BE_eMotoCare.API.Middlewares
 {
@@ -25,6 +26,7 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/auths/verify-otp/staff",
             "/swagger",
             "/health",
+            "/api/v1/checkout"
         };
 
         public JwtMiddleware(
