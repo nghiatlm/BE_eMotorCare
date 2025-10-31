@@ -73,6 +73,100 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 entity.Id = Guid.NewGuid();
                 entity.Status = EVCheckStatus.IN_PROGRESS;
                 entity.CheckDate = DateTime.UtcNow;
+                await _unitOfWork.EVChecks.CreateAsync(entity);
+
+                var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
+
+                if (appointment.Type == ServiceType.MAINTENACE_TYPE)
+                {
+                    var vehicleStages = appointment.VehicleStage;
+                    var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStages.VehicleId);
+                    var allVehiclePartItems = await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(vehicleDetail.Id);
+                    var latestVehiclePartItems = allVehiclePartItems
+                                                .GroupBy(vpi => vpi.PartItem.PartId)
+                                                .Select(g => g.OrderByDescending(x => x.InstallDate).First())
+                                                .ToList();
+                    var maintenanceStageDetails = await _unitOfWork.MaintenanceStageDetails.GetByMaintenanceStageIdAsync(vehicleStages.MaintenanceStageId);
+                    foreach (var detail in maintenanceStageDetails)
+                    {
+                        // Tìm VehiclePartItem tương thích với PartId trong MaintenanceStageDetail
+                        var matchedVehiclePartItem = latestVehiclePartItems
+                            .FirstOrDefault(vpi => vpi.PartItem.PartId == detail.PartId);
+
+                        var evCheckDetail = new EVCheckDetail
+                        {
+                            Id = Guid.NewGuid(),
+                            EVCheckId = entity.Id,
+                            MaintenanceStageDetailId = detail.Id,
+                            Remedies = null,
+                            PartItemId = matchedVehiclePartItem.PartItemId,
+                            Status = EVCheckDetailStatus.IN_PROGRESS,
+                        };
+
+                        await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                    }
+                }
+
+                
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("Created EVCheck");
+                return entity.Id;
+
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Create EVCheck failed: {Message}", ex.Message);
+                throw new AppException(ex.InnerException.Message);
+            }
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            try
+            {
+                var entity =
+                    await _unitOfWork.EVChecks.GetByIdAsync(id)
+                    ?? throw new AppException(
+                        "Không tìm thấy EVCheck",
+                        HttpStatusCode.NotFound
+                    );
+
+                entity.Status = EVCheckStatus.CANCELLED;
+                await _unitOfWork.EVChecks.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
+
+                _logger.LogInformation("Deleted EVCheck {Id}", id);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete EVCheck failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task UpdateAsync(Guid id, EVCheckUpdateRequest req)
+        {
+            try
+            {
+                var entity =
+                    await _unitOfWork.EVChecks.GetByIdAsync(id)
+                    ?? throw new AppException(
+                        "Không tìm thấy EVCheck",
+                        HttpStatusCode.NotFound
+                    );
+
+
+
+                _mapper.Map(req, entity);
 
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
                 if (appointment?.VehicleStage == null)
@@ -134,98 +228,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
 
                     _unitOfWork.VehicleStages.Update(vs);
                 }
-
-                if (appointment.Type == ServiceType.MAINTENACE_TYPE)
-                {
-                    var vehicleStages = appointment.VehicleStage;
-                    var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStages.VehicleId);
-                    var allVehiclePartItems = await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(vehicleDetail.Id);
-                    var latestVehiclePartItems = allVehiclePartItems
-                                                .GroupBy(vpi => vpi.PartItem.PartId)
-                                                .Select(g => g.OrderByDescending(x => x.InstallDate).First())
-                                                .ToList();
-                    var maintenanceStageDetails = await _unitOfWork.MaintenanceStageDetails.GetByMaintenanceStageIdAsync(vehicleStages.MaintenanceStageId);
-                    foreach (var detail in maintenanceStageDetails)
-                    {
-                        // Tìm VehiclePartItem tương thích với PartId trong MaintenanceStageDetail
-                        var matchedVehiclePartItem = latestVehiclePartItems
-                            .FirstOrDefault(vpi => vpi.PartItem.PartId == detail.PartId);
-
-                        var evCheckDetail = new EVCheckDetail
-                        {
-                            Id = Guid.NewGuid(),
-                            EVCheckId = entity.Id,
-                            MaintenanceStageDetailId = detail.Id,
-                            Remedies = null,
-                            PartItemId = matchedVehiclePartItem.PartItemId,
-                            Status = EVCheckDetailStatus.IN_PROGRESS,
-                        };
-
-                        await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
-                    }
-                }
-
-                await _unitOfWork.EVChecks.CreateAsync(entity);
-                await _unitOfWork.SaveAsync();
-
-                _logger.LogInformation("Created EVCheck");
-                return entity.Id;
-
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Create EVCheck failed: {Message}", ex.Message);
-                throw new AppException(ex.InnerException.Message);
-            }
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            try
-            {
-                var entity =
-                    await _unitOfWork.EVChecks.GetByIdAsync(id)
-                    ?? throw new AppException(
-                        "Không tìm thấy EVCheck",
-                        HttpStatusCode.NotFound
-                    );
-
-                entity.Status = EVCheckStatus.CANCELLED;
-                await _unitOfWork.EVChecks.UpdateAsync(entity);
-                await _unitOfWork.SaveAsync();
-
-                _logger.LogInformation("Deleted EVCheck {Id}", id);
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Delete EVCheck failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
-            }
-        }
-
-        public async Task UpdateAsync(Guid id, EVCheckUpdateRequest req)
-        {
-            try
-            {
-                var entity =
-                    await _unitOfWork.EVChecks.GetByIdAsync(id)
-                    ?? throw new AppException(
-                        "Không tìm thấy EVCheck",
-                        HttpStatusCode.NotFound
-                    );
-
-
-
-                _mapper.Map(req, entity);
-
 
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();

@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using eMototCare.BLL.Services.EVCheckDetailServices;
 using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.ExportServices;
+using eMototCare.BLL.Services.EmailServices;
 
 namespace eMototCare.BLL.Configuration
 {
@@ -55,6 +56,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPriceServiceService, PriceServiceService>();
             services.AddScoped<IImportNoteService, ImportNoteService>();
             services.AddScoped<IExportService, ExportService>();
+            services.AddScoped<IEmailService, EmailService>();
             return services;
         }
     }
