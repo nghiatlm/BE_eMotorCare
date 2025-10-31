@@ -12,11 +12,11 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/ev-check-details")]
     [ApiController]
-    public class EVCheckDetailController : ControllerBase
+    public class EVChecksDetailController : ControllerBase
     {
         private readonly IEVCheckDetailService _eVCheckDetailService;
 
-        public EVCheckDetailController(IEVCheckDetailService eVCheckDetailService)
+        public EVChecksDetailController(IEVCheckDetailService eVCheckDetailService)
         {
             _eVCheckDetailService = eVCheckDetailService;
         }

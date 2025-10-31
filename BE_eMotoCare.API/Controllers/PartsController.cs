@@ -13,12 +13,12 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/parts")]
     [ApiController]
-    public class PartController : ControllerBase
+    public class PartsController : ControllerBase
     {
         private readonly IPartService _partService;
         private readonly INotifierService _notifier;
 
-        public PartController(IPartService partService, INotifierService notifier)
+        public PartsController(IPartService partService, INotifierService notifier)
         {
             _partService = partService;
             _notifier = notifier;

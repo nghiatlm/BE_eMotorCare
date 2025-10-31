@@ -13,12 +13,12 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/maintenance-plans")]
     [ApiController]
-    public class MaintenancePlanController : ControllerBase
+    public class MaintenancePlansController : ControllerBase
     {
         private readonly IMaintenancePlanService _maintenancePlanService;
         private readonly INotifierService _notifier;
 
-        public MaintenancePlanController(IMaintenancePlanService maintenancePlanService, INotifierService notifier)
+        public MaintenancePlansController(IMaintenancePlanService maintenancePlanService, INotifierService notifier)
         {
             _maintenancePlanService = maintenancePlanService;
             _notifier = notifier;
