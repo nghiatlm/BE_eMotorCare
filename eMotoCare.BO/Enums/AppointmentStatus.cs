@@ -8,5 +8,6 @@
         QUOTE_APPROVED,
         REPAIR_COMPLETED,
         CANCELED,
+        IN_SERVICE
     }
 }
