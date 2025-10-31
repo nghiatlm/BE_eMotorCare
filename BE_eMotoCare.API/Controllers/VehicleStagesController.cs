@@ -13,9 +13,12 @@ namespace BE_eMotoCare.API.Controllers
     [Route("api/v1/vehicle-stages")]
     public class VehicleStagesController : ControllerBase
     {
-        private readonly IVehicleStageService _service;
+        private readonly IVehicleStageService _vehicleStageService;
 
-        public VehicleStagesController(IVehicleStageService service) => _service = service;
+        public VehicleStagesController(IVehicleStageService vehicleStageService)
+        {
+            _vehicleStageService = vehicleStageService;
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetPaged(
@@ -28,7 +31,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(
+            var data = await _vehicleStageService.GetPagedAsync(
                 vehicleId,
                 maintenanceStageId,
                 status,
@@ -46,10 +49,10 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
-        [HttpGet("{id:guid}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _service.GetByIdAsync(id);
+            var item = await _vehicleStageService.GetByIdAsync(id);
             return Ok(
                 ApiResponse<VehicleStageResponse>.SuccessResponse(
                     item,
@@ -61,25 +64,25 @@ namespace BE_eMotoCare.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] VehicleStageRequest req)
         {
-            var id = await _service.CreateAsync(req);
+            var id = await _vehicleStageService.CreateAsync(req);
             return Ok(
                 ApiResponse<object>.SuccessResponse(new { id }, "Tạo mốc bảo dưỡng thành công")
             );
         }
 
-        [HttpPut("{id:guid}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] VehicleStageRequest req)
         {
-            await _service.UpdateAsync(id, req);
+            await _vehicleStageService.UpdateAsync(id, req);
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật mốc bảo dưỡng thành công")
             );
         }
 
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _vehicleStageService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá mốc bảo dưỡng thành công"));
         }
     }

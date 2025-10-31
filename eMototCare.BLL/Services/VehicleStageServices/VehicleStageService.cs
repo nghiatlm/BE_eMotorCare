@@ -13,17 +13,17 @@ namespace eMototCare.BLL.Services.VehicleStageServices
 {
     public class VehicleStageService : IVehicleStageService
     {
-        private readonly IUnitOfWork _uow;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<VehicleStageService> _logger;
 
         public VehicleStageService(
-            IUnitOfWork uow,
+            IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<VehicleStageService> logger
         )
         {
-            _uow = uow;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
         }
@@ -40,7 +40,7 @@ namespace eMototCare.BLL.Services.VehicleStageServices
         {
             try
             {
-                var (items, total) = await _uow.VehicleStages.GetPagedAsync(
+                var (items, total) = await _unitOfWork.VehicleStages.GetPagedAsync(
                     vehicleId,
                     maintenanceStageId,
                     status,
@@ -63,7 +63,7 @@ namespace eMototCare.BLL.Services.VehicleStageServices
         public async Task<VehicleStageResponse?> GetByIdAsync(Guid id)
         {
             var entity =
-                await _uow.VehicleStages.GetByIdAsync(id)
+                await _unitOfWork.VehicleStages.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy mốc bảo dưỡng", HttpStatusCode.NotFound);
             return _mapper.Map<VehicleStageResponse>(entity);
         }
@@ -75,8 +75,8 @@ namespace eMototCare.BLL.Services.VehicleStageServices
                 var entity = _mapper.Map<VehicleStage>(req);
                 entity.Id = Guid.NewGuid();
 
-                await _uow.VehicleStages.CreateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.VehicleStages.CreateAsync(entity);
+                await _unitOfWork.SaveAsync();
                 _logger.LogInformation(
                     "Created VehicleStage {Id} for Vehicle {VehicleId}",
                     entity.Id,
@@ -100,15 +100,15 @@ namespace eMototCare.BLL.Services.VehicleStageServices
             try
             {
                 var entity =
-                    await _uow.VehicleStages.GetByIdAsync(id)
+                    await _unitOfWork.VehicleStages.GetByIdAsync(id)
                     ?? throw new AppException(
                         "Không tìm thấy mốc bảo dưỡng",
                         HttpStatusCode.NotFound
                     );
 
                 _mapper.Map(req, entity);
-                await _uow.VehicleStages.UpdateAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.VehicleStages.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
                 _logger.LogInformation("Updated VehicleStage {Id}", id);
             }
             catch (AppException)
@@ -127,14 +127,14 @@ namespace eMototCare.BLL.Services.VehicleStageServices
             try
             {
                 var entity =
-                    await _uow.VehicleStages.GetByIdAsync(id)
+                    await _unitOfWork.VehicleStages.GetByIdAsync(id)
                     ?? throw new AppException(
                         "Không tìm thấy mốc bảo dưỡng",
                         HttpStatusCode.NotFound
                     );
 
-                await _uow.VehicleStages.DeleteAsync(entity);
-                await _uow.SaveAsync();
+                await _unitOfWork.VehicleStages.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
                 _logger.LogInformation("Deleted VehicleStage {Id}", id);
             }
             catch (AppException)

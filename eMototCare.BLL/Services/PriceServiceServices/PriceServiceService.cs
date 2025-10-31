@@ -84,7 +84,8 @@ namespace eMototCare.BLL.Services.PriceServiceServices
 
                 var entity = _mapper.Map<PriceService>(req);
                 entity.Id = Guid.NewGuid();
-
+                var count = _unitOfWork.Customers.FindAll().Count;
+                entity.Code = $"PriceSV-{count + 1:D5}";
                 await _unitOfWork.PriceServices.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
