@@ -36,7 +36,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] AppointmentStatus? status,
