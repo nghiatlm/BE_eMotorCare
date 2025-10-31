@@ -18,7 +18,7 @@ namespace BE_eMotoCare.API.Controllers
         public VehiclesController(IVehicleService service) => _service = service;
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] StatusEnum? status,
