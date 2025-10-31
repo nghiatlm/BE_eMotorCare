@@ -3,9 +3,8 @@ using BE_eMotoCare.API.Middlewares;
 using eMotoCare.BO.Common;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
-using RealTime;
-using RealTime.Hubs;
-using RealTime.Services;
+using BE_eMotoCare.API.Realtime.Hubs;
+using BE_eMotoCare.API.Realtime.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
