@@ -26,8 +26,8 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
              decimal? priceService,
              decimal? totalAmount,
              EVCheckDetailStatus? status,
-             int page = 1,
-             int pageSize = 10
+             int page,
+             int pageSize
         )
         {
             page = Math.Max(1, page);
