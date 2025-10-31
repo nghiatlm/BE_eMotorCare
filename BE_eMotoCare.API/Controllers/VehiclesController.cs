@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.VehicleServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -17,6 +18,7 @@ namespace BE_eMotoCare.API.Controllers
         public VehiclesController(IVehicleService service) => _service = service;
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] StatusEnum? status,

@@ -315,12 +315,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
             {
                 case AppointmentStatus.PENDING:
                 case AppointmentStatus.APPROVED:
-                    appt.Status = AppointmentStatus.IN_SERVICE;
+                    appt.Status = AppointmentStatus.CHECKED_IN;
                     await _unitOfWork.Appointments.UpdateAsync(appt);
                     await _unitOfWork.SaveAsync();
                     break;
 
-                case AppointmentStatus.IN_SERVICE:
+                case AppointmentStatus.CHECKED_IN:
                     break;
 
                 default:

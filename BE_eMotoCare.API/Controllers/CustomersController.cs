@@ -58,7 +58,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_USER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_USER")]
         public async Task<IActionResult> Create([FromBody] CustomerRequest request)
         {
             var id = await _customerService.CreateAsync(request);

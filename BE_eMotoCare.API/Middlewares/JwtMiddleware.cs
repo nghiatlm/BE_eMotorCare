@@ -19,19 +19,11 @@ namespace BE_eMotoCare.API.Middlewares
         private static readonly string[] _excludedPaths = new[]
         {
             "/api/v1/auths/login",
-            "/api/v1/admin/service-centers",
-            "/api/v1/admin/users",
             "/api/v1/auths/register",
             "/api/v1/public",
-            "/api/v1/appointments",
-            "/api/v1/admin/staffs",
             "/api/v1/auths/verify-sms-otp",
             "/swagger",
             "/health",
-            "/api/v1/customers",
-            "/api/v1/vehicles",
-            "/api/v1/vehicle-part-items",
-            "/api/v1/vehicle-stages",
         };
 
         public JwtMiddleware(

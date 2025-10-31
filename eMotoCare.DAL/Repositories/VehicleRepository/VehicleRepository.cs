@@ -1,9 +1,9 @@
-﻿using eMotoCare.BO.Entities;
+﻿using System.Runtime.CompilerServices;
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
 namespace eMotoCare.DAL.Repositories.VehicleRepository
 {
@@ -15,8 +15,10 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
         public Task<Vehicle?> GetByIdAsync(Guid id) =>
             _context
                 .Vehicles.AsNoTracking()
-                .Include(x => x.Model)
-                .Include(x => x.Customer)
+                .Include(x => x.Model) // Includes the Model entity
+                .ThenInclude(m => m.MaintenancePlan) // Includes related MaintenancePlan
+                .Include(x => x.Model.ModelPartTypes) // Includes related ModelPartTypes
+                .Include(x => x.Customer) // Includes the Customer entity
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public async Task<(IReadOnlyList<Vehicle> Items, long Total)> GetPagedAsync(
@@ -71,5 +73,14 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
             return (items, total);
         }
 
+        public async Task<Model?> GetModelByIdAsync(Guid modelId)
+        {
+            return await _context
+                .Models.AsNoTracking()
+                .Include(m => m.MaintenancePlan)
+                .Include(m => m.Vehicles)
+                .Include(m => m.ModelPartTypes)
+                .FirstOrDefaultAsync(m => m.Id == modelId);
+        }
     }
 }

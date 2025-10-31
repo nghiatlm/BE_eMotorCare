@@ -115,7 +115,8 @@ namespace eMototCare.BLL.Services.CustomerServices
                 var entity = _mapper.Map<Customer>(req);
                 entity.Id = Guid.NewGuid();
                 entity.CitizenId = citizen;
-
+                var count = _unitOfWork.Customers.FindAll().Count;
+                entity.CustomerCode = $"CUST-{count + 1:D5}";
                 await _unitOfWork.Customers.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 

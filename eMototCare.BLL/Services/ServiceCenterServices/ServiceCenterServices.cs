@@ -99,7 +99,8 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
                 entity.Code = code;
                 entity.Email = email;
                 entity.Phone = phone;
-
+                var count = _unitOfWork.Customers.FindAll().Count;
+                entity.Code = $"SVCT-{count + 1:D5}";
                 await _unitOfWork.ServiceCenters.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
