@@ -44,7 +44,7 @@ namespace eMototCare.BLL.Services.EmailServices
                 <p>Mã này có hiệu lực trong 5 phút.</p>
                 <br/>
                 <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
-                <p>Trân trọng,<br/><b>Modern Estate Team</b></p>
+                <p>Trân trọng,<br/><b>eMotoCare Team</b></p>
             </body>
         </html>";
             var email = new MimeMessage();
