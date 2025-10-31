@@ -93,5 +93,58 @@ namespace eMototCare.BLL.Services.PayosServices
                 throw new AppException("Đã xảy ra lỗi máy chủ.", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task<bool> VerifyPaymentAsync(WebhookType type)
+        {
+            try
+            {
+                var data = _payOS.verifyPaymentWebhookData(type);
+                var transaction = await _uow.Payments.GetByTransactionCodeAsync(data.orderCode.ToString());
+                if (transaction == null)
+                {
+                    _logger.LogWarning(
+                                   "No transaction found for order code {OrderCode}, skipping webhook processing.",
+                                   data.orderCode
+                               );
+                    return true;
+                }
+
+                if (data.code == "00")
+                {
+                    _logger.LogInformation("Payment verified successfully: {Code}", data.code);
+                    transaction.Status = StatusPayment.SUCCESS;
+                    if (transaction.Appointment.EVCheck.Id == null)
+                        throw new AppException("EVCheckId không được null.", HttpStatusCode.BadRequest);
+                    var evCheck = await _uow.EVChecks.GetByIdAsync(transaction.Appointment.EVCheck.Id)
+                             ?? throw new AppException("EVCheck Not found.", HttpStatusCode.BadRequest);
+                    evCheck.Status = EVCheckStatus.COMPLETED;
+                    await _uow.EVChecks.UpdateAsync(evCheck);
+                    _logger.LogInformation("EVCheck {EVCheckId} marked as COMPLETED for transaction {TransactionId}", evCheck.Id, transaction.Id);
+
+                    await _uow.SaveAsync();
+                }
+                else
+                {
+                    _logger.LogWarning("Payment failed or canceled: {Code}", data.code);
+
+                    transaction.Status = StatusPayment.FAILED;
+                }
+
+                await _uow.Payments.UpdateAsync(transaction);
+                await _uow.SaveAsync();
+
+                return data.code == "00";
+            }
+            catch (AppException ex)
+            {
+                _logger.LogWarning(ex, "AppException occurred: {Message}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
     }
 }
