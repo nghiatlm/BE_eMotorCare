@@ -9,5 +9,6 @@
         REPAIR_COMPLETED,
         COMPLETED,
         CANCELED,
+        IN_SERVICE
     }
 }

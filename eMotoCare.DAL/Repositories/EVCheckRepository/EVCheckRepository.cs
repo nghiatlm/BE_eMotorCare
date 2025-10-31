@@ -92,7 +92,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 .Include(x => x.Appointment)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }

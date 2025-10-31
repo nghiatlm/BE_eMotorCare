@@ -165,71 +165,83 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         HttpStatusCode.NotFound
                     );
 
+                if (req.CheckDate != null)
+                    entity.CheckDate = req.CheckDate.Value;
+                if (req.TotalAmout != null)
+                    entity.TotalAmout = req.TotalAmout.Value;
+                if (req.Status != null)
+                    entity.Status = req.Status.Value;
+                if (req.AppointmentId != null)
+                    entity.AppointmentId = req.AppointmentId.Value;
+                if (req.TaskExecutorId != null)
+                    entity.TaskExecutorId = req.TaskExecutorId.Value;
+                if (req.Odometer != null)
+                    entity.Odometer = req.Odometer.Value;
 
 
-                _mapper.Map(req, entity);
-
-                var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
-                if (appointment?.VehicleStage == null)
-                    throw new AppException("VehicleStage not found", HttpStatusCode.NotFound);
-
-                var vehicleStage = appointment.VehicleStage;
-
-                var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStage.VehicleId);
-                if (vehicle == null)
-                    throw new AppException("Vehicle not found", HttpStatusCode.NotFound);
-
-                var model = vehicle.Model;
-
-                var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(model.MaintenancePlanId);
-                if (plan == null)
-                    throw new AppException("Maintenance plan not found", HttpStatusCode.NotFound);
-
-                var maintenanceStages = await _unitOfWork.MaintenanceStages.GetListByPlanIdAsync(plan.Id);
-                if (!maintenanceStages.Any())
-                    throw new AppException("No maintenance stages found", HttpStatusCode.NotFound);
-
-
-                var allVehicleStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicle.Id);
-                if (!allVehicleStages.Any())
-                    throw new AppException("No vehicle stages found", HttpStatusCode.NotFound);
-
-                var matchedStage = maintenanceStages
-                                    .Where(vs => (int)vs.Mileage <= entity.Odometer)
-                                    .OrderByDescending(vs => (int)vs.Mileage)
-                                    .FirstOrDefault();
-
-                if (matchedStage == null)
-                    throw new AppException("No matching maintenance stage for Odo", HttpStatusCode.NotFound);
-
-                var nextStage = maintenanceStages
-                                    .Where(vs => (int)vs.Mileage > entity.Odometer)
-                                    .OrderBy(vs => (int)vs.Mileage)
-                                    .FirstOrDefault();
-
-                foreach (var vs in allVehicleStages)
+                if (req.Odometer != null)
                 {
-                    var stage = maintenanceStages.FirstOrDefault(ms => ms.Id == vs.MaintenanceStageId);
-                    if (stage == null)
-                        continue;
+                    var appointment = await _unitOfWork.Appointments.GetByIdAsync(entity.AppointmentId);
+                    if (appointment?.VehicleStage == null)
+                        throw new AppException("VehicleStage not found", HttpStatusCode.NotFound);
 
-                    if ((int)stage.Mileage <= entity.Odometer)
-                    {
-                        if (vs.Status != VehicleStageStatus.COMPLETED)
-                            vs.Status = VehicleStageStatus.EXPIRED;
-                    }
-                    else if (nextStage != null && stage.Id == nextStage.Id)
-                    {
-                        vs.Status = VehicleStageStatus.UPCOMING;
-                    }
-                    else
-                    {
-                        vs.Status = VehicleStageStatus.NO_START;
-                    }
+                    var vehicleStage = appointment.VehicleStage;
 
-                    _unitOfWork.VehicleStages.Update(vs);
+                    var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStage.VehicleId);
+                    if (vehicle == null)
+                        throw new AppException("Vehicle not found", HttpStatusCode.NotFound);
+
+                    var model = vehicle.Model;
+
+                    var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(model.MaintenancePlanId);
+                    if (plan == null)
+                        throw new AppException("Maintenance plan not found", HttpStatusCode.NotFound);
+
+                    var maintenanceStages = await _unitOfWork.MaintenanceStages.GetListByPlanIdAsync(plan.Id);
+                    if (!maintenanceStages.Any())
+                        throw new AppException("No maintenance stages found", HttpStatusCode.NotFound);
+
+
+                    var allVehicleStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicle.Id);
+                    if (!allVehicleStages.Any())
+                        throw new AppException("No vehicle stages found", HttpStatusCode.NotFound);
+
+                    var matchedStage = maintenanceStages
+                                        .Where(vs => (int)vs.Mileage <= entity.Odometer)
+                                        .OrderByDescending(vs => (int)vs.Mileage)
+                                        .FirstOrDefault();
+
+                    if (matchedStage == null)
+                        throw new AppException("No matching maintenance stage for Odo", HttpStatusCode.NotFound);
+
+                    var nextStage = maintenanceStages
+                                        .Where(vs => (int)vs.Mileage > entity.Odometer)
+                                        .OrderBy(vs => (int)vs.Mileage)
+                                        .FirstOrDefault();
+
+                    foreach (var vs in allVehicleStages)
+                    {
+                        var stage = maintenanceStages.FirstOrDefault(ms => ms.Id == vs.MaintenanceStageId);
+                        if (stage == null)
+                            continue;
+
+                        if ((int)stage.Mileage <= entity.Odometer)
+                        {
+                            if (vs.Status != VehicleStageStatus.COMPLETED)
+                                vs.Status = VehicleStageStatus.EXPIRED;
+                        }
+                        else if (nextStage != null && stage.Id == nextStage.Id)
+                        {
+                            vs.Status = VehicleStageStatus.UPCOMING;
+                        }
+                        else
+                        {
+                            vs.Status = VehicleStageStatus.NO_START;
+                        }
+
+                        _unitOfWork.VehicleStages.Update(vs);
+                    }
                 }
-
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
