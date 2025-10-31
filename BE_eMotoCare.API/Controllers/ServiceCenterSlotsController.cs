@@ -4,14 +4,14 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.DAL;
 using eMototCare.BLL.Services.ServiceCenterSlotServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/service-centerslots")]
-    // [Authorize(Roles = "ROLE_ADMIN")]
+    [Route("api/v1/service-centerslots")]
     public class ServiceCenterSlotsController : ControllerBase
     {
         private readonly IServiceCenterSlotService _serviceCenterSlotService;
@@ -27,6 +27,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetAll([FromQuery] Guid serviceCenterId)
         {
             var items = await _serviceCenterSlotService.GetAllAsync(serviceCenterId);
@@ -68,6 +69,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER")]
         public async Task<IActionResult> Create(
             Guid serviceCenterId,
             [FromBody] ServiceCenterSlotRequest req
@@ -81,7 +83,8 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
-        [HttpPut("{slotId:guid}")]
+        [HttpPut("{slotId}")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER")]
         public async Task<IActionResult> Update(
             Guid serviceCenterId,
             Guid slotId,
@@ -92,7 +95,8 @@ namespace BE_eMotoCare.API.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{slotId:guid}")]
+        [HttpDelete("{slotId}")]
+        [Authorize(Roles = "ROLE_MANAGER")]
         public async Task<IActionResult> Delete(Guid serviceCenterId, Guid slotId)
         {
             await _serviceCenterSlotService.DeleteAsync(serviceCenterId, slotId);

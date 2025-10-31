@@ -4,12 +4,14 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.PriceServiceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
     [Route("api/v1/price-services")]
+    [Authorize(Roles = "ROLE_MANAGER")]
     public class PriceServicesController : ControllerBase
     {
         private readonly IPriceServiceService _priceServiceService;
