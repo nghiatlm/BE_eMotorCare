@@ -10,9 +10,9 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public DateTime CheckDate { get; set; }
         public decimal? TotalAmout { get; set; }
+        [Required]
         [EnumDataType(typeof(EVCheckStatus))]
         public EVCheckStatus Status { get; set; }
-        [Required]
         public int Odometer { get; set; }
         [Required]
         public Guid AppointmentId { get; set; }

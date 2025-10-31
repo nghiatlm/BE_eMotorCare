@@ -1,4 +1,5 @@
 
+using Azure;
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -26,6 +27,20 @@ namespace BE_eMotoCare.API.Controllers
         {
             var response = await _service.Login(request);
             return Ok(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
+        }
+
+        [HttpPost("login/staff")]
+        public async Task<IActionResult> LoginStaff([FromBody] StaffLoginRequest request)
+        {
+            var response = await _service.LoginStaff(request);
+            return Ok(ApiResponse<string>.SuccessResponse("OTP đã được gửi đến email. Vui lòng xác minh để hoàn tất đăng nhập."));
+        }
+
+        [HttpPost("verify-otp/staff")]
+        public async Task<IActionResult> VerifyLoginStaffAsync([FromBody] VerifyLoginRequest request)
+        {
+            var result = await _service.VerifyLoginStaffAsync(request);
+            return Ok(ApiResponse<AuthResponse>.SuccessResponse(result, "Đăng nhập thành công"));
         }
 
         [HttpPost("register")]

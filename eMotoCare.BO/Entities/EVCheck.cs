@@ -23,9 +23,8 @@ namespace eMotoCare.BO.Entities
         [EnumDataType(typeof(EVCheckStatus))]
         public EVCheckStatus Status { get; set; }
 
-        [Required]
         [Column("odometer")]
-        public int Odometer { get; set; }
+        public int? Odometer { get; set; }
         [Required]
         [Column("appointment_id")]
         public Guid AppointmentId { get; set; }

@@ -14,6 +14,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 // Add NotifierService
 builder.Services.AddScoped<INotifierService, NotifierService>();
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
+var mailSection = builder.Configuration.GetSection("MailSettings");
+var fromEmail = mailSection["FromEmail"];
+var fromName = mailSection["FromName"];
+var mailPassword = mailSection["Password"];
+var mailHost = mailSection["Host"];
+var mailPort = int.TryParse(mailSection["Port"], out var parsedPort) ? parsedPort : 587;
 
 var dbSection = builder.Configuration.GetSection("Database");
 var server = dbSection["Server"];
@@ -63,6 +71,7 @@ builder
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddCors(options =>
 {

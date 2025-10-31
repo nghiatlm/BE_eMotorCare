@@ -26,6 +26,7 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/appointments",
             "/api/v1/admin/staffs",
             "/api/v1/auths/verify-sms-otp",
+            "/api/v1/auths/verify-otp/staff",
             "/swagger",
             "/health",
             "/api/v1/customers",
