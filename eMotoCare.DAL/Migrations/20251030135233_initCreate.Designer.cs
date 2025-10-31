@@ -12,8 +12,8 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251030051141_init")]
-    partial class init
+    [Migration("20251030135233_initCreate")]
+    partial class initCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1343,8 +1343,13 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("int")
                         .HasColumnName("capacity");
 
-                    b.Property<int>("DayOfWeek")
-                        .HasColumnType("int")
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasColumnType("varchar(16)")
                         .HasColumnName("day_of_week");
 
                     b.Property<TimeSpan>("EndTime")

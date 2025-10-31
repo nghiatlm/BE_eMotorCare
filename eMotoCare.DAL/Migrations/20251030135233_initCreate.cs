@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace eMotoCare.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class initCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -314,7 +314,9 @@ namespace eMotoCare.DAL.Migrations
                 {
                     service_center_slot_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     service_center_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    day_of_week = table.Column<int>(type: "int", nullable: false),
+                    date = table.Column<DateOnly>(type: "date", nullable: false),
+                    day_of_week = table.Column<string>(type: "varchar(16)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     start_time = table.Column<TimeSpan>(type: "time(6)", nullable: false),
                     end_time = table.Column<TimeSpan>(type: "time(6)", nullable: false),
                     capacity = table.Column<int>(type: "int", nullable: false),

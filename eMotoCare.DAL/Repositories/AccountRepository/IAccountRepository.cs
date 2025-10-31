@@ -15,7 +15,7 @@ namespace eMotoCare.DAL.Repositories.AccountRepository
             int page,
             int pageSize
         );
-
+        Task<Staff?> GetByAccountIdAsync(Guid accountId);
         Task<bool> ExistsPhoneAsync(string phone);
         Task<bool> ExistsEmailAsync(string email);
         Task<Account?> GetByIdAsync(Guid id);

@@ -9,6 +9,7 @@ using RealTime.Services;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
 //builder.WebHost.UseUrls("http://0.0.0.0:80");
 // Add SignalR
 builder.Services.AddSignalR();

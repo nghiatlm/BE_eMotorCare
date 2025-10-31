@@ -99,7 +99,7 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Duyệt lịch hẹn thành công"));
         }
 
-        [HttpGet("{id}/checkin")]
+        [HttpGet("{id}/getcode")]
         public async Task<IActionResult> GetCheckinCode(Guid id)
         {
             var code = await _service.GetCheckinCodeAsync(id);
@@ -113,17 +113,6 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _service.CheckInByCodeAsync(req.Code);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
-        }
-
-        [HttpPost("assign-technician")]
-        public async Task<IActionResult> AssignTechnician(
-            Guid id,
-            [FromBody] AssignTechnicianRequest req,
-            [FromQuery] Guid approveById
-        )
-        {
-            await _service.AssignTechnicianAsync(id, req.TechnicianId, approveById);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Gán kỹ thuật viên thành công"));
         }
     }
 }

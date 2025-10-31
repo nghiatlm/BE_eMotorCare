@@ -17,6 +17,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
                 .Include(x => x.VehicleStage)
+                .Include(x => x.ServiceCenterSlot)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
@@ -70,45 +71,118 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             DateTime date
         )
         {
-            var slots = new[] { "08:00", "09:00", "10:00", "14:00", "15:00", "16:00" };
+            var dow = (eMotoCare.BO.Enums.DayOfWeeks)date.DayOfWeek;
 
-            var booked = await _context
+            var dateSlotsQuery = _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(s =>
+                    s.ServiceCenterId == serviceCenterId
+                    && s.IsActive
+                    && s.Date == DateOnly.FromDateTime(date.Date)
+                );
+
+            var weeklySlotsQuery = _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(s =>
+                    s.ServiceCenterId == serviceCenterId && s.IsActive && s.DayOfWeek == dow
+                );
+
+            var dateSlots = await dateSlotsQuery.ToListAsync();
+            var baseSlots = dateSlots.Count > 0 ? dateSlots : await weeklySlotsQuery.ToListAsync();
+
+            if (baseSlots.Count == 0)
+                return Array.Empty<string>();
+
+            var slotIds = baseSlots.Select(s => s.Id).ToList();
+            var bookedCounts = await _context
                 .Appointments.AsNoTracking()
-                .Where(x =>
-                    x.ServiceCenterId == serviceCenterId
-                    && x.AppointmentDate.Date == date.Date
+                .Where(a =>
+                    a.ServiceCenterId == serviceCenterId
+                    && a.AppointmentDate.Date == date.Date
+                    && a.ServiceCenterSlotId.HasValue
+                    && slotIds.Contains(a.ServiceCenterSlotId.Value)
                     && (
-                        x.Status == AppointmentStatus.PENDING
-                        || x.Status == AppointmentStatus.APPROVED
-                        || x.Status == AppointmentStatus.IN_SERVICE
+                        a.Status == AppointmentStatus.PENDING
+                        || a.Status == AppointmentStatus.APPROVED
+                        || a.Status == AppointmentStatus.IN_SERVICE
                     )
                 )
-                .Select(x => x.TimeSlot)
+                .GroupBy(a => a.ServiceCenterSlotId!.Value)
+                .Select(g => new { SlotId = g.Key, Count = g.Count() })
                 .ToListAsync();
 
-            return slots.Where(s => !booked.Contains(s)).ToList();
+            var bookedDict = bookedCounts.ToDictionary(x => x.SlotId, x => x.Count);
+
+            var available = baseSlots
+                .Where(s => s.Capacity - (bookedDict.TryGetValue(s.Id, out var c) ? c : 0) > 0)
+                .OrderBy(s => s.StartTime)
+                .Select(s => $"{s.StartTime:hh\\:mm}-{s.EndTime:hh\\:mm}")
+                .ToList();
+
+            return available;
         }
 
-        public Task<bool> ExistsOverlapAsync(
+        public async Task<bool> ExistsOverlapAsync(
             Guid serviceCenterId,
             DateTime date,
             string timeSlot
-        ) =>
-            _context.Appointments.AnyAsync(x =>
-                x.ServiceCenterId == serviceCenterId
-                && x.AppointmentDate.Date == date.Date
-                && x.TimeSlot == timeSlot
-                && (
-                    x.Status == AppointmentStatus.PENDING
-                    || x.Status == AppointmentStatus.APPROVED
-                    || x.Status == AppointmentStatus.IN_SERVICE
-                )
+        )
+        {
+            var parts = timeSlot.Split(
+                '-',
+                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries
             );
+            if (parts.Length != 2)
+                return true;
+
+            if (
+                !TimeSpan.TryParse(parts[0], out var start)
+                || !TimeSpan.TryParse(parts[1], out var end)
+            )
+                return true;
+
+            var dow = (eMotoCare.BO.Enums.DayOfWeeks)date.DayOfWeek;
+
+            var slot = await _context
+                .ServiceCenterSlots.AsNoTracking()
+                .Where(s =>
+                    s.ServiceCenterId == serviceCenterId
+                    && s.IsActive
+                    && (
+                        (s.Date == DateOnly.FromDateTime(date.Date))
+                        || (s.Date == default && s.DayOfWeek == dow)
+                    )
+                    && s.StartTime == start
+                    && s.EndTime == end
+                )
+                .OrderByDescending(s => s.Date != default)
+                .FirstOrDefaultAsync();
+
+            if (slot == null)
+                return true;
+
+            var count = await _context
+                .Appointments.AsNoTracking()
+                .Where(a =>
+                    a.ServiceCenterId == serviceCenterId
+                    && a.AppointmentDate.Date == date.Date
+                    && a.ServiceCenterSlotId == slot.Id
+                    && (
+                        a.Status == AppointmentStatus.PENDING
+                        || a.Status == AppointmentStatus.APPROVED
+                        || a.Status == AppointmentStatus.IN_SERVICE
+                    )
+                )
+                .CountAsync();
+
+            return count >= slot.Capacity;
+        }
 
         public Task<Appointment?> GetByCodeAsync(string code) =>
             _context
                 .Appointments.Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
+                .Include(x => x.ServiceCenterSlot)
                 .FirstOrDefaultAsync(x => x.Code == code);
     }
 }
