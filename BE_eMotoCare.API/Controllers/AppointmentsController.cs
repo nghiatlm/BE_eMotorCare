@@ -42,7 +42,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_TECHNICIAN")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_TECHNICIAN,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] AppointmentStatus? status,
@@ -71,7 +71,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _appointmentService.GetByIdAsync(id);
