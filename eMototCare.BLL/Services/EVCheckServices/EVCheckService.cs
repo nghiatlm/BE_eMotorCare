@@ -78,7 +78,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
                 if (appointment == null)
                     throw new AppException("Appointment not found", HttpStatusCode.NotFound);
-                if (appointment.Type == ServiceType.MAINTENACE_TYPE)
+                if (appointment.Type == ServiceType.MAINTENANCE_TYPE)
                 {
                     var vehicleStages = appointment.VehicleStage;
                     var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStages.VehicleId);
