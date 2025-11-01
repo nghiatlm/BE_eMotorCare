@@ -112,14 +112,12 @@ namespace eMototCare.BLL.Services.PayosServices
                 if (data.code == "00")
                 {
                     _logger.LogInformation("Payment verified successfully: {Code}", data.code);
+                    if (transaction.Appointment?.EVCheck == null)
+                        throw new AppException("EVCheck không được null.", HttpStatusCode.BadRequest);
+                    transaction.Appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
                     transaction.Status = StatusPayment.SUCCESS;
-                    if (transaction.Appointment.EVCheck.Id == null)
-                        throw new AppException("EVCheckId không được null.", HttpStatusCode.BadRequest);
-                    var evCheck = await _uow.EVChecks.GetByIdAsync(transaction.Appointment.EVCheck.Id)
-                             ?? throw new AppException("EVCheck Not found.", HttpStatusCode.BadRequest);
-                    evCheck.Status = EVCheckStatus.COMPLETED;
-                    await _uow.EVChecks.UpdateAsync(evCheck);
-                    _logger.LogInformation("EVCheck {EVCheckId} marked as COMPLETED for transaction {TransactionId}", evCheck.Id, transaction.Id);
+                    await _uow.Payments.UpdateAsync(transaction);
+                    _logger.LogInformation("EVCheck marked as COMPLETED for transaction {TransactionId}", transaction.Id);
 
                     await _uow.SaveAsync();
                 }
