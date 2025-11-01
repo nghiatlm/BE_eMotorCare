@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.VehicleStageServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] Guid? vehicleId,
             [FromQuery] Guid? maintenanceStageId,
@@ -50,6 +52,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _vehicleStageService.GetByIdAsync(id);
@@ -62,6 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> Create([FromBody] VehicleStageRequest req)
         {
             var id = await _vehicleStageService.CreateAsync(req);
@@ -80,6 +84,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _vehicleStageService.DeleteAsync(id);

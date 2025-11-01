@@ -3,6 +3,7 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.VehiclePartItemServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +13,15 @@ namespace BE_eMotoCare.API.Controllers
     [Route("api/v1/vehicle-part-items")]
     public class VehiclePartItemsController : ControllerBase
     {
-        private readonly IVehiclePartItemService _service;
+        private readonly IVehiclePartItemService _vehiclePartItemService;
 
-        public VehiclePartItemsController(IVehiclePartItemService service) => _service = service;
+        public VehiclePartItemsController(IVehiclePartItemService vehiclePartItemService)
+        {
+            _vehiclePartItemService = vehiclePartItemService;
+        }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] Guid? vehicleId,
@@ -28,7 +33,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(
+            var data = await _vehiclePartItemService.GetPagedAsync(
                 search,
                 vehicleId,
                 partItemId,
@@ -47,9 +52,10 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _service.GetByIdAsync(id);
+            var item = await _vehiclePartItemService.GetByIdAsync(id);
             return Ok(
                 ApiResponse<VehiclePartItemResponse>.SuccessResponse(
                     item,
@@ -59,23 +65,26 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> Create([FromBody] VehiclePartItemRequest request)
         {
-            var id = await _service.CreateAsync(request);
+            var id = await _vehiclePartItemService.CreateAsync(request);
             return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo thành công"));
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> Update(Guid id, [FromBody] VehiclePartItemRequest request)
         {
-            await _service.UpdateAsync(id, request);
+            await _vehiclePartItemService.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật thành công"));
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _vehiclePartItemService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá thành công"));
         }
     }

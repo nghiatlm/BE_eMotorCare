@@ -147,8 +147,45 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                     );
 
 
+                if (req.MaintenanceStageDetailId != null)
+                    entity.MaintenanceStageDetailId = req.MaintenanceStageDetailId.Value;
 
-                _mapper.Map(req, entity);
+                if (req.CampaignDetailId != null)
+                    entity.CampaignDetailId = req.CampaignDetailId.Value;
+
+                if (req.PartItemId != null)
+                    entity.PartItemId = req.PartItemId.Value;
+
+                if (req.EVCheckId != null)
+                    entity.EVCheckId = req.EVCheckId.Value;
+
+                if (req.ReplacePartId != null)
+                    entity.ReplacePartId = req.ReplacePartId.Value;
+
+                if (req.Result != null)
+                    entity.Result = req.Result;
+
+                if (req.Remedies != null)
+                    entity.Remedies = req.Remedies.Value;
+
+                if (req.Unit != null)
+                    entity.Unit = req.Unit;
+
+                if (req.Quantity != null)
+                    entity.Quantity = req.Quantity.Value;
+
+                if (req.PricePart != null)
+                    entity.PricePart = req.PricePart.Value;
+
+                if (req.PriceService != null)
+                    entity.PriceService = req.PriceService.Value;
+
+                if (req.TotalAmount != null)
+                    entity.TotalAmount = req.TotalAmount.Value;
+
+                if (req.Status != null)
+                    entity.Status = req.Status.Value;
+
 
 
                 await _unitOfWork.EVCheckDetails.UpdateAsync(entity);

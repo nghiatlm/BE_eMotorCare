@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BE_eMotoCare.API.Realtime.Hubs
 {
+    [AllowAnonymous]
     public class NotificationHub : Hub
     {
         // Khi client kết nối

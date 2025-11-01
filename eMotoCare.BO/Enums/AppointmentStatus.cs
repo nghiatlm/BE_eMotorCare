@@ -7,6 +7,8 @@
         CHECKED_IN,
         QUOTE_APPROVED,
         REPAIR_COMPLETED,
+        COMPLETED,
         CANCELED,
+        IN_SERVICE
     }
 }

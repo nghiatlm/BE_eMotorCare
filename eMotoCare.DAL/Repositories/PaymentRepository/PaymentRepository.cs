@@ -12,7 +12,10 @@ namespace eMotoCare.DAL.Repositories.PaymentRepository
 
         public Task<Payment?> GetByTransactionCodeAsync(string transactionCode) =>
             _context
-                .Payments.AsNoTracking()
+                .Payments
+                .AsNoTracking()
+                .Include(a => a.Appointment)
+                    .ThenInclude(ev => ev.EVCheck)
                 .FirstOrDefaultAsync(x => x.TransactionCode == transactionCode);
 
         public async Task<IReadOnlyList<Payment>> GetByAppointmentIdAsync(Guid appointmentId) =>
