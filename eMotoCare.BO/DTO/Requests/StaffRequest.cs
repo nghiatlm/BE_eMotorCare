@@ -27,6 +27,6 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid AccountId { get; set; }
 
         [Required]
-        public Guid ServiceCenterId { get; set; }
+        public Guid? ServiceCenterId { get; set; }
     }
 }

@@ -67,5 +67,8 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
 
         public Task<ServiceCenter?> GetByCodeAsync(string code) =>
             _context.ServiceCenters.AsNoTracking().FirstOrDefaultAsync(x => x.Code == code);
+
+        public Task<bool> ExistsAsync(Guid id) =>
+            _context.ServiceCenters.AsNoTracking().AnyAsync(x => x.Id == id);
     }
 }
