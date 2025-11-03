@@ -4,24 +4,24 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.StaffServices;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/staffs")]
-    //[Authorize(Roles = "ROLE_ADMIN")]
+    [Route("api/v1/staffs")]
     public class StaffsController : ControllerBase
     {
-        private readonly IStaffService _service;
+        private readonly IStaffService _staffService;
 
-        public StaffsController(IStaffService service)
+        public StaffsController(IStaffService staffService)
         {
-            _service = service;
+            _staffService = staffService;
         }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] PositionEnum? position,
@@ -30,7 +30,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(
+            var data = await _staffService.GetPagedAsync(
                 search,
                 position,
                 serviceCenterId,
@@ -46,9 +46,10 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var item = await _service.GetByIdAsync(id);
+            var item = await _staffService.GetByIdAsync(id);
             return Ok(
                 ApiResponse<StaffResponse>.SuccessResponse(
                     item,
@@ -58,23 +59,26 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_MANAGER")]
         public async Task<IActionResult> Create([FromBody] StaffRequest request)
         {
-            var id = await _service.CreateAsync(request);
+            var id = await _staffService.CreateAsync(request);
             return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo nhân viên thành công"));
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER")]
         public async Task<IActionResult> Update(Guid id, [FromBody] StaffRequest request)
         {
-            await _service.UpdateAsync(id, request);
+            await _staffService.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật nhân viên thành công"));
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _staffService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá nhân viên thành công"));
         }
     }

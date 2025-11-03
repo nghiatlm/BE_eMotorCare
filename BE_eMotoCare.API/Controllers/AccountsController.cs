@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/users")]
-    //[Authorize(Roles = "ROLE_ADMIN")]
+    [Route("api/v1/users")]
+    [Authorize(Roles = "ROLE_ADMIN")]
     public class AccountsController : ControllerBase
     {
         private readonly IAccountService _accountService;

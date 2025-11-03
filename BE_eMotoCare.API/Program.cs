@@ -87,7 +87,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         "AllowExpoApp",
-        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+        policy => policy
+        //.AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials()
+        .SetIsOriginAllowed(_ => true)
     );
 });
 

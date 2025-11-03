@@ -4,13 +4,13 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.ServiceCenterServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
-    [Route("api/v1/admin/service-centers")]
-    //[Authorize(Roles = "ROLE_ADMIN")]
+    [Route("api/v1/service-centers")]
     public class ServiceCentersController : ControllerBase
     {
         private readonly IServiceCenterService _serviceCenterService;
@@ -21,6 +21,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] StatusEnum? status,
@@ -38,6 +39,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _serviceCenterService.GetByIdAsync(id);
@@ -50,6 +52,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<IActionResult> Create([FromBody] ServiceCenterRequest request)
         {
             var id = await _serviceCenterService.CreateAsync(request);
@@ -59,6 +62,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER")]
         public async Task<IActionResult> Update(Guid id, [FromBody] ServiceCenterRequest request)
         {
             await _serviceCenterService.UpdateAsync(id, request);
@@ -68,6 +72,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _serviceCenterService.DeleteAsync(id);
