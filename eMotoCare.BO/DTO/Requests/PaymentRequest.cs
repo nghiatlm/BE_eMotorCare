@@ -21,7 +21,5 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public Guid AppointmentId { get; set; }
 
-        [Required]
-        public Guid CustomerID { get; set; }
     }
 }
