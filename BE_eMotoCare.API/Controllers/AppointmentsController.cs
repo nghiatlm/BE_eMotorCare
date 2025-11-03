@@ -85,6 +85,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Create([FromBody] AppointmentRequest request)
         {
             var id = await _appointmentService.CreateAsync(request);
+            await _notifier.NotifyDeleteAsync("Appointment", new { Id = id });
             return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo lịch hẹn thành công"));
         }
 
@@ -93,22 +94,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] AppointmentRequest request)
         {
             await _appointmentService.UpdateAsync(id, request);
-            await _notifier.NotifyUpdateAsync(
-                "Appointment",
-                new
-                {
-                    Action = "UPDATED",
-                    Id = id,
-                    request.Status,
-                    StatusText = request.Status.ToString(),
-                    request.Type,
-                    request.AppointmentDate,
-                    request.TimeSlot,
-                    request.ServiceCenterId,
-                    request.CustomerId,
-                    request.VehicleStageId,
-                }
-            );
+            await _notifier.NotifyDeleteAsync("Appointment", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật lịch hẹn thành công"));
         }
 

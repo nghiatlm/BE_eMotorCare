@@ -287,6 +287,9 @@ namespace eMototCare.BLL.Services.AppointmentServices
             entity.Status = AppointmentStatus.APPROVED;
             entity.ApproveById = staffId;
 
+            if (string.IsNullOrWhiteSpace(entity.CheckinQRCode))
+                entity.CheckinQRCode = $"APPT|{entity.Code}|{entity.Id}";
+
             await _unitOfWork.Appointments.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
         }
