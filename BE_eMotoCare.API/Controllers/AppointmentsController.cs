@@ -97,8 +97,10 @@ namespace BE_eMotoCare.API.Controllers
                 "Appointment",
                 new
                 {
+                    Action = "UPDATED",
                     Id = id,
                     request.Status,
+                    StatusText = request.Status.ToString(),
                     request.Type,
                     request.AppointmentDate,
                     request.TimeSlot,
