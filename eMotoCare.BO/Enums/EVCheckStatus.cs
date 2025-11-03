@@ -8,7 +8,7 @@ namespace eMotoCare.BO.Enums
         VEHICLE_INSPECTION,
         INSPECTION_COMPLETED,
         QUOTE_APPROVED,
-        APPROVEDBYCUSTOMER,
+        WAITING_FOR_QUOTE,
         REPAIR_IN_PROGRESS,
         REPAIR_COMPLETED,
         CANCELLED,
