@@ -41,12 +41,6 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(AppointmentId))]
         public virtual Appointment? Appointment { get; set; }
 
-        [Required]
-        [Column("customer_id")]
-        public Guid CustomerID { get; set; }
-
-        [ForeignKey(nameof(CustomerID))]
-        public virtual Customer? Customer { get; set; }
 
     }
 }
