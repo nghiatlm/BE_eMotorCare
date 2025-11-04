@@ -9,8 +9,8 @@ namespace eMototCare.BLL.Services.AuthServices
     {
         Task ActiveAccount(string phone);
         Task<AuthResponse> Login(LoginRequest request);
-        Task<bool> LoginStaff(StaffLoginRequest request);
+        Task<AuthResponse?> LoginStaff(StaffLoginRequest request);
         Task<bool> Register(RegisterRequest request);
-        Task<AuthResponse> VerifyLoginStaffAsync(VerifyLoginRequest request);
+        Task<bool> VerifyLoginStaffAsync(VerifyLoginRequest request);
     }
 }
