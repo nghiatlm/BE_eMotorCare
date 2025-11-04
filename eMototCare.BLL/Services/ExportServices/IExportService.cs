@@ -14,6 +14,7 @@ namespace eMototCare.BLL.Services.ExportServices
         Task DeleteAsync(Guid id);
         Task<ExportNoteResponse?> GetByIdAsync(Guid id);
         Task<PageResult<ExportNoteResponse>> GetPagedAsync(string? code, DateTime? fromDate, DateTime? toDate, ExportType? exportType, string? exportTo, int? totalQuantity, decimal? totalValue, Guid? exportById, Guid? serviceCenterId, ExportNoteStatus? exportNoteStatus, int page, int pageSize);
+        Task<List<ExportPartItemResponse>> GetPartItemsByExportNoteIdAsync(Guid exportNoteId);
         Task UpdateAsync(Guid id, ExportNoteUpdateRequest req);
     }
 }
