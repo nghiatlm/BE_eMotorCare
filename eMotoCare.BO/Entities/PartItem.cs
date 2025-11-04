@@ -68,9 +68,7 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(ServiceCenterInventoryId))]
         public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
-        public virtual ICollection<RMADetail>? RMADetails { get; set; }
         public virtual ICollection<VehiclePartItem>? VehiclePartItems { get; set; }
-        public virtual ICollection<BatteryCheck>? BatteryChecks { get; set; }
         public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
     }
 }
