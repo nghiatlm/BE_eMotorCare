@@ -1,6 +1,7 @@
 ﻿
 
 using AutoMapper;
+using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -20,12 +21,14 @@ namespace eMototCare.BLL.Services.PartServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<PartService> _logger;
+        private readonly Utils _utils;
 
-        public PartService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PartService> logger)
+        public PartService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PartService> logger, Utils utils)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _utils = utils;
         }
 
         public async Task<PageResult<PartResponse>> GetPagedAsync(
@@ -69,14 +72,13 @@ namespace eMototCare.BLL.Services.PartServices
 
             try
             {
-                var code = req.Code.Trim();
+                
 
-                if (await _unitOfWork.Parts.ExistsCodeAsync(code))
-                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+
 
                 var entity = _mapper.Map<Part>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = code;
+                entity.Code = await _utils.GeneratePartCodeAsync();
                 entity.Status = Status.ACTIVE;
 
                 await _unitOfWork.Parts.CreateAsync(entity);

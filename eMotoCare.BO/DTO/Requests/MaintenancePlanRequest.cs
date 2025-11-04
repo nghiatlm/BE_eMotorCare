@@ -7,10 +7,9 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class MaintenancePlanRequest
     {
+
         [Required]
-        public string Code { get; set; } = default!;
-        [Required]
-        public string Name { get; set; } = default!;
+        public string Name { get; set; }
         public string? Description { get; set; }
         [Required]
         public MaintenanceUnit[] Unit { get; set; }

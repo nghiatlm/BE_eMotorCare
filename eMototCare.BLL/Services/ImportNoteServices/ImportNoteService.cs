@@ -1,6 +1,7 @@
 ﻿
 
 using AutoMapper;
+using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -20,11 +21,14 @@ namespace eMototCare.BLL.Services.ImportNoteServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<ImportNoteService> _logger;
-        public ImportNoteService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ImportNoteService> logger)
+        private readonly Utils _utils;
+
+        public ImportNoteService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ImportNoteService> logger, Utils utils)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _utils = utils;
         }
 
         public async Task<PageResult<ImportNoteResponse>> GetPagedAsync(
@@ -78,14 +82,11 @@ namespace eMototCare.BLL.Services.ImportNoteServices
 
             try
             {
-                var code = req.Code.Trim();
 
-                if (await _unitOfWork.ImportNotes.ExistsCodeAsync(code))
-                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
                 var entity = _mapper.Map<ImportNote>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = code;
+                entity.Code = await _utils.GenerateCodeAsync("IMP");
                 entity.ImportNoteStatus = ImportNoteStatus.RECEIVING;
                 entity.ImportDate = DateTime.UtcNow;
 
