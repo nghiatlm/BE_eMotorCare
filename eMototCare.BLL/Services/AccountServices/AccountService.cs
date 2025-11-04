@@ -152,6 +152,15 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Stattus = req.Status;
 
                 await _unitOfWork.Accounts.CreateAsync(entity);
+                if (req.Staff != null)
+                {
+                    var staffEntity = _mapper.Map<Staff>(req.Staff);
+                    staffEntity.Id = Guid.NewGuid();
+                    staffEntity.AccountId = entity.Id;
+                    staffEntity.CreatedAt = DateTime.UtcNow;
+
+                    await _unitOfWork.Staffs.CreateAsync(staffEntity);
+                }
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation(
@@ -199,7 +208,6 @@ namespace eMototCare.BLL.Services.AccountServices
                     throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
 
                 _mapper.Map(req, entity);
-
                 entity.Phone = newPhone;
                 entity.Email = newEmail;
                 entity.RoleName = req.RoleName;
@@ -211,6 +219,41 @@ namespace eMototCare.BLL.Services.AccountServices
                 }
 
                 await _unitOfWork.Accounts.UpdateAsync(entity);
+                if (req.Staff != null)
+                {
+                    if (
+                        req.Staff.ServiceCenterId.HasValue
+                        && req.Staff.ServiceCenterId.Value != Guid.Empty
+                    )
+                    {
+                        var scId = req.Staff.ServiceCenterId.Value;
+                        var scExists = await _unitOfWork.ServiceCenters.ExistsAsync(scId);
+                        if (!scExists)
+                            throw new AppException(
+                                "Service Center không tồn tại",
+                                HttpStatusCode.BadRequest
+                            );
+                    }
+
+                    var existingStaff = await _unitOfWork.Staffs.GetByAccountIdAsync(entity.Id);
+
+                    if (existingStaff != null)
+                    {
+                        _mapper.Map(req.Staff, existingStaff);
+                        existingStaff.AccountId = entity.Id;
+                        existingStaff.UpdatedAt = DateTime.UtcNow;
+                        await _unitOfWork.Staffs.UpdateAsync(existingStaff);
+                    }
+                    else
+                    {
+                        var newStaff = _mapper.Map<Staff>(req.Staff);
+                        newStaff.Id = Guid.NewGuid();
+                        newStaff.AccountId = entity.Id;
+                        newStaff.CreatedAt = DateTime.UtcNow;
+
+                        await _unitOfWork.Staffs.CreateAsync(newStaff);
+                    }
+                }
                 await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Updated Account {Id}", id);

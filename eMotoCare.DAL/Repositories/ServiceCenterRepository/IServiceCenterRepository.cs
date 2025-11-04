@@ -18,5 +18,6 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
         Task<bool> ExistsPhoneAsync(string phone);
         Task<ServiceCenter?> GetByCodeAsync(string code);
         Task<ServiceCenter?> GetByIdAsync(Guid id);
+        Task<bool> ExistsAsync(Guid id);
     }
 }

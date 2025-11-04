@@ -8,9 +8,8 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
 {
     public class EVCheckRepository : GenericRepository<EVCheck>, IEVCheckRepository
     {
-        public EVCheckRepository(ApplicationDbContext context) : base(context)
-        {
-        }
+        public EVCheckRepository(ApplicationDbContext context)
+            : base(context) { }
 
         public async Task<(IReadOnlyList<EVCheck> Items, long Total)> GetPagedAsync(
             DateTime? startDate,
@@ -25,27 +24,24 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.EVChecks
+            var q = _context
+                .EVChecks.Include(x => x.Appointment)
+                .ThenInclude(a => a.Customer)
+                .ThenInclude(a => a.Account)
                 .Include(x => x.Appointment)
-                    .ThenInclude(a => a.Customer)
-                        .ThenInclude(a => a.Account)
-                .Include(x => x.Appointment)
-                    .ThenInclude(a => a.ServiceCenter)
+                .ThenInclude(a => a.ServiceCenter)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
-                    .ThenInclude(ms => ms.MaintenanceStageDetail)
-                        .ThenInclude(m => m.Part)
+                .ThenInclude(ms => ms.MaintenanceStageDetail)
+                .ThenInclude(m => m.Part)
                 .Include(x => x.EVCheckDetails)
-                    .ThenInclude(ms => ms.CampaignDetail)
+                .ThenInclude(ms => ms.CampaignDetail)
                 .Include(x => x.EVCheckDetails)
-                    .ThenInclude(ms => ms.PartItem)
+                .ThenInclude(ms => ms.PartItem)
                 .Include(x => x.EVCheckDetails)
-                    .ThenInclude(ms => ms.ReplacePart)
-
-
+                .ThenInclude(ms => ms.ReplacePart)
                 .AsNoTracking()
                 .AsQueryable();
-            
 
             if (status.HasValue)
             {
@@ -56,14 +52,16 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 q = q.Where(x => x.AppointmentId == appointmentId);
             }
             if (taskExecutorId.HasValue)
-            {                 
+            {
                 q = q.Where(x => x.TaskExecutorId == taskExecutorId);
             }
 
             if (startDate.HasValue && endDate.HasValue)
             {
                 var endDateInclusive = endDate.Value.Date.AddDays(1);
-                q = q.Where(x => x.CheckDate >= startDate.Value.Date && x.CheckDate < endDateInclusive);
+                q = q.Where(x =>
+                    x.CheckDate >= startDate.Value.Date && x.CheckDate < endDateInclusive
+                );
             }
             else if (startDate.HasValue)
             {
@@ -75,7 +73,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 var endDateInclusive = endDate.Value.Date.AddDays(1);
                 q = q.Where(x => x.CheckDate < endDateInclusive);
             }
-
 
             var total = await q.LongCountAsync();
 
@@ -89,14 +86,13 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
 
         public async Task<EVCheck?> GetByIdAsync(Guid id)
         {
-            var evCheck = await _context.EVChecks
-                .Include(x => x.Appointment)
+            var evCheck = await _context
+                .EVChecks.Include(x => x.Appointment)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }
-        
 
         public Task<EVCheck?> GetByAppointmentIdAsync(Guid appointmentId) =>
             _context
@@ -108,5 +104,11 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
             _context
                 .EVChecks.Include(x => x.EVCheckDetails)
                 .FirstOrDefaultAsync(x => x.Id == evCheckId);
+
+        public Task<EVCheck?> GetByIdWithAppointmentAsync(Guid id) =>
+            _context
+                .EVChecks.AsNoTracking()
+                .Include(x => x.Appointment)
+                .FirstOrDefaultAsync(x => x.Id == id);
     }
 }

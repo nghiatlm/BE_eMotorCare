@@ -20,5 +20,6 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
         Task DeleteAsync(Staff entity);
         Task UpdateAsync(Staff entity);
         Task CreateAsync(Staff entity);
+        Task<Staff?> GetByAccountIdAsync(Guid accountId);
     }
 }
