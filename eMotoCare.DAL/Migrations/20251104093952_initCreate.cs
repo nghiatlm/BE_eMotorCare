@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace eMotoCare.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class initCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -942,7 +942,6 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     solution = table.Column<string>(type: "nvarchar(400)", nullable: true),
                     ev_check_detail_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    part_item_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -954,12 +953,6 @@ namespace eMotoCare.DAL.Migrations
                         column: x => x.ev_check_detail_id,
                         principalTable: "ev_check_detail",
                         principalColumn: "ev_check_detail_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_battery_check_part_item_part_item_id",
-                        column: x => x.part_item_id,
-                        principalTable: "part_item",
-                        principalColumn: "part_item_id",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -978,7 +971,6 @@ namespace eMotoCare.DAL.Migrations
                     inspector = table.Column<string>(type: "nvarchar(400)", nullable: true),
                     result = table.Column<string>(type: "nvarchar(400)", nullable: true),
                     solution = table.Column<string>(type: "nvarchar(400)", nullable: true),
-                    part_item_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     ev_check_detail_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     rma_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
@@ -994,12 +986,6 @@ namespace eMotoCare.DAL.Migrations
                         column: x => x.ev_check_detail_id,
                         principalTable: "ev_check_detail",
                         principalColumn: "ev_check_detail_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_rma_detail_part_item_part_item_id",
-                        column: x => x.part_item_id,
-                        principalTable: "part_item",
-                        principalColumn: "part_item_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_rma_detail_rma_rma_id",
@@ -1045,11 +1031,6 @@ namespace eMotoCare.DAL.Migrations
                 table: "battery_check",
                 column: "ev_check_detail_id",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_battery_check_part_item_id",
-                table: "battery_check",
-                column: "part_item_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_campaign_detail_campaign_id",
@@ -1203,11 +1184,6 @@ namespace eMotoCare.DAL.Migrations
                 table: "rma_detail",
                 column: "ev_check_detail_id",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_rma_detail_part_item_id",
-                table: "rma_detail",
-                column: "part_item_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_rma_detail_rma_id",
