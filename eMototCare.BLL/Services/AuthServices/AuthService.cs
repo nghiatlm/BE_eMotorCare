@@ -81,7 +81,7 @@ namespace eMototCare.BLL.Services.AuthServices
             }
         }
 
-        public async Task<bool> LoginStaff(StaffLoginRequest request)
+        public async Task<AuthResponse?> LoginStaff(StaffLoginRequest request)
         {
             try
             {
@@ -101,17 +101,28 @@ namespace eMototCare.BLL.Services.AuthServices
                 {
                     throw new AppException("Tài khoản không phải nhân viên", HttpStatusCode.Forbidden);
                 }
-                if (account.Stattus != AccountStatus.ACTIVE)
-                    throw new AppException("Tài khoản chưa được kích hoạt", HttpStatusCode.Forbidden);
+                if (account.Stattus == AccountStatus.IN_ACTIVE)
+                {
+                    var otp = new Random().Next(100000, 999999).ToString();
+                    _cache.Set($"OTP_{account.Email}", otp, TimeSpan.FromMinutes(5));
+                    await _mailService.SendLoginEmailAsync(account.Email, "Xác minh đăng nhập nhân viên", otp);
+                    return null;
+                }
 
-                var otp = new Random().Next(100000, 999999).ToString();
+                string token = _jwtService.GenerateJwtToken(account);
+                return new AuthResponse
+                {
+                    Token = token,
+                    AccountResponse = new AccountResponse
+                    {
+                        Id = account.Id,
+                        Email = account.Email,
+                        Phone = account.Phone,
+                        RoleName = account.RoleName,
+                        Stattus = account.Stattus
+                    }
+                };
 
-                _cache.Set($"OTP_{account.Email}", otp, TimeSpan.FromMinutes(5));
-
-
-                await _mailService.SendLoginEmailAsync(account.Email, "Xác minh đăng nhập nhân viên", otp);
-
-                return true;
             }
             catch (AppException aex)
             {
@@ -124,7 +135,7 @@ namespace eMototCare.BLL.Services.AuthServices
             }
         }
 
-        public async Task<AuthResponse> VerifyLoginStaffAsync(VerifyLoginRequest request)
+        public async Task<bool> VerifyLoginStaffAsync(VerifyLoginRequest request)
         {
             var account = await _unitOfWork.Accounts.FindByEmail(request.Email);
             if (account == null)
@@ -137,21 +148,11 @@ namespace eMototCare.BLL.Services.AuthServices
                 throw new AppException("OTP không đúng", HttpStatusCode.BadRequest);
 
             _cache.Remove($"OTP_{request.Email}");
+            account.Stattus = AccountStatus.ACTIVE;
+            await _unitOfWork.Accounts.UpdateAsync(account);
+            await _unitOfWork.SaveAsync();
+            return true;
 
-            string token = _jwtService.GenerateJwtToken(account);
-
-            return new AuthResponse
-            {
-                Token = token,
-                AccountResponse = new AccountResponse
-                {
-                    Id = account.Id,
-                    Email = account.Email,
-                    Phone = account.Phone,
-                    RoleName = account.RoleName,
-                    Stattus = account.Stattus
-                }
-            };
         }
 
 
@@ -168,7 +169,7 @@ namespace eMototCare.BLL.Services.AuthServices
                     Phone = phone,
                     Password = _passwordHasher.HashPassword(request.Password),
                     RoleName = RoleName.ROLE_CUSTOMER,
-                    Stattus = AccountStatus.IN_ACTVIE,
+                    Stattus = AccountStatus.IN_ACTIVE,
                 });
                 if (account < 1) throw new AppException("Tạo không thành công", HttpStatusCode.BadRequest);
                 var result = await _unitOfWork.SaveAsync();

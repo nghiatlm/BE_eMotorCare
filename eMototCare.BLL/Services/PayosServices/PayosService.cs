@@ -114,7 +114,6 @@ namespace eMototCare.BLL.Services.PayosServices
                     if (transaction.Appointment?.EVCheck == null)
                         throw new AppException("EVCheck không được null.", HttpStatusCode.BadRequest);
                     transaction.Appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
-                    transaction.Appointment.Status = eMotoCare.BO.Enum.AppointmentStatus.COMPLETED;
                     transaction.Status = StatusPayment.SUCCESS;
                     _logger.LogInformation("Appointment marked as COMPLETED for transaction {TransactionId}", transaction.Id);
                 }
