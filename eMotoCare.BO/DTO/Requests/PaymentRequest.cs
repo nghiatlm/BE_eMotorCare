@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Requests
 {
     public class PaymentRequest
     {
+        [JsonIgnore]
         [Required]
         public decimal? Amount { get; set; }
 

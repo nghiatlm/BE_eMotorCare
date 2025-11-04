@@ -90,10 +90,7 @@ namespace BE_eMotoCare.API.Controllers
                     Action = "UPDATED",
                 }
             );
-            if (
-                request.Status == EVCheckStatus.QUOTE_APPROVED
-                || request.Status == EVCheckStatus.REPAIR_COMPLETED
-            )
+            if (request.Status == EVCheckStatus.QUOTE_APPROVED)
             {
                 await _notifier.NotifyUpdateAsync(
                     "Appointment",
