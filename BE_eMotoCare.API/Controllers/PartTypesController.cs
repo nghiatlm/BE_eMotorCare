@@ -14,13 +14,14 @@ namespace BE_eMotoCare.API.Controllers
     public class PartTypesController : ControllerBase
     {
         private readonly IPartTypeService _partTypeService;
+
         public PartTypesController(IPartTypeService partTypeService)
         {
             _partTypeService = partTypeService;
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? name,
             [FromQuery] string? description,
@@ -38,30 +39,25 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _partTypeService.GetByIdAsync(id);
             return Ok(
-                ApiResponse<PartTypeResponse>.SuccessResponse(
-                    item,
-                    "Lấy Part Type thành công"
-                )
+                ApiResponse<PartTypeResponse>.SuccessResponse(item, "Lấy Part Type thành công")
             );
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
         public async Task<IActionResult> Create([FromBody] PartTypeRequest request)
         {
             var id = await _partTypeService.CreateAsync(request);
-            return Ok(
-                ApiResponse<object>.SuccessResponse(new { id }, "Tạo Part Type thành công")
-            );
+            return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo Part Type thành công"));
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _partTypeService.DeleteAsync(id);
@@ -69,13 +65,11 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] PartTypeUpdateRequest request)
         {
             await _partTypeService.UpdateAsync(id, request);
-            return Ok(
-                ApiResponse<string>.SuccessResponse(null, "Cập nhật Part Type thành công")
-            );
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật Part Type thành công"));
         }
     }
 }

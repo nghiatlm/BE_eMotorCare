@@ -281,36 +281,20 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         _unitOfWork.VehicleStages.Update(vs);
                     }
                 }
-                if (
-                    req.Status == EVCheckStatus.QUOTE_APPROVED
-                    || req.Status == EVCheckStatus.REPAIR_COMPLETED
-                )
+                if (req.Status == EVCheckStatus.QUOTE_APPROVED)
                 {
                     if (appt != null)
                     {
-                        if (
-                            req.Status == EVCheckStatus.QUOTE_APPROVED
-                            && appt.Status != AppointmentStatus.QUOTE_APPROVED
-                        )
+                        if (appt.Status != AppointmentStatus.QUOTE_APPROVED)
                         {
                             appt.Status = AppointmentStatus.QUOTE_APPROVED;
-                        }
-
-                        if (
-                            req.Status == EVCheckStatus.REPAIR_COMPLETED
-                            && appt.Status != AppointmentStatus.COMPLETED
-                        )
-                        {
-                            appt.Status = AppointmentStatus.COMPLETED;
                         }
                     }
                     else
                     {
                         await _unitOfWork.Appointments.UpdateStatusByIdAsync(
                             entity.AppointmentId,
-                            req.Status == EVCheckStatus.QUOTE_APPROVED
-                                ? AppointmentStatus.QUOTE_APPROVED
-                                : AppointmentStatus.COMPLETED
+                            AppointmentStatus.QUOTE_APPROVED
                         );
                     }
                 }

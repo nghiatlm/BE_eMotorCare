@@ -54,8 +54,8 @@ namespace eMotoCare.DAL.Repositories.VehicleStageRepository
                 q = q.Where(x => x.DateOfImplementation.Date <= toDate.Value.Date);
 
             var total = await q.LongCountAsync();
-            var items = await q.OrderByDescending(x => x.DateOfImplementation)
-                .ThenByDescending(x => x.Id)
+            var items = await q.OrderBy(x => x.DateOfImplementation)
+                .ThenBy(x => x.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
