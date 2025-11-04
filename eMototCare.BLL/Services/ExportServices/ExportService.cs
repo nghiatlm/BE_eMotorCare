@@ -146,16 +146,55 @@ namespace eMototCare.BLL.Services.ExportServices
                         HttpStatusCode.NotFound
                     );
 
-                var code = req.Code.Trim();
-                if (
-                    !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
-                    && await _unitOfWork.ExportNotes.ExistsCodeAsync(code)
-                )
-                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+                
 
+                if (req.Code != null)
+                {
+                    var code = req.Code.Trim();
+                    if (
+                        !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
+                        && await _unitOfWork.ExportNotes.ExistsCodeAsync(code)
+                    )
+                        throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+                    entity.Code = code;
+                }
+                if (req.ExportDate != null)
+                {
+                    entity.ExportDate = req.ExportDate.Value;
+                }
+                if (req.Type != null)
+                {
+                    entity.Type = req.Type.Value;
+                }
+                if (req.ExportTo != null)
+                {
+                    entity.ExportTo = req.ExportTo.Trim();
+                }
+                if (req.TotalQuantity != null)
+                {
+                    entity.TotalQuantity = req.TotalQuantity.Value;
+                }
+                if (req.TotalValue != null)
+                {
+                    entity.TotalValue = req.TotalValue.Value;
+                }
+                if (req.Note != null)
+                {
+                    entity.Note = req.Note.Trim();
+                }
+                if (req.ExportById != null)
+                {
+                    entity.ExportById = req.ExportById.Value;
+                }
+                if (req.ServiceCenterId != null)
+                {
+                    entity.ServiceCenterId = req.ServiceCenterId.Value;
+                }
+                if (req.ExportNoteStatus != null)
+                {
+                    entity.ExportNoteStatus = req.ExportNoteStatus.Value;
+                }
 
-                _mapper.Map(req, entity);
-                entity.Code = code;
 
                 await _unitOfWork.ExportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -192,6 +231,27 @@ namespace eMototCare.BLL.Services.ExportServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "GetById ExportNote failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<List<ExportPartItemResponse>> GetPartItemsByExportNoteIdAsync(Guid exportNoteId)
+        {
+            try
+            {
+                var exportNote = await _unitOfWork.ExportNotes.GetByIdAsync(exportNoteId);
+                if (exportNote is null)
+                    throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
+                var partItems = await _unitOfWork.PartItems.GetByExportNoteIdAsync(exportNoteId);
+                return _mapper.Map<List<ExportPartItemResponse>>(partItems);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Get PartItems by ExportNoteId failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

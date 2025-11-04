@@ -372,7 +372,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     Type = ExportType.REPLACEMENT,
                     ExportById = evCheck.TaskExecutorId,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
-                    ExportNoteStatus = ExportNoteStatus.COMPLETED,
+                    ExportNoteStatus = ExportNoteStatus.PENDING,
                     TotalValue = 0,      // tổng giá trị phiếu xuất
                     TotalQuantity = 0    // tổng số lượng xuất
                 };

@@ -8,34 +8,27 @@ namespace eMotoCare.BO.Entities
 {
     public class ExportNoteUpdateRequest
     {
-        [Required]
-        public string Code { get; set; } = string.Empty;
+        public string? Code { get; set; }
 
-        [Required]
-        public DateTime ExportDate { get; set; }
+        public DateTime? ExportDate { get; set; }
 
-        [Required]
         [EnumDataType(typeof(ExportType))]
-        public ExportType Type { get; set; }
+        public ExportType? Type { get; set; }
 
         public string? ExportTo { get; set; }
 
-        [Required]
-        public int TotalQuantity { get; set; }
+        public int? TotalQuantity { get; set; }
 
-        [Required]
-        public decimal TotalValue { get; set; }
+        public decimal? TotalValue { get; set; }
 
         public string? Note { get; set; }
 
-        [Required]
-        public Guid ExportById { get; set; }
+        public Guid? ExportById { get; set; }
       
-        [Required]
-        public Guid ServiceCenterId { get; set; }
+        public Guid? ServiceCenterId { get; set; }
 
         [EnumDataType(typeof(ExportNoteStatus))]
-        public ExportNoteStatus ExportNoteStatus { get; set; }
+        public ExportNoteStatus? ExportNoteStatus { get; set; }
 
     }
 }

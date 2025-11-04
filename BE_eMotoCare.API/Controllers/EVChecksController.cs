@@ -105,7 +105,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}/approve-quote")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_CUSTOMER")]
         public async Task<IActionResult> Approve(Guid id)
         {
             await _evCheckService.QuoteApprove(id);

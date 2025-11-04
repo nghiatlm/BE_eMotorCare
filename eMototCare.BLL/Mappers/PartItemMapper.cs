@@ -11,6 +11,7 @@ namespace eMototCare.BLL.Mappers
         public PartItemMapper()
         {
             CreateMap<PartItem, PartItemResponse>();
+            CreateMap<PartItem, ExportPartItemResponse>();
             CreateMap<PartItemRequest, PartItem>();
         }
     }
