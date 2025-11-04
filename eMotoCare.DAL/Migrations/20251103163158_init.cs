@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace eMotoCare.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -847,8 +847,7 @@ namespace eMotoCare.DAL.Migrations
                     appointment_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     amount = table.Column<double>(type: "double", nullable: false),
                     currency = table.Column<string>(type: "varchar(10)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    customer_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -858,12 +857,6 @@ namespace eMotoCare.DAL.Migrations
                         column: x => x.appointment_id,
                         principalTable: "appointment",
                         principalColumn: "appointment_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_payment_customer_customer_id",
-                        column: x => x.customer_id,
-                        principalTable: "customer",
-                        principalColumn: "customer_id",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
@@ -880,7 +873,7 @@ namespace eMotoCare.DAL.Migrations
                     replace_part_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     result = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    remedies = table.Column<string>(type: "varchar(200)", nullable: false)
+                    remedies = table.Column<string>(type: "varchar(200)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     unit = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -1098,8 +1091,7 @@ namespace eMotoCare.DAL.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ev_check_detail_maintenance_stage_detail_id",
                 table: "ev_check_detail",
-                column: "maintenance_stage_detail_id",
-                unique: true);
+                column: "maintenance_stage_detail_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ev_check_detail_part_item_id",
@@ -1109,8 +1101,7 @@ namespace eMotoCare.DAL.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ev_check_detail_replace_part_id",
                 table: "ev_check_detail",
-                column: "replace_part_id",
-                unique: true);
+                column: "replace_part_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_export_note_export_by_id",
@@ -1191,11 +1182,6 @@ namespace eMotoCare.DAL.Migrations
                 name: "IX_payment_appointment_id",
                 table: "payment",
                 column: "appointment_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_payment_customer_id",
-                table: "payment",
-                column: "customer_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_price_service_part_type_id",

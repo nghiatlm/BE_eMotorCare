@@ -11,9 +11,7 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public Guid PartTypeId { get; set; }
         [Required]
-        public string Code { get; set; } = default!;
-        [Required]
-        public string Name { get; set; } = default!;
+        public string Name { get; set; }
         [Required]
         public int Quantity { get; set; }
         [Column("image")]

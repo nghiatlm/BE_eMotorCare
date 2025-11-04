@@ -17,6 +17,7 @@ using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
+using eMototCare.BLL.Services.PartItemServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.PayosServices;
@@ -61,6 +62,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPayosService, PayosService>();
             services.AddScoped<Utils>();
+            services.AddScoped<IPartItemService, PartItemService>();
             return services;
         }
     }
