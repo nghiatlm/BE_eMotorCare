@@ -1,4 +1,5 @@
 ﻿using eMotoCare.BO.DTO.ApiResponse;
+using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.Entities;
 using eMototCare.BLL.Services.PayosServices;
 using Microsoft.AspNetCore.Http;
@@ -12,20 +13,26 @@ namespace BE_eMotoCare.API.Controllers
     public class CheckoutController : ControllerBase
     {
         private readonly IPayosService _payosService;
+
         public CheckoutController(IPayosService payosService)
         {
             _payosService = payosService;
         }
 
-        [HttpPost("create-payment-link/{appointmentId}")]
-        public async Task<IActionResult> Checkout(Guid appointmentId)
+        [HttpPost("create-payment-link")]
+        public async Task<IActionResult> Checkout([FromBody] PaymentRequest request)
         {
-            var urlPayemt = await _payosService.CreatePaymentAsync(appointmentId);
+            var urlPayemt = await _payosService.CreatePaymentAsync(request);
             if (urlPayemt == null)
             {
                 return BadRequest(ApiResponse<string>.BadRequest("Failed to create payment link."));
             }
-            return Ok(ApiResponse<object>.SuccessResponse(new { urlPayemt }, "Payment link created successfully"));
+            return Ok(
+                ApiResponse<object>.SuccessResponse(
+                    new { urlPayemt },
+                    "Payment link created successfully"
+                )
+            );
         }
 
         [HttpGet("success")]

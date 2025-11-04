@@ -1,85 +1,161 @@
-﻿
-
+﻿using System.Net;
 using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.DAL;
 using FirebaseAdmin;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Net.payOS;
 using Net.payOS.Types;
-using System.Net;
-
 
 namespace eMototCare.BLL.Services.PayosServices
 {
     public class PayosService : IPayosService
     {
         private readonly ILogger<PayosService> _logger;
-        private readonly IUnitOfWork _uow;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly Utils _utils;
         private readonly IMapper _mapper;
         private readonly PayOS _payOS;
+        private readonly IConfiguration _config;
 
-        public PayosService(IUnitOfWork uow, IMapper mapper, ILogger<PayosService> logger,
-                            Utils utils, PayOS payOS)
+        public PayosService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<PayosService> logger,
+            Utils utils,
+            PayOS payOS,
+            IConfiguration config
+        )
         {
-            _uow = uow;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _utils = utils;
             _payOS = payOS;
+            _config = config;
         }
 
-        public async Task<string> CreatePaymentAsync(Guid id)
+        public async Task<string> CreatePaymentAsync(PaymentRequest request)
         {
             try
             {
-                if (id == Guid.Empty)
-                    throw new AppException("Id không được null.", HttpStatusCode.BadRequest);
+                if (request == null)
+                    throw new AppException("Request không được null.", HttpStatusCode.BadRequest);
 
-                var appointment = await _uow.Appointments.GetByIdAsync(id);
+                if (request.AppointmentId == Guid.Empty)
+                    throw new AppException(
+                        "AppointmentId không được null.",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (request.Currency != EnumCurrency.VND)
+                    throw new AppException("Chỉ hỗ trợ VND.", HttpStatusCode.BadRequest);
+
+                var appointment = await _unitOfWork.Appointments.GetByIdAsync(
+                    request.AppointmentId
+                );
                 if (appointment == null)
                     throw new AppException("Appointment không tồn tại.", HttpStatusCode.NotFound);
 
-                if (appointment.EVCheck.TotalAmout == null || appointment.EVCheck.TotalAmout <= 0)
-                    throw new AppException("Appointment không có giá trị thanh toán.", HttpStatusCode.BadRequest);
+                var amountDec =
+                    request.Amount != 0 ? request.Amount : (appointment.EVCheck?.TotalAmout ?? 0);
+                if (amountDec <= 0)
+                    throw new AppException(
+                        "Không có giá trị thanh toán hợp lệ.",
+                        HttpStatusCode.BadRequest
+                    );
 
+                var amount = (double)amountDec;
 
-                var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                PaymentRequest paymentRequest = new PaymentRequest
+                switch (request.PaymentMethod)
                 {
-                    Amount = appointment.EVCheck.TotalAmout ?? 0,
-                    Currency = EnumCurrency.VND,
-                    PaymentMethod = PaymentMethod.PAYOS,
-                    AppointmentId = appointment.Id,
-                };
-                var payment = _mapper.Map<Payment>(paymentRequest);
-                payment.Status = StatusPayment.PENDING;
-                payment.TransactionCode = orderCode.ToString();
-                await _uow.Payments.CreateAsync(payment);
-                await _uow.SaveAsync();
-                var item = new ItemData(
-                                        $"Appointment - {appointment.Id}",
-                                        1,
-                                        (int)(appointment.EVCheck.TotalAmout ?? 0)
-                                        );
-                var items = new List<ItemData> { item };
+                    case PaymentMethod.CASH:
+                    {
+                        // Tạo payment & chốt SUCCESS ngay
+                        var payment = _mapper.Map<Payment>(request);
+                        payment.Amount = amount;
+                        payment.Status = StatusPayment.SUCCESS;
+                        payment.TransactionCode =
+                            $"CASH-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
 
+                        await _unitOfWork.Payments.CreateAsync(payment);
 
-                var paymentData = new PaymentData(
-                                                orderCode,
-                                                (int)(appointment.EVCheck.TotalAmout ?? 0),
-                                                "Đơn hàng phục vụ học tập",
-                                                items,
-                                                "https://modernestate.vercel.app/payment-failure",
-                                                "https://modernestate.vercel.app/payment-success"
-                                                );
-                CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
-                return createPayment.checkoutUrl;
+                        // Cập nhật trạng thái nghiệp vụ
+                        if (appointment.EVCheck == null)
+                            throw new AppException(
+                                "EVCheck không được null.",
+                                HttpStatusCode.BadRequest
+                            );
+
+                        appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
+                        appointment.Status = AppointmentStatus.COMPLETED;
+
+                        await _unitOfWork.Appointments.UpdateAsync(appointment);
+                        await _unitOfWork.SaveAsync();
+
+                        // CASH không có checkoutUrl
+                        return null;
+                    }
+
+                    case PaymentMethod.PAY_OS_CENTER:
+                    case PaymentMethod.PAY_OS_APP:
+                    {
+                        // Tạo payment pending
+                        var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                        var payment = _mapper.Map<Payment>(request);
+                        payment.Amount = amount;
+                        payment.Status = StatusPayment.PENDING;
+                        payment.TransactionCode = orderCode.ToString();
+
+                        await _unitOfWork.Payments.CreateAsync(payment);
+                        await _unitOfWork.SaveAsync();
+
+                        var section =
+                            request.PaymentMethod == PaymentMethod.PAY_OS_CENTER
+                                ? _config.GetSection("PayOS:Center")
+                                : _config.GetSection("PayOS:App");
+
+                        var returnUrl =
+                            section["ReturnUrl"]
+                            ?? "https://modernestate.vercel.app/payment-success";
+                        var cancelUrl =
+                            section["CancelUrl"]
+                            ?? "https://modernestate.vercel.app/payment-failure";
+
+                        var item = new ItemData(
+                            $"Appointment - {appointment.Id}",
+                            1,
+                            (int)Math.Round(amount)
+                        );
+
+                        var items = new List<ItemData> { item };
+
+                        var paymentData = new PaymentData(
+                            orderCode,
+                            (int)Math.Round(amount),
+                            "Thanh toán bảo dưỡng xe",
+                            items,
+                            cancelUrl,
+                            returnUrl
+                        );
+
+                        var createPayment = await _payOS.createPaymentLink(paymentData);
+                        return createPayment.checkoutUrl;
+                    }
+
+                    default:
+                        throw new AppException(
+                            "PaymentMethod không hợp lệ.",
+                            HttpStatusCode.BadRequest
+                        );
+                }
             }
             catch (AppException ex)
             {
@@ -89,7 +165,10 @@ namespace eMototCare.BLL.Services.PayosServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
-                throw new AppException("Đã xảy ra lỗi máy chủ.", HttpStatusCode.InternalServerError);
+                throw new AppException(
+                    "Đã xảy ra lỗi máy chủ.",
+                    HttpStatusCode.InternalServerError
+                );
             }
         }
 
@@ -98,47 +177,46 @@ namespace eMototCare.BLL.Services.PayosServices
             try
             {
                 var data = _payOS.verifyPaymentWebhookData(type);
-                var transaction = await _uow.Payments.GetByTransactionCodeAsync(data.orderCode.ToString());
-                if (transaction == null)
-                {
-                    _logger.LogWarning(
-                                   "No transaction found for order code {OrderCode}, skipping webhook processing.",
-                                   data.orderCode
-                               );
+                var payment = await _unitOfWork.Payments.GetByTransactionCodeAsync(
+                    data.orderCode.ToString()
+                );
+                if (payment == null)
                     return true;
-                }
+
+                var appointment = _unitOfWork.Appointments.FindById(payment.AppointmentId);
 
                 if (data.code == "00")
                 {
-                    _logger.LogInformation("Payment verified successfully: {Code}", data.code);
-                    if (transaction.Appointment?.EVCheck == null)
-                        throw new AppException("EVCheck không được null.", HttpStatusCode.BadRequest);
-                    transaction.Appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
-                    transaction.Appointment.Status = eMotoCare.BO.Enum.AppointmentStatus.COMPLETED;
-                    transaction.Status = StatusPayment.SUCCESS;
-                    _logger.LogInformation("Appointment marked as COMPLETED for transaction {TransactionId}", transaction.Id);
+                    payment.Status = StatusPayment.SUCCESS;
+                    if (appointment != null)
+                        appointment.Status = AppointmentStatus.COMPLETED;
                 }
                 else
                 {
-                    _logger.LogWarning("Payment failed or canceled: {Code}", data.code);
-
-                    transaction.Status = StatusPayment.FAILED;
+                    payment.Status = StatusPayment.CANCELLED;
+                    if (appointment != null)
+                        appointment.Status = AppointmentStatus.PAYMENT_FAILED;
                 }
 
-                await _uow.Payments.UpdateAsync(transaction);
-                await _uow.SaveAsync();
+                await _unitOfWork.Payments.UpdateAsync(payment);
+                if (appointment != null)
+                    await _unitOfWork.Appointments.UpdateAsync(appointment);
 
-                return data.code == "00";
+                var result = await _unitOfWork.SaveAsync();
+                return result > 0;
             }
-            catch (AppException ex)
+            catch (AppException)
             {
-                _logger.LogWarning(ex, "AppException occurred: {Message}", ex.Message);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+                Console.WriteLine($"[VerifyPaymentAsync] Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                throw new AppException(
+                    "An error occurred while verifying the payment.",
+                    HttpStatusCode.InternalServerError
+                );
             }
         }
     }
