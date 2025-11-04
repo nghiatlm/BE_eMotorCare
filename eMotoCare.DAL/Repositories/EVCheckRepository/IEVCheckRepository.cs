@@ -7,10 +7,18 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
     public interface IEVCheckRepository : IGenericRepository<EVCheck>
     {
         Task<EVCheck?> GetByIdAsync(Guid id);
-        Task<(IReadOnlyList<EVCheck> Items, long Total)> GetPagedAsync(DateTime? startDate, DateTime? endDate, EVCheckStatus? status, Guid? appointmentId, Guid? taskExecutorId, int page, int pageSize);
-    
-    
+        Task<(IReadOnlyList<EVCheck> Items, long Total)> GetPagedAsync(
+            DateTime? startDate,
+            DateTime? endDate,
+            EVCheckStatus? status,
+            Guid? appointmentId,
+            Guid? taskExecutorId,
+            int page,
+            int pageSize
+        );
+
         Task<EVCheck?> GetByAppointmentIdAsync(Guid appointmentId);
         Task<EVCheck?> GetByIdIncludeDetailsAsync(Guid evCheckId);
+        Task<EVCheck?> GetByIdWithAppointmentAsync(Guid id);
     }
 }
