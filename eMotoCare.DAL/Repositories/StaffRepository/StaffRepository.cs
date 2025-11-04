@@ -84,5 +84,8 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             _context.Staffs.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
+
+        public Task<Staff?> GetByAccountIdAsync(Guid accountId) =>
+            _context.Staffs.FirstOrDefaultAsync(x => x.AccountId == accountId);
     }
 }

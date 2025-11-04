@@ -1,5 +1,4 @@
-﻿
-
+﻿using System.Net;
 using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -11,7 +10,6 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Net;
 
 namespace eMototCare.BLL.Services.EVCheckDetailServices
 {
@@ -21,7 +19,11 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
         private readonly IMapper _mapper;
         private readonly ILogger<EVCheckDetailService> _logger;
 
-        public EVCheckDetailService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<EVCheckDetailService> logger)
+        public EVCheckDetailService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<EVCheckDetailService> logger
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -29,39 +31,39 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
         }
 
         public async Task<PageResult<EVCheckDetailResponse>> GetPagedAsync(
-             Guid? maintenanceStageDetailId,
-             Guid? campaignDetailId,
-             Guid? partItemId,
-             Guid? eVCheckId,
-             Guid? replacePartId,
-             string? result,
-             string? unit,
-             decimal? quantity,
-             decimal? pricePart,
-             decimal? priceService,
-             decimal? totalAmount,
-             EVCheckDetailStatus? status,
-             int page,
-             int pageSize
+            Guid? maintenanceStageDetailId,
+            Guid? campaignDetailId,
+            Guid? partItemId,
+            Guid? eVCheckId,
+            Guid? replacePartId,
+            string? result,
+            string? unit,
+            decimal? quantity,
+            decimal? pricePart,
+            decimal? priceService,
+            decimal? totalAmount,
+            EVCheckDetailStatus? status,
+            int page,
+            int pageSize
         )
         {
             try
             {
                 var (items, total) = await _unitOfWork.EVCheckDetails.GetPagedAsync(
-                                                                maintenanceStageDetailId,
-                                                                campaignDetailId,
-                                                                partItemId,
-                                                                eVCheckId,
-                                                                replacePartId,
-                                                                result,
-                                                                unit,
-                                                                quantity,
-                                                                pricePart,
-                                                                priceService,
-                                                                totalAmount,
-                                                                status,
-                                                                page,
-                                                                pageSize
+                    maintenanceStageDetailId,
+                    campaignDetailId,
+                    partItemId,
+                    eVCheckId,
+                    replacePartId,
+                    result,
+                    unit,
+                    quantity,
+                    pricePart,
+                    priceService,
+                    totalAmount,
+                    status,
+                    page,
+                    pageSize
                 );
                 var rows = _mapper.Map<List<EVCheckDetailResponse>>(items);
                 return new PageResult<EVCheckDetailResponse>(rows, pageSize, page, (int)total);
@@ -80,11 +82,8 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
 
         public async Task<Guid> CreateAsync(EVCheckDetailRequest req)
         {
-
             try
             {
-
-
                 var entity = _mapper.Map<EVCheckDetail>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Status = EVCheckDetailStatus.IN_PROGRESS;
@@ -94,7 +93,6 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
 
                 _logger.LogInformation("Created EVCheckDetail");
                 return entity.Id;
-
             }
             catch (AppException)
             {
@@ -146,7 +144,6 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                         HttpStatusCode.NotFound
                     );
 
-
                 if (req.MaintenanceStageDetailId != null)
                     entity.MaintenanceStageDetailId = req.MaintenanceStageDetailId.Value;
 
@@ -185,8 +182,48 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
 
                 if (req.Status != null)
                     entity.Status = req.Status.Value;
+                var isCompletedNow = (req.Status ?? entity.Status) == EVCheckDetailStatus.COMPLETED;
+                if (isCompletedNow)
+                {
+                    Guid? vehicleStageId = null;
 
+                    if (!vehicleStageId.HasValue)
+                    {
+                        var evCheckId = req.EVCheckId ?? entity.EVCheckId;
+                        if (evCheckId != Guid.Empty)
+                        {
+                            var evCheck = await _unitOfWork.EVChecks.GetByIdWithAppointmentAsync(
+                                evCheckId
+                            );
+                            vehicleStageId = evCheck?.Appointment?.VehicleStageId;
+                        }
+                    }
 
+                    if (vehicleStageId.HasValue)
+                    {
+                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                            vehicleStageId.Value
+                        );
+                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                        {
+                            stage.Status = VehicleStageStatus.COMPLETED;
+                            stage.DateOfImplementation = DateTime.UtcNow;
+                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                            _logger.LogInformation(
+                                "VehicleStage {StageId} -> COMPLETED (từ EVCheckDetail {DetailId})",
+                                stage.Id,
+                                entity.Id
+                            );
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "EVCheckDetail {DetailId}: không tìm thấy VehicleStageId để cập nhật COMPLETED",
+                            entity.Id
+                        );
+                    }
+                }
 
                 await _unitOfWork.EVCheckDetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -202,8 +239,6 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                 _logger.LogError(ex, "Update EVCheckDetail failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
-
-
         }
 
         public async Task<EVCheckDetailResponse?> GetByIdAsync(Guid id)

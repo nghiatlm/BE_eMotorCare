@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
@@ -15,10 +16,15 @@ namespace BE_eMotoCare.API.Controllers
     public class EVChecksDetailController : ControllerBase
     {
         private readonly IEVCheckDetailService _eVCheckDetailService;
+        private readonly INotifierService _notifier;
 
-        public EVChecksDetailController(IEVCheckDetailService eVCheckDetailService)
+        public EVChecksDetailController(
+            IEVCheckDetailService eVCheckDetailService,
+            INotifierService notifier
+        )
         {
             _eVCheckDetailService = eVCheckDetailService;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -40,20 +46,22 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _eVCheckDetailService.GetPagedAsync(maintenanceStageDetailId, 
-                                                                campaignDetailId, 
-                                                                partItemId, 
-                                                                eVCheckId, 
-                                                                replacePartId, 
-                                                                result, 
-                                                                unit, 
-                                                                quantity, 
-                                                                pricePart, 
-                                                                priceService,
-                                                                totalAmount, 
-                                                                status, 
-                                                                page, 
-                                                                pageSize);
+            var data = await _eVCheckDetailService.GetPagedAsync(
+                maintenanceStageDetailId,
+                campaignDetailId,
+                partItemId,
+                eVCheckId,
+                replacePartId,
+                result,
+                unit,
+                quantity,
+                pricePart,
+                priceService,
+                totalAmount,
+                status,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<EVCheckDetailResponse>>.SuccessResponse(
                     data,
@@ -95,12 +103,26 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckDetailUpdateRequest request)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] EVCheckDetailUpdateRequest request
+        )
         {
             await _eVCheckDetailService.UpdateAsync(id, request);
-            return Ok(
-                ApiResponse<string>.SuccessResponse(null, "Cập nhật thành công")
+            await _notifier.NotifyUpdateAsync(
+                "EVCheckDetail",
+                new
+                {
+                    Id = id,
+                    Status = request.Status,
+                    Action = "UPDATED",
+                }
             );
+            await _notifier.NotifyUpdateAsync(
+                "VehicleStage",
+                new { Action = "STATUS_CHANGED", Source = "EV_CHECK_DETAIL_COMPLETED" }
+            );
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật thành công"));
         }
     }
 }

@@ -77,7 +77,7 @@ namespace eMototCare.BLL.Services.StaffServices
                 entity.Id = Guid.NewGuid();
                 entity.StaffCode = code;
                 entity.CitizenId = citizen;
-                entity.ServiceCenterId = req.ServiceCenterId;
+                entity.ServiceCenterId = (Guid)req.ServiceCenterId;
                 await _unitOfWork.Staffs.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
