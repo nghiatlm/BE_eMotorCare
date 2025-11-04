@@ -88,7 +88,10 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
         }
 
         public Task<ExportNote?> GetByIdAsync(Guid id) =>
-        _context.ExportNotes.FirstOrDefaultAsync(x => x.Id == id);
+        _context.ExportNotes
+            .Include(x => x.ExportBy)
+            .Include(x => x.ServiceCenter)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.ExportNotes.AnyAsync(x => x.Code == code);
