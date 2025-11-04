@@ -39,13 +39,6 @@ namespace eMotoCare.BO.Entities
         public string? Solution { get; set; }
 
         [Required]
-        [Column("part_item_id")]
-        public Guid PartItemId { get; set; }
-
-        [ForeignKey(nameof(PartItemId))]
-        public virtual PartItem? PartItem { get; set; }
-
-        [Required]
         [Column("ev_check_detail_id")]
         public Guid EVCheckDetailId { get; set; }
 
