@@ -52,7 +52,7 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
 
             if (req.Capacity < 1)
                 throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
-
+            req.Date = AlignDateToDayOfWeek(req.Date, req.DayOfWeek);
             if (
                 await _serviceCenterSlotRepository.HasOverlapAsync(
                     serviceCenterId,
@@ -96,7 +96,7 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
 
             if (req.Capacity < 1)
                 throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
-
+            req.Date = AlignDateToDayOfWeek(req.Date, req.DayOfWeek);
             if (
                 await _serviceCenterSlotRepository.HasOverlapAsync(
                     serviceCenterId,
@@ -153,6 +153,14 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
                 result.Add((_mapper.Map<ServiceCenterSlotResponse>(s), remaining));
             }
             return result;
+        }
+
+        private static DateOnly AlignDateToDayOfWeek(DateOnly date, DayOfWeeks dow)
+        {
+            var target = (DayOfWeek)dow;
+            var cur = date.ToDateTime(TimeOnly.MinValue).DayOfWeek;
+            int delta = ((int)target - (int)cur + 7) % 7;
+            return date.AddDays(delta);
         }
     }
 }

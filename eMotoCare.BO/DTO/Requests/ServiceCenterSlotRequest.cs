@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.Enums;
+﻿using System.Text.Json.Serialization;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Requests
 {
