@@ -1,6 +1,7 @@
 ﻿
 
 using AutoMapper;
+using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -19,12 +20,14 @@ namespace eMototCare.BLL.Services.ExportServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ExportService> _logger;
         private readonly IMapper _mapper;
+        private readonly Utils _utils;
 
-        public ExportService(IUnitOfWork unitOfWork, ILogger<ExportService> logger, IMapper mapper)
+        public ExportService(IUnitOfWork unitOfWork, ILogger<ExportService> logger, IMapper mapper, Utils utils)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _mapper = mapper;
+            _utils = utils;
         }
 
         public async Task<PageResult<ExportNoteResponse>> GetPagedAsync(
@@ -78,14 +81,11 @@ namespace eMototCare.BLL.Services.ExportServices
 
             try
             {
-                var code = req.Code.Trim();
 
-                if (await _unitOfWork.ExportNotes.ExistsCodeAsync(code))
-                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
                 var entity = _mapper.Map<ExportNote>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = code;
+                entity.Code = await _utils.GenerateCodeAsync("EXP");
                 entity.ExportNoteStatus = ExportNoteStatus.PENDING;
                 entity.ExportDate = DateTime.UtcNow;
 

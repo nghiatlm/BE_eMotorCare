@@ -71,7 +71,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
             {
                 var entity = _mapper.Map<EVCheck>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Status = EVCheckStatus.IN_PROGRESS;
+                entity.Status = EVCheckStatus.VEHICLE_INSPECTION;
                 entity.CheckDate = DateTime.UtcNow;
                 await _unitOfWork.EVChecks.CreateAsync(entity);
 

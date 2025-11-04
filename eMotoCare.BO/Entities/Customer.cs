@@ -47,7 +47,6 @@ namespace eMotoCare.BO.Entities
         public Account? Account { get; set; }
 
         public virtual ICollection<Vehicle>? Vehilces { get; set; }
-        public virtual ICollection<Payment>? Payments { get; set; }
         public virtual ICollection<Appointment>? Appointments { get; set; }
         public virtual ICollection<RMA>? RMAs { get; set; }
 

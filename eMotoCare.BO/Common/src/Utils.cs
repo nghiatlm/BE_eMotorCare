@@ -28,5 +28,21 @@ namespace eMotoCare.BO.Common.src
             }
             return sb.ToString();
         }
+
+        public Task<string> GeneratePartCodeAsync()
+        {
+            const int digitCount = 5;
+            string digits = GenerateRandomDigits(digitCount);
+
+            string code = $"PAR-{digits}";
+            return Task.FromResult(code);
+        }
+
+        public Task<string> GenerateCodeAsync(string prefix, int digitCount = 5)
+        {
+            string digits = GenerateRandomDigits(digitCount);
+            string code = $"{prefix}-{digits}";
+            return Task.FromResult(code);
+        }
     }
 }

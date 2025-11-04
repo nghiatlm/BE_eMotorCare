@@ -17,10 +17,10 @@ namespace BE_eMotoCare.API.Controllers
             _payosService = payosService;
         }
 
-        [HttpPost("create-payment-link/{evCheckId}")]
-        public async Task<IActionResult> Checkout(Guid evCheckId)
+        [HttpPost("create-payment-link/{appointmentId}")]
+        public async Task<IActionResult> Checkout(Guid appointmentId)
         {
-            var urlPayemt = await _payosService.CreatePaymentAsync(evCheckId);
+            var urlPayemt = await _payosService.CreatePaymentAsync(appointmentId);
             if (urlPayemt == null)
             {
                 return BadRequest(ApiResponse<string>.BadRequest("Failed to create payment link."));

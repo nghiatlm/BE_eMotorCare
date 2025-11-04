@@ -12,8 +12,8 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251031081852_initCreate")]
-    partial class initCreate
+    [Migration("20251103163158_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -465,7 +465,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnName("quantity");
 
                     b.Property<string>("Remedies")
-                        .IsRequired()
                         .HasColumnType("varchar(200)")
                         .HasColumnName("remedies");
 
@@ -496,13 +495,11 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("EVCheckId");
 
-                    b.HasIndex("MaintenanceStageDetailId")
-                        .IsUnique();
+                    b.HasIndex("MaintenanceStageDetailId");
 
                     b.HasIndex("PartItemId");
 
-                    b.HasIndex("ReplacePartId")
-                        .IsUnique();
+                    b.HasIndex("ReplacePartId");
 
                     b.ToTable("ev_check_detail");
                 });
@@ -1027,10 +1024,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(10)")
                         .HasColumnName("currency");
 
-                    b.Property<Guid>("CustomerID")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("customer_id");
-
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("varchar(150)")
@@ -1048,8 +1041,6 @@ namespace eMotoCare.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AppointmentId");
-
-                    b.HasIndex("CustomerID");
 
                     b.ToTable("payment");
                 });
@@ -1898,15 +1889,7 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eMotoCare.BO.Entities.Customer", "Customer")
-                        .WithMany("Payments")
-                        .HasForeignKey("CustomerID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Appointment");
-
-                    b.Navigation("Customer");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.PriceService", b =>
@@ -2092,8 +2075,6 @@ namespace eMotoCare.DAL.Migrations
             modelBuilder.Entity("eMotoCare.BO.Entities.Customer", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("Payments");
 
                     b.Navigation("RMAs");
 

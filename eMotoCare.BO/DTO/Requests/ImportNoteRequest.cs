@@ -9,8 +9,7 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class ImportNoteRequest
     {
-        [Required]
-        public string Code { get; set; }
+
         [Required]
         public string ImportFrom { get; set; } = string.Empty;
         [Required]

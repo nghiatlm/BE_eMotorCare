@@ -9,8 +9,7 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class ExportNoteRequest
     {
-        [Required]
-        public string Code { get; set; }
+
         [Required]
         [EnumDataType(typeof(ExportType))]
         public ExportType Type { get; set; }

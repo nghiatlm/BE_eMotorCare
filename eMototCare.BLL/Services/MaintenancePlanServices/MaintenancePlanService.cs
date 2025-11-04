@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -19,12 +20,14 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
         private readonly ILogger<MaintenancePlanService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly Utils _utils;
 
-        public MaintenancePlanService(ILogger<MaintenancePlanService> logger, IUnitOfWork unitOfWork, IMapper mapper)
+        public MaintenancePlanService(ILogger<MaintenancePlanService> logger, IUnitOfWork unitOfWork, IMapper mapper, Utils utils)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _utils = utils;
         }
 
         public async Task<PageResult<MaintenancePlanResponse>> GetPagedAsync(
@@ -69,17 +72,15 @@ namespace eMototCare.BLL.Services.MaintenancePlanServices
 
             try
             {
-                var code = req.Code.Trim();
                 var name = req.Name.Trim();
 
-                if (await _unitOfWork.MaintenancePlans.ExistsCodeAsync(code))
-                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+
                 if (await _unitOfWork.MaintenancePlans.ExistsNameAsync(name))
                     throw new AppException("Tên đã tồn tại", HttpStatusCode.Conflict);
 
                 var entity = _mapper.Map<MaintenancePlan>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = code;
+                entity.Code = await _utils.GenerateCodeAsync("MTP");
                 entity.Name = name;
                 entity.Status = Status.ACTIVE;
 

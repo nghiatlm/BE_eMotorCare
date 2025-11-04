@@ -113,6 +113,13 @@ namespace eMotoCare.DAL.context
                 .HasConversion<string>()
                 .HasColumnType("varchar(16)");
 
+            modelBuilder.Entity<EVCheckDetail>()
+                .HasIndex(u => u.MaintenanceStageDetailId)
+                .IsUnique(false);
+
+            modelBuilder.Entity<EVCheckDetail>()
+                .HasIndex(u => u.ReplacePartId)
+                .IsUnique(false);
             base.OnModelCreating(modelBuilder);
         }
     }
