@@ -56,7 +56,6 @@ namespace eMototCare.BLL.Services.PayosServices
                     Currency = EnumCurrency.VND,
                     PaymentMethod = PaymentMethod.PAYOS,
                     AppointmentId = evCheck.AppointmentId,
-                    CustomerID = evCheck.Appointment.CustomerId
                 };
                 var payment = _mapper.Map<Payment>(paymentRequest);
                 payment.Status = StatusPayment.PENDING;
