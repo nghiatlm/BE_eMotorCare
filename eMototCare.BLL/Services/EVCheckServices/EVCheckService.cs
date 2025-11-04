@@ -183,16 +183,33 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     entity.TaskExecutorId = req.TaskExecutorId.Value;
                 if (req.Odometer != null)
                     entity.Odometer = req.Odometer.Value;
+                var appt = entity.Appointment;
+                if (appt == null && entity.AppointmentId != Guid.Empty)
+                {
+                    appt = new Appointment { Id = entity.AppointmentId };
+                }
 
                 if (req.Odometer != null)
                 {
+                    if (appt == null)
+                        throw new AppException("Appointment not found", HttpStatusCode.NotFound);
+
+                    var vehicleStage = appt.VehicleStage;
+
+                    if (vehicleStage == null && appt.VehicleStageId.HasValue)
+                    {
+                        vehicleStage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                            appt.VehicleStageId.Value
+                        );
+                        appt.VehicleStage = vehicleStage;
+                    }
+
                     var appointment = await _unitOfWork.Appointments.GetByIdAsync(
                         entity.AppointmentId
                     );
+
                     if (appointment?.VehicleStage == null)
                         throw new AppException("VehicleStage not found", HttpStatusCode.NotFound);
-
-                    var vehicleStage = appointment.VehicleStage;
 
                     var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleStage.VehicleId);
                     if (vehicle == null)
@@ -262,6 +279,39 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         }
 
                         _unitOfWork.VehicleStages.Update(vs);
+                    }
+                }
+                if (
+                    req.Status == EVCheckStatus.QUOTE_APPROVED
+                    || req.Status == EVCheckStatus.REPAIR_COMPLETED
+                )
+                {
+                    if (appt != null)
+                    {
+                        if (
+                            req.Status == EVCheckStatus.QUOTE_APPROVED
+                            && appt.Status != AppointmentStatus.QUOTE_APPROVED
+                        )
+                        {
+                            appt.Status = AppointmentStatus.QUOTE_APPROVED;
+                        }
+
+                        if (
+                            req.Status == EVCheckStatus.REPAIR_COMPLETED
+                            && appt.Status != AppointmentStatus.COMPLETED
+                        )
+                        {
+                            appt.Status = AppointmentStatus.COMPLETED;
+                        }
+                    }
+                    else
+                    {
+                        await _unitOfWork.Appointments.UpdateStatusByIdAsync(
+                            entity.AppointmentId,
+                            req.Status == EVCheckStatus.QUOTE_APPROVED
+                                ? AppointmentStatus.QUOTE_APPROVED
+                                : AppointmentStatus.COMPLETED
+                        );
                     }
                 }
                 await _unitOfWork.EVChecks.UpdateAsync(entity);

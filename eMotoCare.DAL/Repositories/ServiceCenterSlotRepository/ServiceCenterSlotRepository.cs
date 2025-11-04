@@ -13,8 +13,8 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
         public ServiceCenterSlotRepository(ApplicationDbContext context)
             : base(context) { }
 
-        public Task<List<ServiceCenterSlot>> GetByServiceCenterAsync(Guid serviceCenterId) =>
-            _context
+        public async Task<List<ServiceCenterSlot>> GetByServiceCenterAsync(Guid serviceCenterId) =>
+            await _context
                 .ServiceCenterSlots.AsNoTracking()
                 .Where(x => x.ServiceCenterId == serviceCenterId)
                 .OrderBy(x => x.DayOfWeek)

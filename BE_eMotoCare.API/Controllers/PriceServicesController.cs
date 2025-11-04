@@ -11,7 +11,7 @@ namespace BE_eMotoCare.API.Controllers
 {
     [ApiController]
     [Route("api/v1/price-services")]
-    [Authorize(Roles = "ROLE_MANAGER")]
+    [Authorize]
     public class PriceServicesController : ControllerBase
     {
         private readonly IPriceServiceService _priceServiceService;

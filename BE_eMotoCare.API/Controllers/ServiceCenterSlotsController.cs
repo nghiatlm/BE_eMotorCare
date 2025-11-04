@@ -51,6 +51,7 @@ namespace BE_eMotoCare.API.Controllers
                         {
                             id = s.Id,
                             dayOfWeek = s.DayOfWeek.ToString(),
+                            date = s.Date.ToString("yyyy-MM-dd"),
                             startTime = s.StartTime.ToString(@"hh\:mm"),
                             endTime = s.EndTime.ToString(@"hh\:mm"),
                             capacity = s.Capacity,

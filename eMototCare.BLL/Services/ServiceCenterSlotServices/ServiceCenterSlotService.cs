@@ -34,7 +34,7 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
         public async Task<List<ServiceCenterSlotResponse>> GetAllAsync(Guid serviceCenterId)
         {
             var center =
-                await _unitOfWork.ServiceCenters.GetByIdAsync(serviceCenterId)
+                await _unitOfWork.ServiceCenterSlot.GetByServiceCenterAsync(serviceCenterId)
                 ?? throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
 
             var items = await _serviceCenterSlotRepository.GetByServiceCenterAsync(serviceCenterId);
