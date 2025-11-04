@@ -6,7 +6,6 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class PaymentRequest
     {
-        [JsonIgnore]
         [Required]
         public decimal? Amount { get; set; }
 
