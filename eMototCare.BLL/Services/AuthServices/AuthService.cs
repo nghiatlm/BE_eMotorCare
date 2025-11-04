@@ -94,8 +94,13 @@ namespace eMototCare.BLL.Services.AuthServices
                 );
                 if (!checkPasswo5rd)
                     throw new AppException("Mật khẩu không đúng", HttpStatusCode.BadRequest);
-                if (account.RoleName != RoleName.ROLE_STAFF)
+                if (account.RoleName != RoleName.ROLE_STAFF &&
+                    account.RoleName != RoleName.ROLE_MANAGER &&
+                    account.RoleName != RoleName.ROLE_ADMIN &&
+                    account.RoleName != RoleName.ROLE_STOREKEEPER)
+                {
                     throw new AppException("Tài khoản không phải nhân viên", HttpStatusCode.Forbidden);
+                }
                 if (account.Stattus != AccountStatus.ACTIVE)
                     throw new AppException("Tài khoản chưa được kích hoạt", HttpStatusCode.Forbidden);
 
