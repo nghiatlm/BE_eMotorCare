@@ -16,7 +16,7 @@ namespace eMotoCare.BO.DTO.Responses
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
-        public ServiceCenterSlotResponse? ServiceCenterSlots { get; set; } = new();
+        public List<ServiceCenterSlotResponse> ServiceCenterSlots { get; set; } = new();
         public string? Latitude { get; set; }
         public string? Longitude { get; set; }
         public StatusEnum Status { get; set; }
