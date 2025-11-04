@@ -41,21 +41,21 @@ namespace eMototCare.BLL.Services.PayosServices
                 if (id == Guid.Empty)
                     throw new AppException("Id không được null.", HttpStatusCode.BadRequest);
 
-                var evCheck = await _uow.EVChecks.GetByIdAsync(id);
-                if (evCheck == null)
-                    throw new AppException("EVCheck không tồn tại.", HttpStatusCode.NotFound);
+                var appointment = await _uow.Appointments.GetByIdAsync(id);
+                if (appointment == null)
+                    throw new AppException("Appointment không tồn tại.", HttpStatusCode.NotFound);
 
-                if (evCheck.TotalAmout == null || evCheck.TotalAmout <= 0)
-                    throw new AppException("EVCheck không có giá trị thanh toán.", HttpStatusCode.BadRequest);
+                if (appointment.EVCheck.TotalAmout == null || appointment.EVCheck.TotalAmout <= 0)
+                    throw new AppException("Appointment không có giá trị thanh toán.", HttpStatusCode.BadRequest);
 
 
                 var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 PaymentRequest paymentRequest = new PaymentRequest
                 {
-                    Amount = evCheck.TotalAmout ?? 0,
+                    Amount = appointment.EVCheck.TotalAmout ?? 0,
                     Currency = EnumCurrency.VND,
                     PaymentMethod = PaymentMethod.PAYOS,
-                    AppointmentId = evCheck.AppointmentId,
+                    AppointmentId = appointment.Id,
                 };
                 var payment = _mapper.Map<Payment>(paymentRequest);
                 payment.Status = StatusPayment.PENDING;
@@ -63,16 +63,16 @@ namespace eMototCare.BLL.Services.PayosServices
                 await _uow.Payments.CreateAsync(payment);
                 await _uow.SaveAsync();
                 var item = new ItemData(
-                                        $"EV Check - {evCheck.Id}",
+                                        $"Appointment - {appointment.Id}",
                                         1,
-                                        (int)(evCheck.TotalAmout ?? 0)
+                                        (int)(appointment.EVCheck.TotalAmout ?? 0)
                                         );
                 var items = new List<ItemData> { item };
 
 
                 var paymentData = new PaymentData(
                                                 orderCode,
-                                                (int)(evCheck.TotalAmout ?? 0),
+                                                (int)(appointment.EVCheck.TotalAmout ?? 0),
                                                 "Đơn hàng phục vụ học tập",
                                                 items,
                                                 "https://modernestate.vercel.app/payment-failure",
@@ -114,11 +114,9 @@ namespace eMototCare.BLL.Services.PayosServices
                     if (transaction.Appointment?.EVCheck == null)
                         throw new AppException("EVCheck không được null.", HttpStatusCode.BadRequest);
                     transaction.Appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
+                    transaction.Appointment.Status = eMotoCare.BO.Enum.AppointmentStatus.COMPLETED;
                     transaction.Status = StatusPayment.SUCCESS;
-                    await _uow.Payments.UpdateAsync(transaction);
-                    _logger.LogInformation("EVCheck marked as COMPLETED for transaction {TransactionId}", transaction.Id);
-
-                    await _uow.SaveAsync();
+                    _logger.LogInformation("Appointment marked as COMPLETED for transaction {TransactionId}", transaction.Id);
                 }
                 else
                 {

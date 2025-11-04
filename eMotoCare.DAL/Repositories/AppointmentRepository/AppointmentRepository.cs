@@ -18,6 +18,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.Customer)
                 .Include(x => x.VehicleStage)
                 .Include(x => x.ServiceCenterSlot)
+                .Include(x => x.EVCheck)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
