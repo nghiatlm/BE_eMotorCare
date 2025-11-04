@@ -184,5 +184,13 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.Customer)
                 .Include(x => x.ServiceCenterSlot)
                 .FirstOrDefaultAsync(x => x.Code == code);
+
+        public Task UpdateStatusByIdAsync(Guid id, AppointmentStatus status)
+        {
+            var appt = new Appointment { Id = id, Status = status };
+            _context.Attach(appt);
+            _context.Entry(appt).Property(a => a.Status).IsModified = true;
+            return Task.CompletedTask;
+        }
     }
 }

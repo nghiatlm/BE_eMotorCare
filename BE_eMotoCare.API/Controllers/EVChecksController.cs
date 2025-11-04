@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
@@ -14,10 +15,12 @@ namespace BE_eMotoCare.API.Controllers
     public class EVChecksController : ControllerBase
     {
         private readonly IEVCheckService _evCheckService;
+        private readonly INotifierService _notifier;
 
-        public EVChecksController(IEVCheckService evCheckService)
+        public EVChecksController(IEVCheckService evCheckService, INotifierService notifier)
         {
             _evCheckService = evCheckService;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -32,7 +35,15 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _evCheckService.GetPagedAsync(startDate, endDate, status, appointmentId, taskExecutorId, page, pageSize);
+            var data = await _evCheckService.GetPagedAsync(
+                startDate,
+                endDate,
+                status,
+                appointmentId,
+                taskExecutorId,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<EVCheckResponse>>.SuccessResponse(
                     data,
@@ -46,9 +57,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Create([FromBody] EVCheckRequest request)
         {
             var id = await _evCheckService.CreateAsync(request);
-            return Ok(
-                ApiResponse<object>.SuccessResponse(new { id }, "Tạo EVCheck thành công")
-            );
+            return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo EVCheck thành công"));
         }
 
         [HttpGet("{id}")]
@@ -56,12 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _evCheckService.GetByIdAsync(id);
-            return Ok(
-                ApiResponse<EVCheckResponse>.SuccessResponse(
-                    item,
-                    "Lấy EVCheck thành công"
-                )
-            );
+            return Ok(ApiResponse<EVCheckResponse>.SuccessResponse(item, "Lấy EVCheck thành công"));
         }
 
         [HttpDelete("{id}")]
@@ -77,9 +81,26 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckUpdateRequest request)
         {
             await _evCheckService.UpdateAsync(id, request);
-            return Ok(
-                ApiResponse<string>.SuccessResponse(null, "Cập nhật EVCheck thành công")
+            await _notifier.NotifyUpdateAsync(
+                "EVCheck",
+                new
+                {
+                    Id = id,
+                    Status = request.Status,
+                    Action = "UPDATED",
+                }
             );
+            if (
+                request.Status == EVCheckStatus.QUOTE_APPROVED
+                || request.Status == EVCheckStatus.REPAIR_COMPLETED
+            )
+            {
+                await _notifier.NotifyUpdateAsync(
+                    "Appointment",
+                    new { Action = "STATUS_CHANGED", Source = "EV_CHECK_STATUS_CHANGED" }
+                );
+            }
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật EVCheck thành công"));
         }
     }
 }
