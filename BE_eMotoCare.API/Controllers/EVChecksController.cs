@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
@@ -14,10 +15,12 @@ namespace BE_eMotoCare.API.Controllers
     public class EVChecksController : ControllerBase
     {
         private readonly IEVCheckService _evCheckService;
+        private readonly INotifierService _notifier;
 
-        public EVChecksController(IEVCheckService evCheckService)
+        public EVChecksController(IEVCheckService evCheckService, INotifierService notifier)
         {
             _evCheckService = evCheckService;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -69,6 +72,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _evCheckService.DeleteAsync(id);
+            await _notifier.NotifyDeleteAsync("EVCheck", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá EVCheck thành công"));
         }
 
@@ -77,9 +81,19 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] EVCheckUpdateRequest request)
         {
             await _evCheckService.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync("EVCheck", new { Id = id });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật EVCheck thành công")
             );
+        }
+
+        [HttpPut("{id}/approve-quote")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            await _evCheckService.QuoteApprove(id);
+            await _notifier.NotifyUpdateAsync("EVCheck", new { Id = id });
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Xác nhận sửa chữa và tạo phiếu xuất thành công."));
         }
     }
 }

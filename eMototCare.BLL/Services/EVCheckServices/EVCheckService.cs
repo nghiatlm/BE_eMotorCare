@@ -1,5 +1,5 @@
-﻿using System.Net;
-using AutoMapper;
+﻿using AutoMapper;
+using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -9,6 +9,8 @@ using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Ocsp;
+using System.Net;
 
 namespace eMototCare.BLL.Services.EVCheckServices
 {
@@ -17,16 +19,19 @@ namespace eMototCare.BLL.Services.EVCheckServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<EVCheckService> _logger;
+        private readonly Utils _utils;
 
         public EVCheckService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<EVCheckService> logger
+            ILogger<EVCheckService> logger,
+            Utils utils
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _utils = utils;
         }
 
         public async Task<PageResult<EVCheckResponse>> GetPagedAsync(
@@ -294,6 +299,50 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 _logger.LogError(ex, "GetById EVCheck failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
+        }
+
+        public async Task<bool> QuoteApprove(Guid id)
+        {
+            var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(id);
+            if (evCheck == null)
+            {
+                throw new AppException("EVCheck not found", HttpStatusCode.NotFound);
+            }
+            evCheck.Status = EVCheckStatus.QUOTE_APPROVED;
+            var replaceDetails = evCheck.EVCheckDetails
+                                .Where(d => d.ReplacePartId != null)
+                                .ToList();
+            if (replaceDetails.Any())
+            {
+                var exportNote = new ExportNote
+                {
+                    Id = Guid.NewGuid(),
+                    Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
+                    ExportDate = DateTime.UtcNow,
+                    Type = ExportType.REPLACEMENT,
+                    ExportById = evCheck.TaskExecutorId,
+                    ServiceCenterId = evCheck.Appointment.ServiceCenterId,
+                    ExportNoteStatus = ExportNoteStatus.COMPLETED,
+                    TotalValue = 0,      // tổng giá trị phiếu xuất
+                    TotalQuantity = 0    // tổng số lượng xuất
+                };
+                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
+                foreach (var detail in replaceDetails)
+                {
+                    var partItem = detail.ReplacePart;
+                    partItem.ExportNoteId = exportNote.Id;
+                    partItem.ServiceCenterInventoryId = null;
+
+                    exportNote.TotalValue += partItem.Price;
+                    exportNote.TotalQuantity += partItem.Quantity;
+                    partItem.Quantity = 0;
+                    _unitOfWork.PartItems.Update(partItem);
+                }
+            }
+            _unitOfWork.EVChecks.Update(evCheck);
+            await _unitOfWork.SaveAsync();
+            return true;
+
         }
     }
 }
