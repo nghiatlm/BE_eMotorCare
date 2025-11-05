@@ -241,5 +241,13 @@ namespace eMototCare.BLL.Services.PartItemServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task<List<PartItemResponse>> GetByServiceCenterIdAsync(Guid serviceCenterId)
+        {
+            var entities = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(serviceCenterId);
+            if (entities is null || !entities.Any())
+                throw new AppException("Không tìm thấy Part Item nào cho Trung tâm dịch vụ này", HttpStatusCode.NotFound);
+            return _mapper.Map<List<PartItemResponse>>(entities);
+        }
     }
 }
