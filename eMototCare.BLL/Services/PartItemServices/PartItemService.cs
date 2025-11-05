@@ -242,12 +242,25 @@ namespace eMototCare.BLL.Services.PartItemServices
             }
         }
 
-        public async Task<List<PartItemResponse>> GetByServiceCenterIdAsync(Guid serviceCenterId)
+        public async Task<List<PartItemResponse>> GetByEvCheckDetailIdAsync(Guid evCheckDetailId)
         {
-            var entities = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(serviceCenterId);
-            if (entities is null || !entities.Any())
+            var evCheckDetail = await _unitOfWork.EVCheckDetails.GetByIdAsync(evCheckDetailId);
+            if (evCheckDetail == null || evCheckDetail.PartItem?.Part == null)
+                throw new AppException("Không tìm thấy EVCheckDetail hoặc Part tương ứng", HttpStatusCode.NotFound);
+
+            var partItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(evCheckDetail.EVCheck.Appointment.ServiceCenterId);
+            if (partItems is null || !partItems.Any())
                 throw new AppException("Không tìm thấy Part Item nào cho Trung tâm dịch vụ này", HttpStatusCode.NotFound);
-            return _mapper.Map<List<PartItemResponse>>(entities);
+
+
+            var targetCode = evCheckDetail.PartItem.Part.Code;
+
+            var filtered = partItems
+                        .Where(pi => pi.Part != null && pi.Part.Code == targetCode && pi.Quantity == 1)
+                        .ToList();
+
+
+            return _mapper.Map<List<PartItemResponse>>(filtered);
         }
     }
 }

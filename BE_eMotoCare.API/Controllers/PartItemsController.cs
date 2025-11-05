@@ -84,11 +84,11 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
-        [HttpGet("{serviceCenterId}/part-items")]
+        [HttpGet("{evCheckDetailId}/part-items")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
-        public async Task<IActionResult> GetPartItemsByServiceCenter(Guid serviceCenterId)
+        public async Task<IActionResult> GetPartItemsByServiceCenter(Guid evCheckDetailId)
         {
-            var partItems = await _partItemService.GetByServiceCenterIdAsync(serviceCenterId);
+            var partItems = await _partItemService.GetByEvCheckDetailIdAsync(evCheckDetailId);
 
             if (!partItems.Any())
                 return NotFound(ApiResponse<string>.NotFound("Không tìm thấy part item"));
