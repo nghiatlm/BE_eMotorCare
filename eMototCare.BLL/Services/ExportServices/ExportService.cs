@@ -235,25 +235,5 @@ namespace eMototCare.BLL.Services.ExportServices
             }
         }
 
-        public async Task<List<ExportPartItemResponse>> GetPartItemsByExportNoteIdAsync(Guid exportNoteId)
-        {
-            try
-            {
-                var exportNote = await _unitOfWork.ExportNotes.GetByIdAsync(exportNoteId);
-                if (exportNote is null)
-                    throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
-                var partItems = await _unitOfWork.PartItems.GetByExportNoteIdAsync(exportNoteId);
-                return _mapper.Map<List<ExportPartItemResponse>>(partItems);
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Get PartItems by ExportNoteId failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
-            }
-        }
     }
 }
