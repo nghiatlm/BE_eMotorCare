@@ -7,6 +7,7 @@ using eMotoCare.DAL.Repositories.CampaignRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
+using eMotoCare.DAL.Repositories.ExportNoteDetailRepository;
 using eMotoCare.DAL.Repositories.ExportNoteRepository;
 using eMotoCare.DAL.Repositories.ImportNoteRepository;
 using eMotoCare.DAL.Repositories.MaintenancePlanRepository;
@@ -62,6 +63,7 @@ namespace eMotoCare.DAL
         IVehicleRepository Vehicles { get; }
         IVehicleStageRepository VehicleStages { get; }
         IServiceCenterSlotRepository ServiceCenterSlot { get; }
+        IExportNoteDetailRepository ExportNoteDetails { get; }
 
         void RemoveRange(List<EVCheckDetail> olds);
         Task<int> SaveAsync();

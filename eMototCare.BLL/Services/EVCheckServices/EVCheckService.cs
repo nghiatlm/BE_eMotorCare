@@ -370,7 +370,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
-                    ExportById = evCheck.TaskExecutorId,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
                     ExportTo = "EVCheck: " + evCheck.Id.ToString(),
                     ExportNoteStatus = ExportNoteStatus.PENDING,

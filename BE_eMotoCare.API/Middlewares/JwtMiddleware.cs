@@ -26,7 +26,7 @@ namespace BE_eMotoCare.API.Middlewares
             "/api/v1/auths/verify-otp/staff",
             "/swagger",
             "/health",
-            "/api/v1/checkout"
+            "/api/v1/checkout",
         };
 
         public JwtMiddleware(

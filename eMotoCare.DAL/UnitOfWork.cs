@@ -8,6 +8,7 @@ using eMotoCare.DAL.Repositories.CampaignRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
+using eMotoCare.DAL.Repositories.ExportNoteDetailRepository;
 using eMotoCare.DAL.Repositories.ExportNoteRepository;
 using eMotoCare.DAL.Repositories.ImportNoteRepository;
 using eMotoCare.DAL.Repositories.MaintenancePlanRepository;
@@ -70,6 +71,7 @@ namespace eMotoCare.DAL
         private IVehicleRepository? _vehicleRepository;
         private IVehicleStageRepository? _vehicleStageRepository;
         private IServiceCenterSlotRepository _serviceCenterSlotRepository;
+        private IExportNoteDetailRepository? _exportNoteDetailRepository;
         public IAccountRepository Accounts =>
             _accountRepository ??= new AccountRepository(_unitOfWorkContext);
 
@@ -157,6 +159,8 @@ namespace eMotoCare.DAL
             _vehicleStageRepository ??= new VehicleStageRepository(_unitOfWorkContext);
         public IServiceCenterSlotRepository ServiceCenterSlot =>
             _serviceCenterSlotRepository ??= new ServiceCenterSlotRepository(_unitOfWorkContext);
+        public IExportNoteDetailRepository ExportNoteDetails =>
+            _exportNoteDetailRepository ??= new ExportNoteDetailRepository(_unitOfWorkContext);
 
         public void RemoveRange(List<EVCheckDetail> olds)
         {
