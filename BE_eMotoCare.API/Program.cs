@@ -1,12 +1,12 @@
-﻿using BE_eMotoCare.API.Configuration;
+﻿using System.Text.Json.Serialization;
+using BE_eMotoCare.API.Configuration;
 using BE_eMotoCare.API.Middlewares;
+using BE_eMotoCare.API.Realtime.Hubs;
+using BE_eMotoCare.API.Realtime.Services;
 using eMotoCare.BO.Common;
 using eMotoCare.DAL.context;
 using eMototCare.BLL.Services.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
-using BE_eMotoCare.API.Realtime.Hubs;
-using BE_eMotoCare.API.Realtime.Services;
-using System.Text.Json.Serialization;
 using Net.payOS;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,8 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.WebHost.UseUrls("http://0.0.0.0:80");
 // Add SignalR
 builder.Services.AddSignalR();
+
 // Add NotifierService
 builder.Services.AddScoped<INotifierService, NotifierService>();
+builder.Services.AddScoped<INotifierAppointmentService, NotificationAppointmentService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 var mailSection = builder.Configuration.GetSection("MailSettings");
@@ -60,9 +62,7 @@ var PayOS = builder.Configuration.GetSection("PAYOS");
 var ClientId = PayOS["CLIENT_ID"];
 var APILEY = PayOS["API_KEY"];
 var CHECKSUMKEY = PayOS["CHECKSUM_KEY"];
-PayOS payOS = new PayOS(ClientId,
-                    APILEY,
-                    CHECKSUMKEY);
+PayOS payOS = new PayOS(ClientId, APILEY, CHECKSUMKEY);
 builder.Services.AddSingleton(payOS);
 
 //DI
@@ -87,12 +87,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         "AllowExpoApp",
-        policy => policy
-        //.AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials()
-        .SetIsOriginAllowed(_ => true)
+        policy =>
+            policy
+                //.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()
+                .SetIsOriginAllowed(_ => true)
     );
 });
 
@@ -110,6 +111,7 @@ app.UseHttpsRedirection();
 app.UseAppExceptionHandler();
 app.UseCors("AllowExpoApp");
 app.MapHub<NotificationHub>("/hubs/notify");
+app.MapHub<NotificationAppointmentHub>("/hubs/notifyappointment");
 app.UseMiddleware<JwtMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();

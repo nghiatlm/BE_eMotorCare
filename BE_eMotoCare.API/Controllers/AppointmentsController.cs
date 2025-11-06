@@ -15,15 +15,15 @@ namespace BE_eMotoCare.API.Controllers
     public class AppointmentsController : ControllerBase
     {
         private readonly IAppointmentService _appointmentService;
-        private readonly INotifierService _notifier;
+        private readonly INotifierAppointmentService _notifierAppointment;
 
         public AppointmentsController(
             IAppointmentService appointmentService,
-            INotifierService notifier
+            INotifierAppointmentService notifierAppointment
         )
         {
             _appointmentService = appointmentService;
-            _notifier = notifier;
+            _notifierAppointment = notifierAppointment;
         }
 
         [HttpGet("available-slots")]
@@ -85,7 +85,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Create([FromBody] AppointmentRequest request)
         {
             var id = await _appointmentService.CreateAsync(request);
-            await _notifier.NotifyDeleteAsync("Appointment", new { Id = id });
+            await _notifierAppointment.NotifyCreateAsync("Appointment", new { Id = id });
             return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo lịch hẹn thành công"));
         }
 
@@ -94,7 +94,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] AppointmentRequest request)
         {
             await _appointmentService.UpdateAsync(id, request);
-            await _notifier.NotifyDeleteAsync("Appointment", new { Id = id });
+            await _notifierAppointment.NotifyUpdateAsync("Appointment", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật lịch hẹn thành công"));
         }
 

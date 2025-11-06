@@ -127,7 +127,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
                 entity.ServiceCenterSlotId = slot.Id;
-                entity.TimeSlot = $"{slot.StartTime:hh\\:mm}-{slot.EndTime:hh\\:mm}";
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -214,7 +213,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     entity.ServiceCenterId = req.ServiceCenterId;
                     entity.AppointmentDate = req.AppointmentDate;
                     entity.ServiceCenterSlotId = slot.Id;
-                    entity.TimeSlot = $"{slot.StartTime:hh\\:mm}-{slot.EndTime:hh\\:mm}";
                 }
 
                 // Map các field còn lại

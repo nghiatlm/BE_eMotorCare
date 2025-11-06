@@ -17,10 +17,6 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid ServiceCenterSlotId { get; set; }
 
         [Required]
-        [StringLength(50)]
-        public string TimeSlot { get; set; } = default!;
-
-        [Required]
         public DateTime AppointmentDate { get; set; }
 
         public decimal? EstimatedCost { get; set; }

@@ -10,6 +10,5 @@
         PAYMENT_FAILED,
         COMPLETED,
         CANCELED,
-        IN_SERVICE,
     }
 }

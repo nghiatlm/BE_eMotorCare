@@ -54,11 +54,6 @@ namespace eMotoCare.BO.Entities
         [Column("appointment_date")]
         public DateTime AppointmentDate { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        [Column("time_slot")]
-        public string TimeSlot { get; set; } = default!;
-
         [Column("estimated_cost", TypeName = "decimal(18,2)")]
         public decimal? EstimatedCost { get; set; }
 

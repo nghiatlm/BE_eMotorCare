@@ -11,7 +11,6 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid? ApproveById { get; set; }
         public Guid? VehicleStageId { get; set; }
         public DateTime AppointmentDate { get; set; }
-        public string TimeSlot { get; set; } = default!;
         public AppointmentStatus Status { get; set; }
         public ServiceType Type { get; set; }
         public decimal? EstimatedCost { get; set; }
