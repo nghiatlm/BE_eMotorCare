@@ -29,8 +29,6 @@ namespace eMototCare.BLL.Services.PartItemServices
 
         public async Task<PageResult<PartItemResponse>> GetPagedAsync(
              Guid? partId,
-             Guid? exportNoteId,
-             Guid? importNoteId,
              string? serialNumber,
              PartItemStatus? status,
              Guid? serviceCenterInventoryId,
@@ -42,8 +40,6 @@ namespace eMototCare.BLL.Services.PartItemServices
             {
                 var (items, total) = await _unitOfWork.PartItems.GetPagedAsync(
                     partId,
-                    exportNoteId,
-                    importNoteId,
                     serialNumber,
                     status,
                     serviceCenterInventoryId,
@@ -150,10 +146,6 @@ namespace eMototCare.BLL.Services.PartItemServices
 
                 if (req.PartId != null)
                     entity.PartId =  req.PartId.Value;
-                if (req.ExportNoteId != null)
-                    entity.ExportNoteId = req.ExportNoteId;
-                if (req.ImportNoteId != null)
-                    entity.ImportNoteId = req.ImportNoteId;
                 if (req.Quantity != null)
                     entity.Quantity = req.Quantity.Value;
                 if (req.SerialNumber != null)

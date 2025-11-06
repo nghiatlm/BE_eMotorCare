@@ -25,8 +25,6 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] Guid? partId,
-            [FromQuery] Guid? exportNoteId,
-            [FromQuery] Guid? importNoteId,
             [FromQuery] string? serialNumber,
             [FromQuery] PartItemStatus? status,
             [FromQuery] Guid? serviceCenterInventoryId,
@@ -34,7 +32,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _partItemService.GetPagedAsync(partId, exportNoteId, importNoteId, serialNumber, status, serviceCenterInventoryId, page, pageSize);
+            var data = await _partItemService.GetPagedAsync(partId, serialNumber, status, serviceCenterInventoryId, page, pageSize);
             return Ok(
                 ApiResponse<PageResult<PartItemResponse>>.SuccessResponse(
                     data,

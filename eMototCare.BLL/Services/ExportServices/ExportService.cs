@@ -86,7 +86,7 @@ namespace eMototCare.BLL.Services.ExportServices
                 var entity = _mapper.Map<ExportNote>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
-                entity.ExportNoteStatus = ExportNoteStatus.PENDING;
+                entity.ExportNoteStatus = ExportNoteStatus.APPROVED;
                 entity.ExportDate = DateTime.UtcNow;
 
                 await _unitOfWork.ExportNotes.CreateAsync(entity);

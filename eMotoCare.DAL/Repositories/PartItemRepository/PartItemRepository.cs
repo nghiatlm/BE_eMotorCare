@@ -15,8 +15,6 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
         public async Task<(IReadOnlyList<PartItem> Items, long Total)> GetPagedAsync(
              Guid? partId,
-             Guid? exportNoteId,
-             Guid? importNoteId,
              string? serialNumber,
              PartItemStatus? status,
              Guid? serviceCenterInventoryId,
@@ -29,17 +27,11 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
             var q = _context.PartItems
                 .Include(x => x.Part)
-                .Include(x => x.ImportNote)
-                .Include(x => x.ExportNote)
                 .AsNoTracking()
                 .AsQueryable();
             
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
-            if (exportNoteId.HasValue)
-                q = q.Where(x => x.ExportNoteId == exportNoteId.Value);
-            if (importNoteId.HasValue)
-                q = q.Where(x => x.ImportNoteId == importNoteId.Value);
             if (!string.IsNullOrWhiteSpace(serialNumber))
                 q = q.Where(x => x.SerialNumber.Contains(serialNumber));
             if (status.HasValue)

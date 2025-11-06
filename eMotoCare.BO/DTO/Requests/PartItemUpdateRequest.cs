@@ -8,8 +8,6 @@ namespace eMotoCare.BO.DTO.Requests
     public class PartItemUpdateRequest
     {
         public Guid? PartId { get; set; }
-        public Guid? ExportNoteId { get; set; }
-        public Guid? ImportNoteId { get; set; }
         public int? Quantity { get; set; }
         public string? SerialNumber { get; set; }
         public decimal? Price { get; set; }

@@ -19,18 +19,6 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(PartId))]
         public virtual Part? Part { get; set; }
 
-        [Column("export_note_id")]
-        public Guid? ExportNoteId { get; set; }
-
-        [ForeignKey(nameof(ExportNoteId))]
-        public virtual ExportNote? ExportNote { get; set; }
-
-        [Column("import_note_id")]
-        public Guid? ImportNoteId { get; set; }
-
-        [ForeignKey(nameof(ImportNoteId))]
-        public virtual ImportNote? ImportNote { get; set; }
-
         [InverseProperty(nameof(EVCheckDetail.ReplacePart))]
         public virtual EVCheckDetail? ReplcePart { get; set; }
 
@@ -70,5 +58,7 @@ namespace eMotoCare.BO.Entities
         public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
         public virtual ICollection<VehiclePartItem>? VehiclePartItems { get; set; }
         public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
+        public virtual ICollection<ImportNoteDetail>? ImportNoteDetails { get; set; }
+        public virtual ICollection<ExportNoteDetail>? ExportNoteDetails { get; set; }
     }
 }

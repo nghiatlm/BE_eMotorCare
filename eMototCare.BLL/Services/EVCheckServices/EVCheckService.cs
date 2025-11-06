@@ -370,7 +370,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
-                    ExportById = evCheck.TaskExecutorId,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
                     ExportNoteStatus = ExportNoteStatus.PENDING,
                     TotalValue = 0,      // tổng giá trị phiếu xuất
@@ -380,7 +379,12 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;
-                    partItem.ExportNoteId = exportNote.Id;
+                    var exportNoteDetail = new ExportNoteDetail
+                    {
+                        Id = Guid.NewGuid(),
+                        ExportNoteId = exportNote.Id,
+                        PartItemId = partItem.Id,
+                    };
                     partItem.ServiceCenterInventoryId = null;
 
                     exportNote.TotalValue += partItem.Price;
