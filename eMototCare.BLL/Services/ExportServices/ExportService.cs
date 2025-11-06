@@ -192,6 +192,10 @@ namespace eMototCare.BLL.Services.ExportServices
                 }
                 if (req.ExportNoteStatus != null)
                 {
+                    if (req.ExportNoteStatus == ExportNoteStatus.COMPLETED && entity.Type == ExportType.REPLACEMENT)
+                    {
+                        
+                    }
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;
                 }
 
