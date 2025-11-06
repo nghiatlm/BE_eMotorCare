@@ -11,6 +11,7 @@ namespace eMototCare.BLL.Services.PartItemServices
     {
         Task<Guid> CreateAsync(PartItemRequest req);
         Task DeleteAsync(Guid id);
+        Task<List<PartItemResponse>> GetByEvCheckDetailIdAsync(Guid evCheckDetailId);
         Task<PartItemResponse?> GetByIdAsync(Guid id);
         Task<PageResult<PartItemResponse>> GetPagedAsync(Guid? partId, string? serialNumber, PartItemStatus? status, Guid? serviceCenterInventoryId, int page, int pageSize);
         Task UpdateAsync(Guid id, PartItemUpdateRequest req);
