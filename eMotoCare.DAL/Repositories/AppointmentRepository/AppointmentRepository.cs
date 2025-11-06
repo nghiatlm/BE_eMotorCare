@@ -1,5 +1,6 @@
 ﻿using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,6 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
                 .Include(x => x.VehicleStage)
-                .Include(x => x.ServiceCenterSlot)
                 .Include(x => x.EVCheck)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -72,118 +72,64 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             DateTime date
         )
         {
-            var dow = (eMotoCare.BO.Enums.DayOfWeeks)date.DayOfWeek;
+            var d = DateOnly.FromDateTime(date.Date);
+            var dow = (DayOfWeeks)date.DayOfWeek;
 
-            var dateSlotsQuery = _context
+            var baseSlots = await _context
                 .ServiceCenterSlots.AsNoTracking()
                 .Where(s =>
                     s.ServiceCenterId == serviceCenterId
                     && s.IsActive
-                    && s.Date == DateOnly.FromDateTime(date.Date)
-                );
-
-            var weeklySlotsQuery = _context
-                .ServiceCenterSlots.AsNoTracking()
-                .Where(s =>
-                    s.ServiceCenterId == serviceCenterId && s.IsActive && s.DayOfWeek == dow
-                );
-
-            var dateSlots = await dateSlotsQuery.ToListAsync();
-            var baseSlots = dateSlots.Count > 0 ? dateSlots : await weeklySlotsQuery.ToListAsync();
+                    && (s.Date == d || (s.Date == default && s.DayOfWeek == dow))
+                )
+                .ToListAsync();
 
             if (baseSlots.Count == 0)
                 return Array.Empty<string>();
 
-            var slotIds = baseSlots.Select(s => s.Id).ToList();
-            var bookedCounts = await _context
-                .Appointments.AsNoTracking()
-                .Where(a =>
-                    a.ServiceCenterId == serviceCenterId
-                    && a.AppointmentDate.Date == date.Date
-                    && a.ServiceCenterSlotId.HasValue
-                    && slotIds.Contains(a.ServiceCenterSlotId.Value)
-                    && (
-                        a.Status == AppointmentStatus.PENDING
-                        || a.Status == AppointmentStatus.APPROVED
-                        || a.Status == AppointmentStatus.CHECKED_IN
-                    )
-                )
-                .GroupBy(a => a.ServiceCenterSlotId!.Value)
-                .Select(g => new { SlotId = g.Key, Count = g.Count() })
-                .ToListAsync();
+            var results = new List<string>();
+            foreach (var s in baseSlots.OrderBy(x => x.SlotTime))
+            {
+                var booked = await _context
+                    .Appointments.AsNoTracking()
+                    .CountAsync(a =>
+                        a.ServiceCenterId == serviceCenterId
+                        && DateOnly.FromDateTime(a.AppointmentDate.Date) == d
+                        && a.SlotTime == s.SlotTime
+                        && (
+                            a.Status == AppointmentStatus.PENDING
+                            || a.Status == AppointmentStatus.APPROVED
+                            || a.Status == AppointmentStatus.CHECKED_IN
+                        )
+                    );
 
-            var bookedDict = bookedCounts.ToDictionary(x => x.SlotId, x => x.Count);
-
-            var available = baseSlots
-                .Where(s => s.Capacity - (bookedDict.TryGetValue(s.Id, out var c) ? c : 0) > 0)
-                .OrderBy(s => s.StartTime)
-                .Select(s => $"{s.StartTime:hh\\:mm}-{s.EndTime:hh\\:mm}")
-                .ToList();
-
-            return available;
-        }
-
-        public async Task<bool> ExistsOverlapAsync(
-            Guid serviceCenterId,
-            DateTime date,
-            string timeSlot
-        )
-        {
-            var parts = timeSlot.Split(
-                '-',
-                StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries
-            );
-            if (parts.Length != 2)
-                return true;
-
-            if (
-                !TimeSpan.TryParse(parts[0], out var start)
-                || !TimeSpan.TryParse(parts[1], out var end)
-            )
-                return true;
-
-            var dow = (eMotoCare.BO.Enums.DayOfWeeks)date.DayOfWeek;
-
-            var slot = await _context
-                .ServiceCenterSlots.AsNoTracking()
-                .Where(s =>
-                    s.ServiceCenterId == serviceCenterId
-                    && s.IsActive
-                    && (
-                        (s.Date == DateOnly.FromDateTime(date.Date))
-                        || (s.Date == default && s.DayOfWeek == dow)
-                    )
-                    && s.StartTime == start
-                    && s.EndTime == end
-                )
-                .OrderByDescending(s => s.Date != default)
-                .FirstOrDefaultAsync();
-
-            if (slot == null)
-                return true;
-
-            var count = await _context
-                .Appointments.AsNoTracking()
-                .Where(a =>
-                    a.ServiceCenterId == serviceCenterId
-                    && a.AppointmentDate.Date == date.Date
-                    && a.ServiceCenterSlotId == slot.Id
-                    && (
-                        a.Status == AppointmentStatus.PENDING
-                        || a.Status == AppointmentStatus.APPROVED
-                        || a.Status == AppointmentStatus.CHECKED_IN
-                    )
-                )
-                .CountAsync();
-
-            return count >= slot.Capacity;
+                if (booked < s.Capacity)
+                {
+                    // Ánh xạ SlotTime -> string hiển thị (không dùng extension)
+                    var text = s.SlotTime switch
+                    {
+                        SlotTime.H07_08 => "07:00-08:00",
+                        SlotTime.H08_09 => "08:00-09:00",
+                        SlotTime.H09_10 => "09:00-10:00",
+                        SlotTime.H10_11 => "10:00-11:00",
+                        SlotTime.H11_12 => "11:00-12:00",
+                        SlotTime.H13_14 => "13:00-14:00",
+                        SlotTime.H14_15 => "14:00-15:00",
+                        SlotTime.H15_16 => "15:00-16:00",
+                        SlotTime.H16_17 => "16:00-17:00",
+                        SlotTime.H17_18 => "17:00-18:00",
+                        _ => "UNKNOWN",
+                    };
+                    results.Add(text);
+                }
+            }
+            return results;
         }
 
         public Task<Appointment?> GetByCodeAsync(string code) =>
             _context
                 .Appointments.Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
-                .Include(x => x.ServiceCenterSlot)
                 .FirstOrDefaultAsync(x => x.Code == code);
 
         public Task UpdateStatusByIdAsync(Guid id, AppointmentStatus status)

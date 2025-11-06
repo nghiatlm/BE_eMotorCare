@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
@@ -54,6 +55,11 @@ namespace eMotoCare.BO.Entities
         [Column("appointment_date")]
         public DateTime AppointmentDate { get; set; }
 
+        [Required]
+        [Column("slot_time")]
+        [EnumDataType(typeof(SlotTime))]
+        public SlotTime SlotTime { get; set; }
+
         [Column("estimated_cost", TypeName = "decimal(18,2)")]
         public decimal? EstimatedCost { get; set; }
 
@@ -72,12 +78,6 @@ namespace eMotoCare.BO.Entities
 
         [Column("checkin_qr_code", TypeName = "varchar(200)")]
         public string? CheckinQRCode { get; set; }
-
-        [Column("service_center_slot_id")]
-        public Guid? ServiceCenterSlotId { get; set; }
-
-        [ForeignKey(nameof(ServiceCenterSlotId))]
-        public virtual ServiceCenterSlot? ServiceCenterSlot { get; set; }
 
         public virtual ICollection<Payment>? Payments { get; set; }
     }

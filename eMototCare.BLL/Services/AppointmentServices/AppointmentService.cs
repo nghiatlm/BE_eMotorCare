@@ -73,45 +73,31 @@ namespace eMototCare.BLL.Services.AppointmentServices
         {
             try
             {
-                // 1) Kiểm tra ServiceCenterSlot hợp lệ & còn chỗ
-                var slot =
-                    await _unitOfWork.ServiceCenterSlot.FindByIdAsync(req.ServiceCenterSlotId)
-                    ?? throw new AppException(
-                        "Không tìm thấy khung giờ (slot)",
-                        HttpStatusCode.NotFound
-                    );
-
-                if (slot.ServiceCenterId != req.ServiceCenterId)
-                    throw new AppException(
-                        "Slot không thuộc Service Center này",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (!slot.IsActive)
-                    throw new AppException("Slot đã bị vô hiệu hóa", HttpStatusCode.Conflict);
-
-                var apptDateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
+                var dateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
                 var dow = (eMotoCare.BO.Enums.DayOfWeeks)req.AppointmentDate.DayOfWeek;
 
-                // Slot theo ngày hoặc theo thứ
-                var slotMatchDate =
-                    slot.Date == default ? (slot.DayOfWeek == dow) : (slot.Date == apptDateOnly);
-                if (!slotMatchDate)
+                // 1) Có cấu hình slot không?
+                var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
+                    s =>
+                        s.ServiceCenterId == req.ServiceCenterId
+                        && s.IsActive
+                        && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
+                        && s.SlotTime == req.SlotTime
+                );
+                if (slotCfg is null)
                     throw new AppException(
-                        "Slot không khớp với ngày đặt",
-                        HttpStatusCode.BadRequest
+                        "Ngày này không có khung giờ đó.",
+                        HttpStatusCode.Conflict
                     );
 
-                // 2) Kiểm tra capacity còn chỗ?
-                // (dùng đếm số booking cùng slot trong ngày)
-                var bookedCount = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
-                    slot.ServiceCenterId,
-                    slot.Id,
-                    apptDateOnly
+                // 2) Đếm appointment đã đặt trong (SC, Date, SlotTime)
+                var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
+                    req.ServiceCenterId,
+                    dateOnly,
+                    req.SlotTime
                 );
-
-                if (bookedCount >= slot.Capacity)
-                    throw new AppException("Khung giờ đã đầy", HttpStatusCode.Conflict);
+                if (booked >= slotCfg.Capacity)
+                    throw new AppException("Khung giờ này đã đầy.", HttpStatusCode.Conflict);
 
                 // 3) Sinh code
                 string code;
@@ -122,15 +108,13 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     guard++;
                 } while (await _unitOfWork.Appointments.ExistsCodeAsync(code) && guard < 5);
 
-                // 4) Map & gán slot / timeslot
+                // 4) Tạo Appointment (không gán ServiceCenterSlotId)
                 var entity = _mapper.Map<Appointment>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
-                entity.ServiceCenterSlotId = slot.Id;
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
-
                 _logger.LogInformation("Created Appointment {Code} ({Id})", entity.Code, entity.Id);
                 return entity.Id;
             }
@@ -156,66 +140,56 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var changingCore =
                     entity.ServiceCenterId != req.ServiceCenterId
                     || entity.AppointmentDate.Date != req.AppointmentDate.Date
-                    || entity.ServiceCenterSlotId != req.ServiceCenterSlotId;
+                    || entity.SlotTime != req.SlotTime; // CHANGE
 
                 if (changingCore)
                 {
-                    // Kiểm tra slot mới hợp lệ & còn chỗ
-                    var slot =
-                        await _unitOfWork.ServiceCenterSlot.FindByIdAsync(req.ServiceCenterSlotId)
-                        ?? throw new AppException(
-                            "Không tìm thấy khung giờ (slot)",
-                            HttpStatusCode.NotFound
-                        );
-
-                    if (slot.ServiceCenterId != req.ServiceCenterId)
-                        throw new AppException(
-                            "Slot không thuộc Service Center này",
-                            HttpStatusCode.BadRequest
-                        );
-
-                    if (!slot.IsActive)
-                        throw new AppException("Slot đã bị vô hiệu hóa", HttpStatusCode.Conflict);
-
-                    var apptDateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
+                    var dateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
                     var dow = (eMotoCare.BO.Enums.DayOfWeeks)req.AppointmentDate.DayOfWeek;
 
-                    var slotMatchDate =
-                        slot.Date == default
-                            ? (slot.DayOfWeek == dow)
-                            : (slot.Date == apptDateOnly);
-                    if (!slotMatchDate)
+                    var slotCfg = (
+                        await _unitOfWork.ServiceCenterSlot.FindAllAsync()
+                    ).FirstOrDefault(s =>
+                        s.ServiceCenterId == req.ServiceCenterId
+                        && s.IsActive
+                        && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
+                        && s.SlotTime == req.SlotTime
+                    );
+                    if (slotCfg is null)
                         throw new AppException(
-                            "Slot không khớp với ngày đặt",
-                            HttpStatusCode.BadRequest
+                            "Ngày này không có khung giờ đó.",
+                            HttpStatusCode.Conflict
                         );
 
-                    var bookedCount = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
-                        slot.ServiceCenterId,
-                        slot.Id,
-                        apptDateOnly
+                    // Nếu đổi sang slot mới, phải check capacity của slot đó ở ngày mới
+                    var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
+                        req.ServiceCenterId,
+                        dateOnly,
+                        req.SlotTime
                     );
 
-                    // Nếu slot mới đã full, không cho đổi
-                    // (trừ khi đặt chính record này đang chiếm chỗ, nhưng CountBookingsAsync đang tính all;
-                    // để chính xác tuyệt đối, có thể trừ 1 nếu entity đang cùng slot/date)
+                    // trừ chính record hiện tại nếu nó đang ở cùng ngày+slot
                     if (
                         !(
-                            entity.ServiceCenterSlotId == slot.Id
-                            && entity.AppointmentDate.Date == req.AppointmentDate.Date
+                            entity.ServiceCenterId == req.ServiceCenterId
+                            && DateOnly.FromDateTime(entity.AppointmentDate.Date) == dateOnly
+                            && entity.SlotTime == req.SlotTime
                         )
                     )
                     {
-                        if (bookedCount >= slot.Capacity)
-                            throw new AppException("Khung giờ đã đầy", HttpStatusCode.Conflict);
+                        if (booked >= slotCfg.Capacity)
+                            throw new AppException(
+                                "Khung giờ này đã đầy.",
+                                HttpStatusCode.Conflict
+                            );
                     }
 
                     entity.ServiceCenterId = req.ServiceCenterId;
                     entity.AppointmentDate = req.AppointmentDate;
-                    entity.ServiceCenterSlotId = slot.Id;
+                    entity.SlotTime = req.SlotTime; // CHANGE
                 }
 
-                // Map các field còn lại
+                // map các field khác
                 entity.CustomerId = req.CustomerId;
                 entity.VehicleStageId = req.VehicleStageId;
                 entity.EstimatedCost = req.EstimatedCost;
@@ -225,7 +199,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Appointments.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
-
                 _logger.LogInformation("Updated Appointment {Id}", id);
             }
             catch (AppException)

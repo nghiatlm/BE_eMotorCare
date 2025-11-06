@@ -47,21 +47,20 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
                 await _unitOfWork.ServiceCenters.GetByIdAsync(serviceCenterId)
                 ?? throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
 
-            if (req.EndTime <= req.StartTime)
-                throw new AppException("Thời gian slot không hợp lệ", HttpStatusCode.BadRequest);
+            if (req.Capacity < 1)
+                throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
 
             if (req.Capacity < 1)
                 throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
             req.Date = AlignDateToDayOfWeek(req.Date, req.DayOfWeek);
-            if (
-                await _serviceCenterSlotRepository.HasOverlapAsync(
-                    serviceCenterId,
-                    req.DayOfWeek,
-                    req.StartTime,
-                    req.EndTime
-                )
-            )
-                throw new AppException("Slot bị trùng thời gian", HttpStatusCode.Conflict);
+            var duplicated = await _serviceCenterSlotRepository.ExistsSlotAsync(
+                serviceCenterId,
+                req.Date,
+                req.DayOfWeek,
+                req.SlotTime
+            );
+            if (duplicated)
+                throw new AppException("Slot đã tồn tại", HttpStatusCode.Conflict);
 
             var entity = _mapper.Map<ServiceCenterSlot>(req);
             entity.Id = Guid.NewGuid();
@@ -91,22 +90,23 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
             if (slot.ServiceCenterId != serviceCenterId)
                 throw new AppException("Slot không thuộc trung tâm này", HttpStatusCode.BadRequest);
 
-            if (req.EndTime <= req.StartTime)
-                throw new AppException("Thời gian slot không hợp lệ", HttpStatusCode.BadRequest);
+            if (req.Capacity < 1)
+                throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
 
             if (req.Capacity < 1)
                 throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
             req.Date = AlignDateToDayOfWeek(req.Date, req.DayOfWeek);
-            if (
-                await _serviceCenterSlotRepository.HasOverlapAsync(
-                    serviceCenterId,
-                    req.DayOfWeek,
-                    req.StartTime,
-                    req.EndTime,
-                    excludeId: slotId
-                )
-            )
-                throw new AppException("Slot bị trùng thời gian", HttpStatusCode.Conflict);
+            var allOfCenter = await _serviceCenterSlotRepository.GetByServiceCenterAsync(
+                serviceCenterId
+            );
+            var duplicated = allOfCenter.Any(x =>
+                x.Id != slotId
+                && x.IsActive
+                && (x.Date == req.Date || (x.Date == default && x.DayOfWeek == req.DayOfWeek))
+                && x.SlotTime == req.SlotTime
+            );
+            if (duplicated)
+                throw new AppException("Slot đã tồn tại", HttpStatusCode.Conflict);
 
             _mapper.Map(req, slot);
 
@@ -139,16 +139,26 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
 
             var dow = date.ToDateTime(TimeOnly.MinValue).DayOfWeek;
             var all = await _serviceCenterSlotRepository.GetByServiceCenterAsync(serviceCenterId);
-            var todaySlots = all.Where(s => s.IsActive && s.DayOfWeek == (DayOfWeeks)dow).ToList();
+            var todaySlots = all.Where(s => s.IsActive && s.Date == date).ToList();
+
+            if (todaySlots.Count == 0)
+            {
+                todaySlots = all.Where(s =>
+                        s.IsActive && s.Date == default && s.DayOfWeek == (DayOfWeeks)dow
+                    )
+                    .ToList();
+            }
 
             var result = new List<(ServiceCenterSlotResponse, int)>();
             foreach (var s in todaySlots)
             {
+                //đếm theo (Date, SlotTime) — không dùng slotId
                 var booked = await _serviceCenterSlotRepository.CountBookingsAsync(
                     serviceCenterId,
-                    s.Id,
-                    date
+                    date,
+                    s.SlotTime
                 );
+
                 var remaining = Math.Max(0, s.Capacity - booked);
                 result.Add((_mapper.Map<ServiceCenterSlotResponse>(s), remaining));
             }

@@ -8,8 +8,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid ServiceCenterId { get; set; }
         public DateOnly Date { get; set; }
         public DayOfWeeks DayOfWeek { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
+        public SlotTime SlotTime { get; set; }
         public int Capacity { get; set; }
         public bool IsActive { get; set; }
         public string? Note { get; set; }
