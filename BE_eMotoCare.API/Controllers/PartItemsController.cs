@@ -22,7 +22,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] Guid? partId,
             [FromQuery] string? serialNumber,
@@ -42,7 +42,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _partItemService.GetByIdAsync(id);
@@ -55,7 +55,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> Create([FromBody] PartItemRequest request)
         {
             var id = await _partItemService.CreateAsync(request);
@@ -65,7 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _partItemService.DeleteAsync(id);
@@ -73,13 +73,25 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] PartItemUpdateRequest request)
         {
             await _partItemService.UpdateAsync(id, request);
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Part Item thành công")
             );
+        }
+
+        [HttpGet("{evCheckDetailId}/part-items")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> GetPartItemsByServiceCenter(Guid evCheckDetailId)
+        {
+            var partItems = await _partItemService.GetByEvCheckDetailIdAsync(evCheckDetailId);
+
+            if (!partItems.Any())
+                return NotFound(ApiResponse<string>.NotFound("Không tìm thấy part item"));
+
+            return Ok(ApiResponse<List<PartItemResponse>>.SuccessResponse(partItems, "Lấy danh sách thành công"));
         }
     }
 }

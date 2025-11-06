@@ -57,6 +57,15 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
         public Task<bool> ExistsSerialNumberAsync(string serialNumber) =>
             _context.PartItems.AnyAsync(x => x.SerialNumber == serialNumber);
 
+   
 
+        public async Task<List<PartItem>> GetByServiceCenterIdAsync(Guid serviceCenterId)
+        {
+            return await _context.PartItems
+                .Include(p => p.ServiceCenterInventory)
+                .Include(p => p.Part)
+                .Where(p => p.ServiceCenterInventory.ServiceCenterId == serviceCenterId)
+                .ToListAsync();
+        }
     }
 }

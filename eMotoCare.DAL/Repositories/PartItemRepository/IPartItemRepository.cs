@@ -9,5 +9,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
         Task<bool> ExistsSerialNumberAsync(string serialNumber);
         Task<PartItem?> GetByIdAsync(Guid id);
         Task<(IReadOnlyList<PartItem> Items, long Total)> GetPagedAsync(Guid? partId, string? serialNumber, PartItemStatus? status, Guid? serviceCenterInventoryId, int page, int pageSize);
+        Task<List<PartItem>> GetByServiceCenterIdAsync(Guid serviceCenterId);
+        Task<(IReadOnlyList<PartItem> Items, long Total)> GetPagedAsync(Guid? partId, Guid? exportNoteId, Guid? importNoteId, string? serialNumber, PartItemStatus? status, Guid? serviceCenterInventoryId, int page, int pageSize);
     }
 }
