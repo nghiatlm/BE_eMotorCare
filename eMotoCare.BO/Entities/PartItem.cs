@@ -58,7 +58,5 @@ namespace eMotoCare.BO.Entities
         public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
         public virtual ICollection<VehiclePartItem>? VehiclePartItems { get; set; }
         public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
-        public virtual ICollection<ImportNoteDetail>? ImportNoteDetails { get; set; }
-        public virtual ICollection<ExportNoteDetail>? ExportNoteDetails { get; set; }
     }
 }

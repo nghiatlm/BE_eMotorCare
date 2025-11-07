@@ -8,12 +8,9 @@ using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.CustomerServices;
 using eMototCare.BLL.Services.EmailServices;
 using eMototCare.BLL.Services.EVCheckDetailServices;
-using eMototCare.BLL.Services.EVCheckDetailServices;
 using eMototCare.BLL.Services.EVCheckServices;
-using eMototCare.BLL.Services.ExportNoteDetailServices;
 using eMototCare.BLL.Services.ExportServices;
 using eMototCare.BLL.Services.FirebaseServices;
-using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
@@ -64,7 +61,6 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPayosService, PayosService>();
             services.AddScoped<Utils>();
             services.AddScoped<IPartItemService, PartItemService>();
-            services.AddScoped<IExportNoteDetailService, ExportNoteDetailService>();
             return services;
         }
     }
