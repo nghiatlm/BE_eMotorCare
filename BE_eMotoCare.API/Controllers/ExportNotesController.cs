@@ -75,6 +75,18 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
+        [HttpGet("{exportNoteId}/part-items")]
+        public async Task<IActionResult> GetPartItems(Guid exportNoteId)
+        {
+            var result = await _exportService.GetPartItemsByExportNoteIdAsync(exportNoteId);
+            return Ok(
+                ApiResponse<List<ExportPartItemResponse>>.SuccessResponse(
+                    result,
+                    "Lấy danh sách part item thành công")
+                );
+        }
+
         [HttpPost]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Create([FromBody] ExportNoteRequest request)
