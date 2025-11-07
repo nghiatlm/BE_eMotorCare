@@ -29,8 +29,6 @@ namespace eMototCare.BLL.Services.PartItemServices
 
         public async Task<PageResult<PartItemResponse>> GetPagedAsync(
              Guid? partId,
-             Guid? exportNoteId,
-             Guid? importNoteId,
              string? serialNumber,
              PartItemStatus? status,
              Guid? serviceCenterInventoryId,
@@ -42,8 +40,6 @@ namespace eMototCare.BLL.Services.PartItemServices
             {
                 var (items, total) = await _unitOfWork.PartItems.GetPagedAsync(
                     partId,
-                    exportNoteId,
-                    importNoteId,
                     serialNumber,
                     status,
                     serviceCenterInventoryId,
@@ -150,10 +146,6 @@ namespace eMototCare.BLL.Services.PartItemServices
 
                 if (req.PartId != null)
                     entity.PartId =  req.PartId.Value;
-                if (req.ExportNoteId != null)
-                    entity.ExportNoteId = req.ExportNoteId;
-                if (req.ImportNoteId != null)
-                    entity.ImportNoteId = req.ImportNoteId;
                 if (req.Quantity != null)
                     entity.Quantity = req.Quantity.Value;
                 if (req.SerialNumber != null)
@@ -240,6 +232,27 @@ namespace eMototCare.BLL.Services.PartItemServices
                 _logger.LogError(ex, "GetById Part Item failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
+        }
+
+        public async Task<List<PartItemResponse>> GetByEvCheckDetailIdAsync(Guid evCheckDetailId)
+        {
+            var evCheckDetail = await _unitOfWork.EVCheckDetails.GetByIdAsync(evCheckDetailId);
+            if (evCheckDetail == null || evCheckDetail.PartItem?.Part == null)
+                throw new AppException("Không tìm thấy EVCheckDetail hoặc Part tương ứng", HttpStatusCode.NotFound);
+
+            var partItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(evCheckDetail.EVCheck.Appointment.ServiceCenterId);
+            if (partItems is null || !partItems.Any())
+                throw new AppException("Không tìm thấy Part Item nào cho Trung tâm dịch vụ này", HttpStatusCode.NotFound);
+
+
+            var targetCode = evCheckDetail.PartItem.Part.Code;
+
+            var filtered = partItems
+                        .Where(pi => pi.Part != null && pi.Part.Code == targetCode && pi.Quantity == 1)
+                        .ToList();
+
+
+            return _mapper.Map<List<PartItemResponse>>(filtered);
         }
     }
 }

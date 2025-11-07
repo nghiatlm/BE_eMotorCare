@@ -85,8 +85,8 @@ namespace eMototCare.BLL.Services.ExportServices
 
                 var entity = _mapper.Map<ExportNote>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = await _utils.GenerateCodeAsync("EXP");
-                entity.ExportNoteStatus = ExportNoteStatus.PENDING;
+                entity.Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+                entity.ExportNoteStatus = ExportNoteStatus.APPROVED;
                 entity.ExportDate = DateTime.UtcNow;
 
                 await _unitOfWork.ExportNotes.CreateAsync(entity);
@@ -146,16 +146,62 @@ namespace eMototCare.BLL.Services.ExportServices
                         HttpStatusCode.NotFound
                     );
 
-                var code = req.Code.Trim();
-                if (
-                    !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
-                    && await _unitOfWork.ExportNotes.ExistsCodeAsync(code)
-                )
-                    throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+                
 
+                if (req.Code != null)
+                {
+                    var code = req.Code.Trim();
+                    if (
+                        !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
+                        && await _unitOfWork.ExportNotes.ExistsCodeAsync(code)
+                    )
+                        throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+                    entity.Code = code;
+                }
+                if (req.ExportDate != null)
+                {
+                    entity.ExportDate = req.ExportDate.Value;
+                }
+                if (req.Type != null)
+                {
+                    entity.Type = req.Type.Value;
+                }
+                if (req.ExportTo != null)
+                {
+                    entity.ExportTo = req.ExportTo.Trim();
+                }
+                if (req.TotalQuantity != null)
+                {
+                    entity.TotalQuantity = req.TotalQuantity.Value;
+                }
+                if (req.TotalValue != null)
+                {
+                    entity.TotalValue = req.TotalValue.Value;
+                }
+                if (req.Note != null)
+                {
+                    entity.Note = req.Note.Trim();
+                }
 
-                _mapper.Map(req, entity);
-                entity.Code = code;
+                entity.ExportById = req.ExportById;
+
+                if (req.ServiceCenterId != null)
+                {
+                    entity.ServiceCenterId = req.ServiceCenterId.Value;
+                }
+                if (req.ExportNoteStatus != null)
+                {
+                    if (req.ExportNoteStatus == ExportNoteStatus.COMPLETED && entity.Type == ExportType.REPLACEMENT)
+                    {
+                        var guidString = entity.ExportTo.Replace("EVCheck: ", "").Trim();
+                        var evCheckId = Guid.Parse(guidString);
+                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(evCheckId);
+                        evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
+                        await _unitOfWork.EVChecks.UpdateAsync(evCheck);
+                    }
+                    entity.ExportNoteStatus = req.ExportNoteStatus.Value;
+                }
+
 
                 await _unitOfWork.ExportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -195,5 +241,27 @@ namespace eMototCare.BLL.Services.ExportServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task<List<ExportPartItemResponse>> GetPartItemsByExportNoteIdAsync(Guid exportNoteId)
+        {
+            try
+            {
+                var exportNote = await _unitOfWork.ExportNotes.GetByIdAsync(exportNoteId);
+                if (exportNote is null)
+                    throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
+                var partItems = await _unitOfWork.PartItems.GetByExportNoteIdAsync(exportNoteId);
+                return _mapper.Map<List<ExportPartItemResponse>>(partItems);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Get PartItems by ExportNoteId failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
     }
 }

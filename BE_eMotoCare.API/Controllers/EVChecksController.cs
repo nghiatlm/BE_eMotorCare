@@ -73,6 +73,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _evCheckService.DeleteAsync(id);
+            await _notifier.NotifyDeleteAsync("EVCheck", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá EVCheck thành công"));
         }
 
@@ -98,6 +99,15 @@ namespace BE_eMotoCare.API.Controllers
                 );
             }
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật EVCheck thành công"));
+        }
+
+        [HttpPut("{id}/approve-quote")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_CUSTOMER")]
+        public async Task<IActionResult> Approve(Guid id)
+        {
+            await _evCheckService.QuoteApprove(id);
+            await _notifier.NotifyUpdateAsync("EVCheck", new { Id = id });
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Xác nhận sửa chữa và tạo phiếu xuất thành công."));
         }
     }
 }

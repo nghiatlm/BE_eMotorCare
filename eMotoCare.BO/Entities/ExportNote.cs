@@ -41,7 +41,7 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("export_by_id")]
-        public Guid ExportById { get; set; }
+        public Guid? ExportById { get; set; }
 
         [ForeignKey(nameof(ExportById))]
         public virtual Staff? ExportBy { get; set; }

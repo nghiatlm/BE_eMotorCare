@@ -33,14 +33,18 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> LoginStaff([FromBody] StaffLoginRequest request)
         {
             var response = await _service.LoginStaff(request);
-            return Ok(ApiResponse<string>.SuccessResponse("OTP đã được gửi đến email. Vui lòng xác minh để hoàn tất đăng nhập."));
+            if (response == null)
+            {
+                return Ok(ApiResponse<string>.SuccessResponse("OTP đã được gửi đến email. Vui lòng xác minh tài khoản."));
+            }
+            return Ok(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
         }
 
         [HttpPost("verify-otp/staff")]
         public async Task<IActionResult> VerifyLoginStaffAsync([FromBody] VerifyLoginRequest request)
         {
             var result = await _service.VerifyLoginStaffAsync(request);
-            return Ok(ApiResponse<AuthResponse>.SuccessResponse(result, "Đăng nhập thành công"));
+            return Ok(ApiResponse<string>.SuccessResponse("Xác thực thành công"));
         }
 
         [HttpPost("register")]

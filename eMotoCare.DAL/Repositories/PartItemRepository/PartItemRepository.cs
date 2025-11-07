@@ -15,8 +15,6 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
         public async Task<(IReadOnlyList<PartItem> Items, long Total)> GetPagedAsync(
              Guid? partId,
-             Guid? exportNoteId,
-             Guid? importNoteId,
              string? serialNumber,
              PartItemStatus? status,
              Guid? serviceCenterInventoryId,
@@ -29,17 +27,11 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
             var q = _context.PartItems
                 .Include(x => x.Part)
-                .Include(x => x.ImportNote)
-                .Include(x => x.ExportNote)
                 .AsNoTracking()
                 .AsQueryable();
             
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
-            if (exportNoteId.HasValue)
-                q = q.Where(x => x.ExportNoteId == exportNoteId.Value);
-            if (importNoteId.HasValue)
-                q = q.Where(x => x.ImportNoteId == importNoteId.Value);
             if (!string.IsNullOrWhiteSpace(serialNumber))
                 q = q.Where(x => x.SerialNumber.Contains(serialNumber));
             if (status.HasValue)
@@ -64,5 +56,20 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
         public Task<bool> ExistsSerialNumberAsync(string serialNumber) =>
             _context.PartItems.AnyAsync(x => x.SerialNumber == serialNumber);
+
+        public Task<List<PartItem>> GetByExportNoteIdAsync(Guid exportNoteId) =>
+            _context.PartItems
+            .Include(x => x.Part)
+            .Where(x => x.ExportNoteId == exportNoteId)
+            .ToListAsync();
+
+        public async Task<List<PartItem>> GetByServiceCenterIdAsync(Guid serviceCenterId)
+        {
+            return await _context.PartItems
+                .Include(p => p.ServiceCenterInventory)
+                .Include(p => p.Part)
+                .Where(p => p.ServiceCenterInventory.ServiceCenterId == serviceCenterId)
+                .ToListAsync();
+        }
     }
 }

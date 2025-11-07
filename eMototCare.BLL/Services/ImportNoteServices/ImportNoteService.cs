@@ -86,9 +86,10 @@ namespace eMototCare.BLL.Services.ImportNoteServices
 
                 var entity = _mapper.Map<ImportNote>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = await _utils.GenerateCodeAsync("IMP");
-                entity.ImportNoteStatus = ImportNoteStatus.RECEIVING;
                 entity.ImportDate = DateTime.UtcNow;
+                entity.Code = $"IMPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+                entity.ImportNoteStatus = ImportNoteStatus.APPROVE;
+                
 
                 await _unitOfWork.ImportNotes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();

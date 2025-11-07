@@ -41,13 +41,6 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(CreateById))]
         public virtual Staff? Staff { get; set; }
 
-        [Required]
-        [Column("customer_id")]
-        public Guid CustomerId { get; set; }
-
-        [ForeignKey(nameof(CustomerId))]
-        public virtual Customer? Customer { get; set; }
-
         public virtual ICollection<RMADetail>? RMADetails { get; set; }
 
     }

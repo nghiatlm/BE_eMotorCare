@@ -87,9 +87,13 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
         public async Task<EVCheck?> GetByIdAsync(Guid id)
         {
             var evCheck = await _context
-                .EVChecks.Include(x => x.Appointment)
+                .EVChecks
+                .Include(x => x.Appointment)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
+                    .ThenInclude(p => p.PartItem)
+                .Include(x => x.EVCheckDetails)
+                    .ThenInclude(p => p.ReplacePart)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }

@@ -210,7 +210,11 @@ namespace eMototCare.BLL.Services.PayosServices
                 {
                     payment.Status = StatusPayment.SUCCESS;
                     if (appointment != null)
+                    {
                         appointment.Status = AppointmentStatus.COMPLETED;
+                        appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
+
+                    }
                 }
                 else
                 {

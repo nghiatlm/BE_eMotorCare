@@ -4,7 +4,7 @@ using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Responses
 {
-    public class PartItemResponse
+    public class ExportPartItemResponse
     {
         public Guid Id { get; set; }
         public PartResponse? Part { get; set; }

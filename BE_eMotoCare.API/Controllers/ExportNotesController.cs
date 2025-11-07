@@ -16,9 +16,9 @@ namespace BE_eMotoCare.API.Controllers
     public class ExportNotesController : ControllerBase
     {
         private readonly IExportService _exportService;
-        private readonly INotifierService _notifier;
+        private readonly INotifierExportNoteService _notifier;
 
-        public ExportNotesController(IExportService exportService, INotifierService notifier)
+        public ExportNotesController(IExportService exportService, INotifierExportNoteService notifier)
         {
             _exportService = exportService;
             _notifier = notifier;
@@ -75,6 +75,18 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
+        [HttpGet("{exportNoteId}/part-items")]
+        public async Task<IActionResult> GetPartItems(Guid exportNoteId)
+        {
+            var result = await _exportService.GetPartItemsByExportNoteIdAsync(exportNoteId);
+            return Ok(
+                ApiResponse<List<ExportPartItemResponse>>.SuccessResponse(
+                    result,
+                    "Lấy danh sách part item thành công")
+                );
+        }
+
         [HttpPost]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
         public async Task<IActionResult> Create([FromBody] ExportNoteRequest request)
@@ -99,7 +111,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] ExportNoteUpdateRequest request)
         {
             await _exportService.UpdateAsync(id, request);
-            await _notifier.NotifyUpdateAsync("Export Note", new { Id = id });
+            await _notifier.NotifyUpdateAsync("Export Note", new { Id = id, Status = request.ExportNoteStatus });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Export Note thành công")
             );

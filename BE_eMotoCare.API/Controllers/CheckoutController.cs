@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.Entities;
 using eMototCare.BLL.Services.PayosServices;
@@ -13,10 +14,11 @@ namespace BE_eMotoCare.API.Controllers
     public class CheckoutController : ControllerBase
     {
         private readonly IPayosService _payosService;
-
-        public CheckoutController(IPayosService payosService)
+        private readonly INotifierService _notifier;
+        public CheckoutController(IPayosService payosService, INotifierService notifier)
         {
             _payosService = payosService;
+            _notifier = notifier;
         }
 
         [HttpPost("create-payment-link")]
@@ -53,10 +55,22 @@ namespace BE_eMotoCare.API.Controllers
             var resullt = await _payosService.VerifyPaymentAsync(type);
             if (resullt)
             {
+                await _notifier.NotifyUpdateAsync("Payment", new
+                {
+                    Message = "Payment verified successfully.",
+                    OrderCode = type.code,
+                    Status = "Success"
+                });
                 return Ok(ApiResponse<string>.SuccessResponse("Payment verified successfully."));
             }
             else
             {
+                await _notifier.NotifyUpdateAsync("Payment", new
+                {
+                    Message = "Payment verification failed.",
+                    OrderCode = type.code,
+                    Status = "Failed"
+                });
                 return BadRequest(ApiResponse<string>.BadRequest("Payment verification failed."));
             }
         }
