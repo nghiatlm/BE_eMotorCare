@@ -94,15 +94,13 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
                         .ServiceCenterSlots.AsNoTracking()
                         .Where(s => s.ServiceCenterId == x.Id)
                         .OrderBy(s => s.Date)
-                        .ThenBy(s => s.StartTime)
                         .Select(s => new ServiceCenterSlotResponse
                         {
                             Id = s.Id,
                             ServiceCenterId = s.ServiceCenterId,
                             Date = s.Date,
                             DayOfWeek = s.DayOfWeek,
-                            StartTime = s.StartTime,
-                            EndTime = s.EndTime,
+                            SlotTime = s.SlotTime,
                             Capacity = s.Capacity,
                             IsActive = s.IsActive,
                             Note = s.Note,
@@ -158,15 +156,13 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
                         .ServiceCenterSlots.AsNoTracking()
                         .Where(s => s.ServiceCenterId == x.Id)
                         .OrderBy(s => s.Date)
-                        .ThenBy(s => s.StartTime)
                         .Select(s => new ServiceCenterSlotResponse
                         {
                             Id = s.Id,
                             ServiceCenterId = s.ServiceCenterId,
                             Date = s.Date,
                             DayOfWeek = s.DayOfWeek,
-                            StartTime = s.StartTime,
-                            EndTime = s.EndTime,
+                            SlotTime = s.SlotTime,
                             Capacity = s.Capacity,
                             IsActive = s.IsActive,
                             Note = s.Note,

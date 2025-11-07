@@ -1,4 +1,5 @@
 ﻿using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
@@ -18,35 +19,43 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
                 .ServiceCenterSlots.AsNoTracking()
                 .Where(x => x.ServiceCenterId == serviceCenterId)
                 .OrderBy(x => x.DayOfWeek)
-                .ThenBy(x => x.StartTime)
+                .ThenBy(x => x.SlotTime)
                 .ToListAsync();
 
-        public async Task<bool> HasOverlapAsync(
-            Guid serviceCenterId,
-            DayOfWeeks dayOfWeek,
-            TimeSpan start,
-            TimeSpan end,
-            Guid? excludeId = null
+        public async Task<bool> ExistsSlotAsync(
+            Guid scId,
+            DateOnly date,
+            DayOfWeeks dow,
+            SlotTime slot
         )
         {
-            var q = _context
+            return await _context
                 .ServiceCenterSlots.AsNoTracking()
-                .Where(x => x.ServiceCenterId == serviceCenterId && x.DayOfWeek == dayOfWeek);
-
-            if (excludeId.HasValue)
-                q = q.Where(x => x.Id != excludeId.Value);
-
-            return await q.AnyAsync(x => start < x.EndTime && end > x.StartTime);
+                .AnyAsync(s =>
+                    s.ServiceCenterId == scId
+                    && s.IsActive
+                    && (s.Date == date || (s.Date == default && s.DayOfWeek == dow))
+                    && s.SlotTime == slot
+                );
         }
 
-        public async Task<int> CountBookingsAsync(Guid serviceCenterId, Guid slotId, DateOnly date)
+        public async Task<int> CountBookingsAsync(
+            Guid serviceCenterId,
+            DateOnly date,
+            SlotTime slot
+        )
         {
             return await _context
                 .Appointments.AsNoTracking()
                 .Where(a =>
                     a.ServiceCenterId == serviceCenterId
-                    && a.ServiceCenterSlotId == slotId
                     && DateOnly.FromDateTime(a.AppointmentDate.Date) == date
+                    && a.SlotTime == slot
+                    && (
+                        a.Status == AppointmentStatus.PENDING
+                        || a.Status == AppointmentStatus.APPROVED
+                        || a.Status == AppointmentStatus.CHECKED_IN
+                    )
                 )
                 .CountAsync();
         }
@@ -58,23 +67,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterSlotRepository
             _context
                 .ServiceCenterSlots.AsNoTracking()
                 .Where(x => x.ServiceCenterId == scId && x.Date == date && x.IsActive)
-                .OrderBy(x => x.StartTime)
+                .OrderBy(x => x.SlotTime)
                 .ToListAsync();
-
-        public async Task<bool> HasOverlapOnDateAsync(
-            Guid scId,
-            DateOnly date,
-            TimeSpan start,
-            TimeSpan end,
-            Guid? excludeId = null
-        )
-        {
-            var q = _context
-                .ServiceCenterSlots.AsNoTracking()
-                .Where(x => x.ServiceCenterId == scId && x.Date == date);
-            if (excludeId.HasValue)
-                q = q.Where(x => x.Id != excludeId.Value);
-            return await q.AnyAsync(x => start < x.EndTime && end > x.StartTime);
-        }
     }
 }
