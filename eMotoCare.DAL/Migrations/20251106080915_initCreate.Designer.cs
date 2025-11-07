@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251106080915_initCreate")]
+    partial class initCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,14 +112,20 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
 
-                    b.Property<int>("SlotTime")
-                        .HasColumnType("int")
-                        .HasColumnName("slot_time");
+                    b.Property<Guid?>("ServiceCenterSlotId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("service_center_slot_id");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("varchar(200)")
                         .HasColumnName("status");
+
+                    b.Property<string>("TimeSlot")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)")
+                        .HasColumnName("time_slot");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -136,6 +145,8 @@ namespace eMotoCare.DAL.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ServiceCenterId");
+
+                    b.HasIndex("ServiceCenterSlotId");
 
                     b.HasIndex("VehicleStageId");
 
@@ -1359,6 +1370,10 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(16)")
                         .HasColumnName("day_of_week");
 
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time(6)")
+                        .HasColumnName("end_time");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("tinyint(1)")
                         .HasColumnName("is_active");
@@ -1371,9 +1386,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
 
-                    b.Property<int>("SlotTime")
-                        .HasColumnType("int")
-                        .HasColumnName("slot_time");
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time(6)")
+                        .HasColumnName("start_time");
 
                     b.HasKey("Id");
 
@@ -1629,6 +1644,10 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("eMotoCare.BO.Entities.ServiceCenterSlot", "ServiceCenterSlot")
+                        .WithMany()
+                        .HasForeignKey("ServiceCenterSlotId");
+
                     b.HasOne("eMotoCare.BO.Entities.VehicleStage", "VehicleStage")
                         .WithMany("Appointments")
                         .HasForeignKey("VehicleStageId");
@@ -1640,6 +1659,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("ServiceCenter");
+
+                    b.Navigation("ServiceCenterSlot");
 
                     b.Navigation("VehicleStage");
                 });

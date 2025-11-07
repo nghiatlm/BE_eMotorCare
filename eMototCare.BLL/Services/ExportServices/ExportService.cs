@@ -86,7 +86,7 @@ namespace eMototCare.BLL.Services.ExportServices
                 var entity = _mapper.Map<ExportNote>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
-                entity.ExportNoteStatus = ExportNoteStatus.PENDING;
+                entity.ExportNoteStatus = ExportNoteStatus.APPROVED;
                 entity.ExportDate = DateTime.UtcNow;
 
                 await _unitOfWork.ExportNotes.CreateAsync(entity);
@@ -182,16 +182,23 @@ namespace eMototCare.BLL.Services.ExportServices
                 {
                     entity.Note = req.Note.Trim();
                 }
-                if (req.ExportById != null)
-                {
-                    entity.ExportById = req.ExportById.Value;
-                }
+
+                entity.ExportById = req.ExportById;
+
                 if (req.ServiceCenterId != null)
                 {
                     entity.ServiceCenterId = req.ServiceCenterId.Value;
                 }
                 if (req.ExportNoteStatus != null)
                 {
+                    if (req.ExportNoteStatus == ExportNoteStatus.COMPLETED && entity.Type == ExportType.REPLACEMENT)
+                    {
+                        var guidString = entity.ExportTo.Replace("EVCheck: ", "").Trim();
+                        var evCheckId = Guid.Parse(guidString);
+                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(evCheckId);
+                        evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
+                        await _unitOfWork.EVChecks.UpdateAsync(evCheck);
+                    }
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;
                 }
 
@@ -255,5 +262,6 @@ namespace eMototCare.BLL.Services.ExportServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
     }
 }

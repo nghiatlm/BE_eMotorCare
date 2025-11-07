@@ -158,6 +158,7 @@ namespace eMotoCare.DAL
         public IServiceCenterSlotRepository ServiceCenterSlot =>
             _serviceCenterSlotRepository ??= new ServiceCenterSlotRepository(_unitOfWorkContext);
 
+
         public void RemoveRange(List<EVCheckDetail> olds)
         {
             _unitOfWorkContext.EVCheckDetails.RemoveRange(olds);

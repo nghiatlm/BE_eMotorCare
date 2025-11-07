@@ -281,36 +281,20 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         _unitOfWork.VehicleStages.Update(vs);
                     }
                 }
-                if (
-                    req.Status == EVCheckStatus.QUOTE_APPROVED
-                    || req.Status == EVCheckStatus.REPAIR_COMPLETED
-                )
+                if (req.Status == EVCheckStatus.REPAIR_COMPLETED)
                 {
                     if (appt != null)
                     {
-                        if (
-                            req.Status == EVCheckStatus.QUOTE_APPROVED
-                            && appt.Status != AppointmentStatus.QUOTE_APPROVED
-                        )
+                        if (appt.Status != AppointmentStatus.REPAIR_COMPLETED)
                         {
-                            appt.Status = AppointmentStatus.QUOTE_APPROVED;
-                        }
-
-                        if (
-                            req.Status == EVCheckStatus.REPAIR_COMPLETED
-                            && appt.Status != AppointmentStatus.COMPLETED
-                        )
-                        {
-                            appt.Status = AppointmentStatus.COMPLETED;
+                            appt.Status = AppointmentStatus.REPAIR_COMPLETED;
                         }
                     }
                     else
                     {
                         await _unitOfWork.Appointments.UpdateStatusByIdAsync(
                             entity.AppointmentId,
-                            req.Status == EVCheckStatus.QUOTE_APPROVED
-                                ? AppointmentStatus.QUOTE_APPROVED
-                                : AppointmentStatus.COMPLETED
+                            AppointmentStatus.REPAIR_COMPLETED
                         );
                     }
                 }
@@ -370,8 +354,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
-                    ExportById = evCheck.TaskExecutorId,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
+                    ExportTo = "EVCheck: " + evCheck.Id.ToString(),
                     ExportNoteStatus = ExportNoteStatus.PENDING,
                     TotalValue = 0,      // tổng giá trị phiếu xuất
                     TotalQuantity = 0    // tổng số lượng xuất
@@ -389,6 +373,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     _unitOfWork.PartItems.Update(partItem);
                 }
             }
+            evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
             _unitOfWork.EVChecks.Update(evCheck);
             await _unitOfWork.SaveAsync();
             return true;

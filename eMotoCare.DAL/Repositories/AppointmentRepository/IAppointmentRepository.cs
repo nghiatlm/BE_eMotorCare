@@ -21,7 +21,6 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
         Task<bool> ExistsCodeAsync(string code);
 
         Task<IReadOnlyList<string>> GetAvailableSlotsAsync(Guid serviceCenterId, DateTime date);
-        Task<bool> ExistsOverlapAsync(Guid serviceCenterId, DateTime date, string timeSlot);
         Task UpdateStatusByIdAsync(Guid appointmentId, AppointmentStatus appointmentStatus);
     }
 }

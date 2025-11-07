@@ -27,7 +27,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER,ROLE_ADMIN")]
         public async Task<IActionResult> GetAll([FromQuery] Guid serviceCenterId)
         {
             var items = await _serviceCenterSlotService.GetAllAsync(serviceCenterId);
@@ -52,8 +52,7 @@ namespace BE_eMotoCare.API.Controllers
                             id = s.Id,
                             dayOfWeek = s.DayOfWeek.ToString(),
                             date = s.Date.ToString("yyyy-MM-dd"),
-                            startTime = s.StartTime.ToString(@"hh\:mm"),
-                            endTime = s.EndTime.ToString(@"hh\:mm"),
+                            slotTime = s.SlotTime.ToString(),
                             capacity = s.Capacity,
                             isActive = s.IsActive,
                         }),
@@ -70,7 +69,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER")]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER,ROLE_ADMIN")]
         public async Task<IActionResult> Create(
             Guid serviceCenterId,
             [FromBody] ServiceCenterSlotRequest req
@@ -85,7 +84,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{slotId}")]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_ADMIN")]
         public async Task<IActionResult> Update(
             Guid serviceCenterId,
             Guid slotId,

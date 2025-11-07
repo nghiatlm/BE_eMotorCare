@@ -28,12 +28,9 @@ namespace eMotoCare.BO.Entities
         public DayOfWeeks DayOfWeek { get; set; }
 
         [Required]
-        [Column("start_time")]
-        public TimeSpan StartTime { get; set; }
-
-        [Required]
-        [Column("end_time")]
-        public TimeSpan EndTime { get; set; }
+        [Column("slot_time")]
+        [EnumDataType(typeof(SlotTime))]
+        public SlotTime SlotTime { get; set; }
 
         [Required]
         [Column("capacity")]

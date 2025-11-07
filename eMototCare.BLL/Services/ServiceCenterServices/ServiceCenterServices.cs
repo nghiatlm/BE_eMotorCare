@@ -38,14 +38,18 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
         {
             try
             {
-                var (items, total) = await _unitOfWork.ServiceCenters.GetPagedAsync(
+                var (items, total) = await _unitOfWork.ServiceCenters.GetDtoPagedAsync(
                     search,
                     status,
                     page,
                     pageSize
                 );
-                var rows = _mapper.Map<List<ServiceCenterResponse>>(items);
-                return new PageResult<ServiceCenterResponse>(rows, pageSize, page, (int)total);
+                return new PageResult<ServiceCenterResponse>(
+                    items.ToList(),
+                    pageSize,
+                    page,
+                    (int)total
+                );
             }
             catch (AppException)
             {
@@ -62,11 +66,11 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
         {
             try
             {
-                var sc = await _unitOfWork.ServiceCenters.GetByIdAsync(id);
-                if (sc is null)
+                var dto = await _unitOfWork.ServiceCenters.GetDtoByIdAsync(id);
+                if (dto is null)
                     throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
 
-                return _mapper.Map<ServiceCenterResponse>(sc);
+                return dto;
             }
             catch (AppException)
             {

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Requests
 {
@@ -14,11 +15,7 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid? VehicleStageId { get; set; }
 
         [Required]
-        public Guid ServiceCenterSlotId { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string TimeSlot { get; set; } = default!;
+        public SlotTime SlotTime { get; set; }
 
         [Required]
         public DateTime AppointmentDate { get; set; }

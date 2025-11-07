@@ -180,50 +180,67 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                 if (req.TotalAmount != null)
                     entity.TotalAmount = req.TotalAmount.Value;
 
-                if (req.Status != null)
-                    entity.Status = req.Status.Value;
-                var isCompletedNow = (req.Status ?? entity.Status) == EVCheckDetailStatus.COMPLETED;
-                if (isCompletedNow)
+                if (req.Status != null) 
                 {
-                    Guid? vehicleStageId = null;
-
-                    if (!vehicleStageId.HasValue)
+                    entity.Status = req.Status.Value;
+                    
+                    if (req.Status == EVCheckDetailStatus.COMPLETED && entity.ReplacePartId != null)
                     {
-                        var evCheckId = req.EVCheckId ?? entity.EVCheckId;
-                        if (evCheckId != Guid.Empty)
+                        var vehiclePartItem = new VehiclePartItem
                         {
-                            var evCheck = await _unitOfWork.EVChecks.GetByIdWithAppointmentAsync(
-                                evCheckId
-                            );
-                            vehicleStageId = evCheck?.Appointment?.VehicleStageId;
-                        }
-                    }
-
-                    if (vehicleStageId.HasValue)
-                    {
-                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
-                            vehicleStageId.Value
-                        );
-                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
-                        {
-                            stage.Status = VehicleStageStatus.COMPLETED;
-                            stage.DateOfImplementation = DateTime.UtcNow;
-                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
-                            _logger.LogInformation(
-                                "VehicleStage {StageId} -> COMPLETED (từ EVCheckDetail {DetailId})",
-                                stage.Id,
-                                entity.Id
-                            );
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "EVCheckDetail {DetailId}: không tìm thấy VehicleStageId để cập nhật COMPLETED",
-                            entity.Id
-                        );
+                            Id = Guid.NewGuid(),
+                            InstallDate = DateTime.UtcNow,
+                            VehicleId = entity.EVCheck.Appointment.VehicleStage.VehicleId,
+                            PartItemId = entity.ReplacePartId.Value,
+                            ReplaceForId = entity.PartItemId
+                        };
+                        await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
                     }
                 }
+                    
+                
+                //var isCompletedNow = (req.Status ?? entity.Status) == EVCheckDetailStatus.COMPLETED;
+                //if (isCompletedNow)
+                //{
+                //    Guid? vehicleStageId = null;
+
+                //    if (!vehicleStageId.HasValue)
+                //    {
+                //        var evCheckId = req.EVCheckId ?? entity.EVCheckId;
+                //        if (evCheckId != Guid.Empty)
+                //        {
+                //            var evCheck = await _unitOfWork.EVChecks.GetByIdWithAppointmentAsync(
+                //                evCheckId
+                //            );
+                //            vehicleStageId = evCheck?.Appointment?.VehicleStageId;
+                //        }
+                //    }
+
+                //    if (vehicleStageId.HasValue)
+                //    {
+                //        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                //            vehicleStageId.Value
+                //        );
+                //        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                //        {
+                //            stage.Status = VehicleStageStatus.COMPLETED;
+                //            stage.DateOfImplementation = DateTime.UtcNow;
+                //            await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                //            _logger.LogInformation(
+                //                "VehicleStage {StageId} -> COMPLETED (từ EVCheckDetail {DetailId})",
+                //                stage.Id,
+                //                entity.Id
+                //            );
+                //        }
+                //    }
+                //    else
+                //    {
+                //        _logger.LogWarning(
+                //            "EVCheckDetail {DetailId}: không tìm thấy VehicleStageId để cập nhật COMPLETED",
+                //            entity.Id
+                //        );
+                //    }
+                //}
 
                 await _unitOfWork.EVCheckDetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();

@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.Entities;
+﻿using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 
@@ -19,5 +20,12 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
         Task<ServiceCenter?> GetByCodeAsync(string code);
         Task<ServiceCenter?> GetByIdAsync(Guid id);
         Task<bool> ExistsAsync(Guid id);
+        Task<ServiceCenterResponse?> GetDtoByIdAsync(Guid id);
+        Task<(IReadOnlyList<ServiceCenterResponse> Items, long Total)> GetDtoPagedAsync(
+            string? search,
+            StatusEnum? status,
+            int page,
+            int pageSize
+        );
     }
 }

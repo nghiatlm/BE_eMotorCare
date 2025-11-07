@@ -18,7 +18,6 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(PartId))]
         public virtual Part? Part { get; set; }
-
         [Column("export_note_id")]
         public Guid? ExportNoteId { get; set; }
 
