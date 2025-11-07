@@ -27,7 +27,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_ADMIN")]
         public async Task<IActionResult> GetAll([FromQuery] Guid serviceCenterId)
         {
             var items = await _serviceCenterSlotService.GetAllAsync(serviceCenterId);

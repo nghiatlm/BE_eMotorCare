@@ -249,17 +249,18 @@ namespace eMototCare.BLL.Services.AppointmentServices
             return entity.Code;
         }
 
-        public async Task ApproveAsync(Guid id, Guid staffId)
+        public async Task ApproveAsync(Guid id, Guid staffId, string checkinQRCode)
         {
+            if (string.IsNullOrWhiteSpace(checkinQRCode))
+                throw new AppException("Mã check-in không hợp lệ", HttpStatusCode.BadRequest);
+
             var entity =
                 await _unitOfWork.Appointments.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
 
             entity.Status = AppointmentStatus.APPROVED;
             entity.ApproveById = staffId;
-
-            if (string.IsNullOrWhiteSpace(entity.CheckinQRCode))
-                entity.CheckinQRCode = $"APPT|{entity.Code}|{entity.Id}";
+            entity.CheckinQRCode = checkinQRCode;
 
             await _unitOfWork.Appointments.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
@@ -318,6 +319,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
             appt.Status = AppointmentStatus.APPROVED;
             await _unitOfWork.Appointments.UpdateAsync(appt);
             await _unitOfWork.SaveAsync();
+        }
+
+        public async Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId)
+        {
+            var appointments = await _unitOfWork.Appointments.GetByTechnicianIdAsync(technicianId);
+            return _mapper.Map<List<AppointmentResponse>>(appointments);
         }
     }
 }

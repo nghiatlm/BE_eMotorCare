@@ -17,7 +17,14 @@ namespace eMototCare.BLL.Mappers
                 .ForMember(d => d.Payments, opt => opt.Ignore());
 
             CreateMap<Appointment, AppointmentResponse>()
-                .ForMember(d => d.CheckinCode, opt => opt.MapFrom(s => s.Code));
+                .ForMember(d => d.CheckinCode, opt => opt.MapFrom(s => s.Code))
+                .ForMember(
+                    d => d.MaintenanceStage,
+                    o =>
+                        o.MapFrom(s =>
+                            s.VehicleStage != null ? s.VehicleStage.MaintenanceStage : null
+                        )
+                );
         }
     }
 }

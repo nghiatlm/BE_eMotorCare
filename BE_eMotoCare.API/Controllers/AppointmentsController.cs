@@ -80,6 +80,19 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
+        [HttpGet("technician/{technicianId}")]
+        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
+        public async Task<IActionResult> GetByTechnician(Guid technicianId)
+        {
+            var data = await _appointmentService.GetByTechnicianIdAsync(technicianId);
+            return Ok(
+                ApiResponse<List<AppointmentResponse>>.SuccessResponse(
+                    data,
+                    "Lấy cuộc hẹn của technician thành công"
+                )
+            );
+        }
+
         [HttpPost]
         [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
         public async Task<IActionResult> Create([FromBody] AppointmentRequest request)
@@ -108,9 +121,9 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPost("{id}/approve")]
         [Authorize(Roles = "ROLE_STAFF")]
-        public async Task<IActionResult> Approve(Guid id, [FromQuery] Guid staffId)
+        public async Task<IActionResult> Approve(Guid id, ApproveAppointmentRequest req)
         {
-            await _appointmentService.ApproveAsync(id, staffId);
+            await _appointmentService.ApproveAsync(id, req.StaffId, req.CheckinQRCode);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Duyệt lịch hẹn thành công"));
         }
 

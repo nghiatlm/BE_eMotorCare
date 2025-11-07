@@ -11,6 +11,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid CustomerId { get; set; }
         public Guid? ApproveById { get; set; }
         public Guid? VehicleStageId { get; set; }
+        public MaintenanceStageResponse? MaintenanceStage { get; set; }
         public DateTime AppointmentDate { get; set; }
         public SlotTime SlotTime { get; set; }
         public AppointmentStatus Status { get; set; }
