@@ -364,12 +364,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;
-                    var exportNoteDetail = new ExportNoteDetail
-                    {
-                        Id = Guid.NewGuid(),
-                        ExportNoteId = exportNote.Id,
-                        PartItemId = partItem.Id,
-                    };
+                    partItem.ExportNoteId = exportNote.Id;
                     partItem.ServiceCenterInventoryId = null;
 
                     exportNote.TotalValue += partItem.Price;
