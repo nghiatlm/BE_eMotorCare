@@ -10,6 +10,16 @@ using Microsoft.EntityFrameworkCore;
 using Net.payOS;
 
 var builder = WebApplication.CreateBuilder(args);
+// Configure Kestrel to listen on both HTTP and HTTPS for local development.
+// HTTP on port 8080 and HTTPS on port 8443. HTTPS will use the developer certificate when available.
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // HTTP
+    options.ListenAnyIP(8080);
+
+    // HTTPS (uses the default development certificate)
+    options.ListenAnyIP(8443, listenOptions => { listenOptions.UseHttps(); });
+});
 
 //builder.WebHost.UseUrls("http://0.0.0.0:80");
 // Add SignalR
