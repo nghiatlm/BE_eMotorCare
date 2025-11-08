@@ -194,7 +194,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var changingCore =
                     entity.ServiceCenterId != req.ServiceCenterId
                     || entity.AppointmentDate.Date != req.AppointmentDate.Date
-                    || entity.SlotTime != req.SlotTime; // CHANGE
+                    || entity.SlotTime != req.SlotTime;
 
                 if (changingCore)
                 {
@@ -209,11 +209,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
                         && s.SlotTime == req.SlotTime
                     );
-                    //if (slotCfg is null)
-                    //    throw new AppException(
-                    //        "Ngày này không có khung giờ đó.",
-                    //        HttpStatusCode.Conflict
-                    //    );
 
                     // Nếu đổi sang slot mới, phải check capacity của slot đó ở ngày mới
                     var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(

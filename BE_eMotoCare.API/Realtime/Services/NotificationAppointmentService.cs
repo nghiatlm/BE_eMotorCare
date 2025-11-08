@@ -6,6 +6,7 @@ namespace BE_eMotoCare.API.Realtime.Services
     public interface INotifierAppointmentService
     {
         Task NotifyCreateAsync(string entity, object data);
+        Task NotifyApproveAsync(string entity, object data);
         Task NotifyUpdateAsync(string entity, object data);
         Task NotifyDeleteAsync(string entity, object data);
     }
@@ -22,6 +23,11 @@ namespace BE_eMotoCare.API.Realtime.Services
         public async Task NotifyCreateAsync(string entity, object data)
         {
             await _hubContext.Clients.All.SendAsync("ReceiveCreate", entity, data);
+        }
+
+        public async Task NotifyApproveAsync(string entity, object data)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveApproved", entity, data);
         }
 
         public async Task NotifyUpdateAsync(string entity, object data)

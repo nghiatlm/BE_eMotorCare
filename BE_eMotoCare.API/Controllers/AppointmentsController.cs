@@ -124,6 +124,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Approve(Guid id, ApproveAppointmentRequest req)
         {
             await _appointmentService.ApproveAsync(id, req.StaffId, req.CheckinQRCode);
+            await _notifierAppointment.NotifyApproveAsync("Appointment", new { Id = id });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Duyệt lịch hẹn thành công"));
         }
 
