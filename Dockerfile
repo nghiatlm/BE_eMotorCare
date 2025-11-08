@@ -31,8 +31,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy published output
 COPY --from=build /app/out .
 
-# Set environment to listen on all interfaces
-ENV ASPNETCORE_URLS="http://+:80"
+# Copy HTTPS certificate into image and configure Kestrel to use it
+RUN mkdir -p /https
+COPY BE_eMotoCare.API/certs/aspnetapp.pfx /https/aspnetapp.pfx
+ENV ASPNETCORE_Kestrel__Certificates__Default__Password="emotocare_123"
+ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx"
+
+# Set environment to listen on all interfaces (HTTP and HTTPS)
+ENV ASPNETCORE_URLS="http://+:80;https://+:443"
 
 # Expose ports
 EXPOSE 80
