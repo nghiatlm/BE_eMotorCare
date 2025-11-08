@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
@@ -74,8 +75,61 @@ namespace eMototCare.BLL.Services.AppointmentServices
             try
             {
                 var dateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
-                var dow = (eMotoCare.BO.Enums.DayOfWeeks)req.AppointmentDate.DayOfWeek;
+                var dow = (DayOfWeeks)req.AppointmentDate.DayOfWeek;
 
+                var now = DateTime.UtcNow.AddHours(7).Date;
+                if (req.AppointmentDate.Date < now)
+                {
+                    throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
+                }
+
+                if (req.VehicleStageId.HasValue)
+                {
+                    var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                        req.VehicleStageId.Value
+                    );
+                    if (stage is null)
+                        throw new AppException(
+                            "Mốc bảo dưỡng không tồn tại.",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    switch (stage.Status)
+                    {
+                        case VehicleStageStatus.UPCOMING:
+
+                            break;
+
+                        case VehicleStageStatus.COMPLETED:
+                            throw new AppException(
+                                "Mốc bảo dưỡng này đã hoàn thành.",
+                                HttpStatusCode.BadRequest
+                            );
+
+                        case VehicleStageStatus.EXPIRED:
+                            throw new AppException(
+                                "Mốc bảo dưỡng này đã hết hạn.",
+                                HttpStatusCode.BadRequest
+                            );
+
+                        case VehicleStageStatus.NO_START:
+                            throw new AppException(
+                                "Mốc bảo dưỡng này chưa đến thời điểm bắt đầu.",
+                                HttpStatusCode.BadRequest
+                            );
+                    }
+                    var allAppointments = await _unitOfWork.Appointments.FindAllAsync();
+                    var existed = allAppointments.Any(a =>
+                        a.VehicleStageId == req.VehicleStageId.Value
+                        && a.Status != AppointmentStatus.CANCELED
+                    );
+
+                    if (existed)
+                        throw new AppException(
+                            "Mốc bảo dưỡng này đã có đặt lịch.",
+                            HttpStatusCode.BadRequest
+                        );
+                }
                 // 1) Có cấu hình slot không?
                 var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
                     s =>
@@ -155,11 +209,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
                         && s.SlotTime == req.SlotTime
                     );
-                    if (slotCfg is null)
-                        throw new AppException(
-                            "Ngày này không có khung giờ đó.",
-                            HttpStatusCode.Conflict
-                        );
+                    //if (slotCfg is null)
+                    //    throw new AppException(
+                    //        "Ngày này không có khung giờ đó.",
+                    //        HttpStatusCode.Conflict
+                    //    );
 
                     // Nếu đổi sang slot mới, phải check capacity của slot đó ở ngày mới
                     var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
