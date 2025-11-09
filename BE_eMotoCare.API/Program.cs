@@ -28,6 +28,7 @@ builder.Services.AddSignalR();
 // Add NotifierService
 builder.Services.AddScoped<INotifierService, NotifierService>();
 builder.Services.AddScoped<INotifierAppointmentService, NotificationAppointmentService>();
+builder.Services.AddScoped<INotifierExportNoteService, NotifierExportNoteService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 var mailSection = builder.Configuration.GetSection("MailSettings");
