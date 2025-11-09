@@ -12,7 +12,7 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251107161635_initCreate")]
+    [Migration("20251109154021_initCreate")]
     partial class initCreate
     {
         /// <inheritdoc />
