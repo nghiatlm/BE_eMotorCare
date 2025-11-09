@@ -122,6 +122,7 @@ app.UseAppExceptionHandler();
 app.UseCors("AllowExpoApp");
 app.MapHub<NotificationHub>("/hubs/notify");
 app.MapHub<NotificationAppointmentHub>("/hubs/notifyappointment");
+app.MapHub<NotificationExportNoteHub>("/hubs/notifyexportnote");
 app.UseMiddleware<JwtMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
