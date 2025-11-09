@@ -524,7 +524,7 @@ namespace eMotoCare.DAL.Migrations
                     total_quantity = table.Column<int>(type: "int", nullable: false),
                     total_value = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     note = table.Column<string>(type: "nvarchar(400)", nullable: true),
-                    export_by_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    export_by_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     service_center_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     export_note_status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -544,8 +544,7 @@ namespace eMotoCare.DAL.Migrations
                         name: "FK_export_note_staff_export_by_id",
                         column: x => x.export_by_id,
                         principalTable: "staff",
-                        principalColumn: "staff_id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "staff_id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 

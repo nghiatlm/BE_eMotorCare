@@ -503,7 +503,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<Guid?>("ExportById")
-                        .IsRequired()
                         .HasColumnType("char(36)")
                         .HasColumnName("export_by_id");
 
@@ -1701,9 +1700,7 @@ namespace eMotoCare.DAL.Migrations
                 {
                     b.HasOne("eMotoCare.BO.Entities.Staff", "ExportBy")
                         .WithMany("ExportNotes")
-                        .HasForeignKey("ExportById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ExportById");
 
                     b.HasOne("eMotoCare.BO.Entities.ServiceCenter", "ServiceCenter")
                         .WithMany("ExportNotes")
