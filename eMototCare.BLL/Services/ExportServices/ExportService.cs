@@ -183,7 +183,10 @@ namespace eMototCare.BLL.Services.ExportServices
                     entity.Note = req.Note.Trim();
                 }
 
-                entity.ExportById = req.ExportById;
+                if (req.ExportById != null)
+                {
+                    entity.ExportById = req.ExportById;
+                }
 
                 if (req.ServiceCenterId != null)
                 {
