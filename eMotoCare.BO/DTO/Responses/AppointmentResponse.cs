@@ -25,5 +25,7 @@ namespace eMotoCare.BO.DTO.Responses
         public string? CheckinCode { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
         public CustomerResponse? Customer { get; set; }
+        public string? CheckinQRCode { get; set; }
+        public Guid? EVCheckId { get; set; }
     }
 }

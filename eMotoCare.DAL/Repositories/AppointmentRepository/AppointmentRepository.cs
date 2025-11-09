@@ -30,6 +30,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -52,7 +53,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 var s = search.Trim().ToLower();
                 q = q.Where(x => x.Code.ToLower().Contains(s));
             }
-
+            if (customerId.HasValue)
+                q = q.Where(a => a.CustomerId == customerId.Value);
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
             if (serviceCenterId.HasValue)
