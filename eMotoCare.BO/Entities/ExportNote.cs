@@ -39,7 +39,6 @@ namespace eMotoCare.BO.Entities
         [Column("note", TypeName = "nvarchar(400)")]
         public string? Note { get; set; }
 
-        [Required]
         [Column("export_by_id")]
         public Guid? ExportById { get; set; }
 

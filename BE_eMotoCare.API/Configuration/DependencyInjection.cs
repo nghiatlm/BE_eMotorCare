@@ -10,6 +10,7 @@ namespace BE_eMotoCare.API.Configuration
     {
         public static IServiceCollection AddAppDI(this IServiceCollection services)
         {
+            services.AddScoped<INotifierExportNoteService, NotifierExportNoteService>();
             services.AddServiceDI().AddRepoDI().AddSwaggerDependencies().MapperInjection();
             services.AddScoped<INotifierExportNoteService, NotifierExportNoteService>();
 
