@@ -23,7 +23,7 @@ namespace eMotoCare.BO.Entities
 
         public string? Note { get; set; }
 
-        public Guid ExportById { get; set; }
+        public Guid? ExportById { get; set; }
       
         public Guid? ServiceCenterId { get; set; }
 
