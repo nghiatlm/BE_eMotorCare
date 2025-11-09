@@ -97,7 +97,8 @@ namespace eMototCare.BLL.Services.AuthServices
                 if (account.RoleName != RoleName.ROLE_STAFF &&
                     account.RoleName != RoleName.ROLE_MANAGER &&
                     account.RoleName != RoleName.ROLE_ADMIN &&
-                    account.RoleName != RoleName.ROLE_STOREKEEPER)
+                    account.RoleName != RoleName.ROLE_STOREKEEPER &&
+                    account.RoleName != RoleName.ROLE_TECHNICIAN)
                 {
                     throw new AppException("Tài khoản không phải nhân viên", HttpStatusCode.Forbidden);
                 }
