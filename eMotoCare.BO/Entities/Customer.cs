@@ -39,8 +39,7 @@ namespace eMotoCare.BO.Entities
         public string? AvatarUrl { get; set; }
 
         [Column("account_id")]
-        [Required]
-        public Guid AccountId { get; set; }
+        public Guid? AccountId { get; set; }
 
         [ForeignKey(nameof(AccountId))]
         [InverseProperty(nameof(Account.Customer))]
