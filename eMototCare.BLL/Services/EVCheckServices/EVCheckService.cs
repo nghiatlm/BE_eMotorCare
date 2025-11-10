@@ -284,6 +284,14 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         _unitOfWork.VehicleStages.Update(vs);
                     }
                 }
+                if (req.Status == EVCheckStatus.WAITING_FOR_QUOTE)
+                {
+                    var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(entity.Id);
+
+                    entity.TotalAmout = evCheckDetails.Sum(d => d.TotalAmount ?? 0);
+
+                }
+
                 if (req.Status == EVCheckStatus.REPAIR_COMPLETED)
                 {
                     if (appt != null)

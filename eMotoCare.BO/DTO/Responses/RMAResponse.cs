@@ -31,6 +31,6 @@ namespace eMotoCare.BO.DTO.Responses
 
         public StaffResponse? Staff { get; set; }
 
-        //public ICollection<RMADetail>? RMADetails { get; set; }
+        public ICollection<RMADetailResponse>? RMADetails { get; set; }
     }
 }
