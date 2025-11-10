@@ -313,7 +313,7 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("customer_id");
 
-                    b.Property<Guid>("AccountId")
+                    b.Property<Guid?>("AccountId")
                         .HasColumnType("char(36)")
                         .HasColumnName("account_id");
 
@@ -1632,9 +1632,7 @@ namespace eMotoCare.DAL.Migrations
                 {
                     b.HasOne("eMotoCare.BO.Entities.Account", "Account")
                         .WithOne("Customer")
-                        .HasForeignKey("eMotoCare.BO.Entities.Customer", "AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("eMotoCare.BO.Entities.Customer", "AccountId");
 
                     b.Navigation("Account");
                 });

@@ -149,7 +149,7 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     avatar_url = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    account_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    account_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -160,8 +160,7 @@ namespace eMotoCare.DAL.Migrations
                         name: "FK_customer_account_account_id",
                         column: x => x.account_id,
                         principalTable: "account",
-                        principalColumn: "account_id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "account_id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
