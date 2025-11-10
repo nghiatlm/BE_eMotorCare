@@ -196,9 +196,9 @@ namespace eMototCare.BLL.Services.ExportServices
                 {
                     if (req.ExportNoteStatus == ExportNoteStatus.COMPLETED && entity.Type == ExportType.REPLACEMENT)
                     {
-                        var guidString = entity.ExportTo.Replace("EVCheck: ", "").Trim();
-                        var evCheckId = Guid.Parse(guidString);
-                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(evCheckId);
+                        var appointmentCode = entity.Note.Replace("Xuất phụ tùng cho appointment: ", "").Trim();
+                        var appointment = await _unitOfWork.Appointments.GetByCodeAsync(appointmentCode);
+                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(appointment.EVCheck.Id);
                         evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
                         await _unitOfWork.EVChecks.UpdateAsync(evCheck);
                     }
