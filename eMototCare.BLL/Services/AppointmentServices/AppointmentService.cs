@@ -177,6 +177,22 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
+
+                var current = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
+                    req.ServiceCenterId,
+                    dateOnly,
+                    req.SlotTime
+                );
+                if (current >= slotCfg.Capacity && slotCfg.IsActive)
+                {
+                    slotCfg.IsActive = false;
+                    await _unitOfWork.ServiceCenterSlot.UpdateAsync(slotCfg);
+                    await _unitOfWork.SaveAsync();
+                    _logger.LogInformation(
+                        "Slot {SlotId} đã đủ số lượng, tự động đóng.",
+                        slotCfg.Id
+                    );
+                }
                 _logger.LogInformation("Created Appointment {Code} ({Id})", entity.Code, entity.Id);
                 return entity.Id;
             }

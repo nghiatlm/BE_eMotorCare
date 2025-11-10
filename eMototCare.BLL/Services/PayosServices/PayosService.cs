@@ -163,20 +163,42 @@ namespace eMototCare.BLL.Services.PayosServices
                         payment.TransactionCode = orderCode.ToString();
 
                         await _unitOfWork.Payments.CreateAsync(payment);
-
-                        // Update appointment status to WAITING_FOR_PAYMENT
-                        if (appointment != null)
-                        {
-                            appointment.Status = AppointmentStatus.WAITING_FOR_PAYMENT;
-                            await _unitOfWork.Appointments.UpdateAsync(appointment);
-                        }
-
                         await _unitOfWork.SaveAsync();
 
+                        var section =
+                            request.PaymentMethod == PaymentMethod.PAY_OS_APP
+                                ? _config.GetSection("PayOS:Center")
+                                : _config.GetSection("PayOS:App");
+
+                        var returnUrl =
+                            section["ReturnUrl"]
+                            ?? "https://modernestate.vercel.app/payment-success";
+                        var cancelUrl =
+                            section["CancelUrl"]
+                            ?? "https://modernestate.vercel.app/payment-failure";
+
+                        var item = new ItemData(
+                            $"Appointment - {appointment.Id}",
+                            1,
+                            (int)Math.Round(amount)
+                        );
+
+                        var items = new List<ItemData> { item };
+
+                        var paymentData = new PaymentData(
+                            orderCode,
+                            (int)Math.Round(amount),
+                            "Thanh toán bảo dưỡng xe",
+                            items,
+                            cancelUrl,
+                            returnUrl
+                        );
+
+                        var createPayment = await _payOS.createPaymentLink(paymentData);
                         return new PayOSCreatePaymentResponse
                         {
-                            CheckoutUrl = null,
-                            TransactionCode = payment.TransactionCode ?? orderCode.ToString(),
+                            CheckoutUrl = createPayment.checkoutUrl,
+                            TransactionCode = orderCode.ToString(),
                         };
                     }
 

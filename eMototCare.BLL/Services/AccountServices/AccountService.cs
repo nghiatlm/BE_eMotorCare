@@ -39,6 +39,12 @@ namespace eMototCare.BLL.Services.AccountServices
         {
             try
             {
+                if (role.HasValue && role.Value == RoleName.ROLE_ADMIN)
+                    throw new AppException(
+                        "Không được tìm kiếm theo ROLE_ADMIN",
+                        HttpStatusCode.Forbidden
+                    );
+
                 var (items, total) = await _unitOfWork.Accounts.GetPagedAsync(
                     search,
                     role,
