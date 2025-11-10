@@ -288,7 +288,11 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 {
                     var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(entity.Id);
 
-                    entity.TotalAmout = evCheckDetails.Sum(d => d.TotalAmount ?? 0);
+                    entity.ServicePrice = evCheckDetails.Sum(d => d.PriceService ?? 0);
+                    entity.PartPrice = evCheckDetails.Sum(d => d.PricePart ?? 0);
+                    var totalBeforeTax = evCheckDetails.Sum(d => d.TotalAmount ?? 0);
+                    entity.VAT = totalBeforeTax * 0.08m;
+                    entity.TotalAmout = totalBeforeTax + entity.VAT;
 
                 }
 

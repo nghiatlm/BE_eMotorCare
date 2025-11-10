@@ -15,7 +15,12 @@ namespace eMotoCare.BO.Entities
         [Required]
         [Column("check_date")]
         public DateTime CheckDate { get; set; }
-
+        [Column("part_price")]
+        public decimal? PartPrice { get; set; }
+        [Column("service_price")]
+        public decimal? ServicePrice { get; set; }
+        [Column("VAT")]
+        public decimal? VAT { get; set; }
         [Column("total_amout")]
         public decimal? TotalAmout { get; set; }
 
@@ -25,6 +30,7 @@ namespace eMotoCare.BO.Entities
 
         [Column("odometer")]
         public int? Odometer { get; set; }
+
         [Required]
         [Column("appointment_id")]
         public Guid AppointmentId { get; set; }
