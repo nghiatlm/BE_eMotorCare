@@ -67,27 +67,55 @@ namespace eMototCare.BLL.Services.BackgroundServices
                         TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId!)
                     )
                     .Date;
+            var pastThreshold = today.AddDays(-10);
+            var futureThreshold = today.AddDays(10);
 
-            // Điều kiện:
-            // - DateOfImplementation < hôm nay
-            // - Status chưa phải COMPLETED/EXPIRED (tuỳ nghi có thể ràng NO_START/UPCOMING)
-            var affected = await db
+            // 1) Set EXPIRED: quá 10 ngày trước today
+            var expired = await db
                 .VehicleStages.Where(vs =>
                     vs.Status != VehicleStageStatus.COMPLETED
                     && vs.Status != VehicleStageStatus.EXPIRED
-                    && vs.DateOfImplementation < today
+                    && vs.DateOfImplementation < pastThreshold
                 )
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(vs => vs.Status, VehicleStageStatus.EXPIRED),
                     ct
                 );
+            // 2) Set UPCOMING: nằm trong [-10; +10] ngày tính từ today
+            var upcoming = await db
+                .VehicleStages.Where(vs =>
+                    vs.Status != VehicleStageStatus.COMPLETED
+                    && vs.Status != VehicleStageStatus.UPCOMING
+                    && vs.DateOfImplementation >= pastThreshold
+                    && vs.DateOfImplementation <= futureThreshold
+                )
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(vs => vs.Status, VehicleStageStatus.UPCOMING),
+                    ct
+                );
 
-            if (affected > 0)
+            // 3) Set NO_START: sau hơn 10 ngày kể từ today
+            var nostart = await db
+                .VehicleStages.Where(vs =>
+                    vs.Status != VehicleStageStatus.COMPLETED
+                    && vs.Status != VehicleStageStatus.NO_START
+                    && vs.DateOfImplementation > futureThreshold
+                )
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(vs => vs.Status, VehicleStageStatus.NO_START),
+                    ct
+                );
+
+            if (expired + upcoming + nostart > 0)
             {
                 _logger.LogInformation(
-                    "Expired {Count} vehicle stages (date_of_implementation < {Today}).",
-                    affected,
-                    today.ToString("yyyy-MM-dd")
+                    "VehicleStage status updated on {Today} (past<{Past}, future>{Future}): EXPIRED={Expired}, UPCOMING={Upcoming}, NO_START={NoStart}",
+                    today.ToString("yyyy-MM-dd"),
+                    pastThreshold.ToString("yyyy-MM-dd"),
+                    futureThreshold.ToString("yyyy-MM-dd"),
+                    expired,
+                    upcoming,
+                    nostart
                 );
             }
         }
