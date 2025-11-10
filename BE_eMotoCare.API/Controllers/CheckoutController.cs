@@ -15,6 +15,7 @@ namespace BE_eMotoCare.API.Controllers
     {
         private readonly IPayosService _payosService;
         private readonly INotifierService _notifier;
+
         public CheckoutController(IPayosService payosService, INotifierService notifier)
         {
             _payosService = payosService;
@@ -31,8 +32,14 @@ namespace BE_eMotoCare.API.Controllers
             }
             return Ok(
                 ApiResponse<object>.SuccessResponse(
-                    new { urlPayemt },
-                    "Payment link created successfully"
+                    new
+                    {
+                        checkoutUrl = urlPayemt.CheckoutUrl,
+                        transactionCode = urlPayemt.TransactionCode,
+                    },
+                    urlPayemt.CheckoutUrl is null
+                        ? "Payment created successfully."
+                        : "Payment link created successfully."
                 )
             );
         }
@@ -55,22 +62,28 @@ namespace BE_eMotoCare.API.Controllers
             var resullt = await _payosService.VerifyPaymentAsync(type);
             if (resullt)
             {
-                await _notifier.NotifyUpdateAsync("Payment", new
-                {
-                    Message = "Payment verified successfully.",
-                    OrderCode = type.code,
-                    Status = "Success"
-                });
+                await _notifier.NotifyUpdateAsync(
+                    "Payment",
+                    new
+                    {
+                        Message = "Payment verified successfully.",
+                        OrderCode = type.code,
+                        Status = "Success",
+                    }
+                );
                 return Ok(ApiResponse<string>.SuccessResponse("Payment verified successfully."));
             }
             else
             {
-                await _notifier.NotifyUpdateAsync("Payment", new
-                {
-                    Message = "Payment verification failed.",
-                    OrderCode = type.code,
-                    Status = "Failed"
-                });
+                await _notifier.NotifyUpdateAsync(
+                    "Payment",
+                    new
+                    {
+                        Message = "Payment verification failed.",
+                        OrderCode = type.code,
+                        Status = "Failed",
+                    }
+                );
                 return BadRequest(ApiResponse<string>.BadRequest("Payment verification failed."));
             }
         }
