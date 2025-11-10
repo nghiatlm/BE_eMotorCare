@@ -414,7 +414,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
-                    Note = "EVCheck: " + evCheck.Id.ToString(),
+                    Note = "Xuất phụ tùng cho appointment: " + evCheck.Appointment.Code,
                     ExportNoteStatus = ExportNoteStatus.PENDING,
                     TotalValue = 0, // tổng giá trị phiếu xuất
                     TotalQuantity = 0, // tổng số lượng xuất
