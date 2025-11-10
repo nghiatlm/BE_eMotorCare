@@ -149,7 +149,7 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Password = BCrypt.Net.BCrypt.HashPassword(req.Password);
 
                 entity.RoleName = req.RoleName;
-                entity.Stattus = req.Status;
+                entity.Stattus = AccountStatus.IN_ACTIVE;
 
                 await _unitOfWork.Accounts.CreateAsync(entity);
                 if (req.Staff != null)
