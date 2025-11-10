@@ -405,6 +405,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 .ToList();
             if (replaceDetails.Any())
             {
+                var customerName = evCheck.Appointment.Customer.LastName + " " + evCheck.Appointment.Customer.FirstName;
+                var phone = evCheck.Appointment.Customer.Account.Phone;
                 var exportNote = new ExportNote
                 {
                     Id = Guid.NewGuid(),
@@ -412,12 +414,12 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
-                    ExportTo = "EVCheck: " + evCheck.Id.ToString(),
+                    Note = "EVCheck: " + evCheck.Id.ToString(),
                     ExportNoteStatus = ExportNoteStatus.PENDING,
                     TotalValue = 0, // tổng giá trị phiếu xuất
-                    TotalQuantity =
-                        0 // tổng số lượng xuất
-                    ,
+                    TotalQuantity = 0, // tổng số lượng xuất
+                    ExportTo = customerName + " - " + phone
+
                 };
                 await _unitOfWork.ExportNotes.CreateAsync(exportNote);
                 foreach (var detail in replaceDetails)
@@ -427,7 +429,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     partItem.ServiceCenterInventoryId = null;
 
                     exportNote.TotalValue += partItem.Price;
-                    exportNote.TotalQuantity += partItem.Quantity;
+                    exportNote.TotalQuantity += 1;
                     partItem.Quantity = 0;
                     _unitOfWork.PartItems.Update(partItem);
                 }
