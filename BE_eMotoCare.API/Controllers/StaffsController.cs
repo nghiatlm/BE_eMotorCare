@@ -26,6 +26,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] string? search,
             [FromQuery] PositionEnum? position,
             [FromQuery] Guid? serviceCenterId,
+            [FromQuery] Guid? staffId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
@@ -34,6 +35,7 @@ namespace BE_eMotoCare.API.Controllers
                 search,
                 position,
                 serviceCenterId,
+                staffId,
                 page,
                 pageSize
             );

@@ -106,6 +106,24 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
                             Note = s.Note,
                         })
                         .ToList(),
+                    Staffs = _context
+                        .Staffs.AsNoTracking()
+                        .Where(st => st.ServiceCenterId == x.Id)
+                        .OrderByDescending(st => st.CreatedAt)
+                        .Select(st => new StaffResponse
+                        {
+                            Id = st.Id,
+                            StaffCode = st.StaffCode,
+                            FirstName = st.FirstName,
+                            LastName = st.LastName,
+                            Gender = st.Gender,
+                            Position = st.Position,
+                            AccountId = st.AccountId,
+                            ServiceCenterId = st.ServiceCenterId,
+                            CreatedAt = st.CreatedAt,
+                            UpdatedAt = st.UpdatedAt,
+                        })
+                        .ToList(),
                 })
                 .FirstOrDefaultAsync();
         }
@@ -166,6 +184,24 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
                             Capacity = s.Capacity,
                             IsActive = s.IsActive,
                             Note = s.Note,
+                        })
+                        .ToList(),
+                    Staffs = _context
+                        .Staffs.AsNoTracking()
+                        .Where(st => st.ServiceCenterId == x.Id)
+                        .OrderByDescending(st => st.CreatedAt)
+                        .Select(st => new StaffResponse
+                        {
+                            Id = st.Id,
+                            StaffCode = st.StaffCode,
+                            FirstName = st.FirstName,
+                            LastName = st.LastName,
+                            Gender = st.Gender,
+                            Position = st.Position,
+                            AccountId = st.AccountId,
+                            ServiceCenterId = st.ServiceCenterId,
+                            CreatedAt = st.CreatedAt,
+                            UpdatedAt = st.UpdatedAt,
                         })
                         .ToList(),
                 })
