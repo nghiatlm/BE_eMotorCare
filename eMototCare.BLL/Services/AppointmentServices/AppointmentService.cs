@@ -33,6 +33,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -45,6 +46,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     search,
                     status,
                     serviceCenterId,
+                    customerId,
                     fromDate,
                     toDate,
                     page,
@@ -52,6 +54,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 );
 
                 var rows = _mapper.Map<List<AppointmentResponse>>(items);
+                foreach (var appt in rows)
+                {
+                    var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appt.Id);
+                    if (evCheck != null)
+                        appt.EVCheckId = evCheck.Id;
+                }
                 return new PageResult<AppointmentResponse>(rows, pageSize, page, (int)total);
             }
             catch (Exception ex)
@@ -169,6 +177,22 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
+
+                var current = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
+                    req.ServiceCenterId,
+                    dateOnly,
+                    req.SlotTime
+                );
+                if (current >= slotCfg.Capacity && slotCfg.IsActive)
+                {
+                    slotCfg.IsActive = false;
+                    await _unitOfWork.ServiceCenterSlot.UpdateAsync(slotCfg);
+                    await _unitOfWork.SaveAsync();
+                    _logger.LogInformation(
+                        "Slot {SlotId} đã đủ số lượng, tự động đóng.",
+                        slotCfg.Id
+                    );
+                }
                 _logger.LogInformation("Created Appointment {Code} ({Id})", entity.Code, entity.Id);
                 return entity.Id;
             }

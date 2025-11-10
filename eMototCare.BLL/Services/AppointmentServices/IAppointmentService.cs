@@ -11,6 +11,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,

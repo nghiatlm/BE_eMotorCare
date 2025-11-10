@@ -14,7 +14,11 @@ namespace eMototCare.BLL.Mappers
                 .ForMember(d => d.VinNUmber, opt => opt.MapFrom(s => s.VinNumber));
 
             CreateMap<Vehicle, VehicleResponse>()
-                .ForMember(d => d.VinNumber, opt => opt.MapFrom(s => s.VinNUmber));
+                .ForMember(d => d.VinNumber, opt => opt.MapFrom(s => s.VinNUmber))
+                .ForMember(
+                    d => d.ModelName,
+                    opt => opt.MapFrom(s => s.Model != null ? s.Model.Name : null)
+                );
         }
     }
 }

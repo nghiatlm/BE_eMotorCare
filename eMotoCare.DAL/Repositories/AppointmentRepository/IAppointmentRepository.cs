@@ -10,6 +10,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,

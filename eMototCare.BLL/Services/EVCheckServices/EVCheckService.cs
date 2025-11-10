@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -10,7 +11,6 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Ocsp;
-using System.Net;
 
 namespace eMototCare.BLL.Services.EVCheckServices
 {
@@ -313,6 +313,48 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         );
                     }
                 }
+                var isCompletedNow = (req.Status ?? entity.Status) == EVCheckStatus.COMPLETED;
+                if (isCompletedNow)
+                {
+                    Guid? vehicleStageId = null;
+
+                    if (!vehicleStageId.HasValue)
+                    {
+                        var evCheckId = entity.Id;
+                        if (evCheckId != Guid.Empty)
+                        {
+                            var evCheck = await _unitOfWork.EVChecks.GetByIdWithAppointmentAsync(
+                                evCheckId
+                            );
+                            vehicleStageId = evCheck?.Appointment?.VehicleStageId;
+                        }
+                    }
+
+                    if (vehicleStageId.HasValue)
+                    {
+                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                            vehicleStageId.Value
+                        );
+                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                        {
+                            stage.Status = VehicleStageStatus.COMPLETED;
+                            stage.DateOfImplementation = DateTime.UtcNow;
+                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                            _logger.LogInformation(
+                                "VehicleStage {StageId} -> COMPLETED (từ EVCheck {Id})",
+                                stage.Id,
+                                entity.Id
+                            );
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "EVCheck {Id}: không tìm thấy VehicleStageId để cập nhật COMPLETED",
+                            entity.Id
+                        );
+                    }
+                }
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -358,9 +400,9 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 throw new AppException("EVCheck not found", HttpStatusCode.NotFound);
             }
             evCheck.Status = EVCheckStatus.QUOTE_APPROVED;
-            var replaceDetails = evCheck.EVCheckDetails
-                                .Where(d => d.ReplacePartId != null)
-                                .ToList();
+            var replaceDetails = evCheck
+                .EVCheckDetails.Where(d => d.ReplacePartId != null)
+                .ToList();
             if (replaceDetails.Any())
             {
                 var exportNote = new ExportNote
@@ -372,8 +414,10 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
                     ExportTo = "EVCheck: " + evCheck.Id.ToString(),
                     ExportNoteStatus = ExportNoteStatus.PENDING,
-                    TotalValue = 0,      // tổng giá trị phiếu xuất
-                    TotalQuantity = 0    // tổng số lượng xuất
+                    TotalValue = 0, // tổng giá trị phiếu xuất
+                    TotalQuantity =
+                        0 // tổng số lượng xuất
+                    ,
                 };
                 await _unitOfWork.ExportNotes.CreateAsync(exportNote);
                 foreach (var detail in replaceDetails)
@@ -392,7 +436,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
             _unitOfWork.EVChecks.Update(evCheck);
             await _unitOfWork.SaveAsync();
             return true;
-
         }
     }
 }

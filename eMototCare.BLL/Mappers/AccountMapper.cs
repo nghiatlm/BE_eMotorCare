@@ -13,7 +13,9 @@ namespace eMototCare.BLL.Mappers
                 .ForMember(d => d.Id, opt => opt.Ignore())
                 .ForMember(d => d.Password, opt => opt.Ignore());
 
-            CreateMap<Account, AccountResponse>();
+            CreateMap<Account, AccountResponse>()
+                .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Stattus))
+                .ForMember(d => d.RoleName, opt => opt.MapFrom(s => s.RoleName));
         }
     }
 }
