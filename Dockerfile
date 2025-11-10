@@ -36,10 +36,10 @@ ENV ASPNETCORE_Kestrel__Certificates__Default__Path="/https/aspnetapp.pfx"
 
 # Set environment to listen on all interfaces (HTTP and HTTPS) using the same ports as local dev
 # These match the ports configured in `Program.cs` (HTTP 8080, HTTPS 8443).
-ENV ASPNETCORE_URLS="http://+:8080;https://+:8443"
+ENV ASPNETCORE_URLS="http://+:80;https://+:443"
 
 # Expose the same ports
-EXPOSE 8080
-EXPOSE 8443
+EXPOSE 80
+EXPOSE 443
 
 ENTRYPOINT ["dotnet", "BE_eMotoCare.API.dll"]
