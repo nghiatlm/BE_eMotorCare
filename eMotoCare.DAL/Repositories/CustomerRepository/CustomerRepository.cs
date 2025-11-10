@@ -66,5 +66,10 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
         {
             return _context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.AccountId == id);
         }
+
+        public Task<Customer?> GetByCitizenId(string citizenId)
+        {
+            return _context.Customers.FirstOrDefaultAsync(x => x.CitizenId == citizenId);
+        }
     }
 }

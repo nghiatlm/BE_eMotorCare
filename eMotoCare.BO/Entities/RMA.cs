@@ -32,7 +32,11 @@ namespace eMotoCare.BO.Entities
 
         [Column("note")]
         public string? Note { get; set; }
-
+        [Required]
+        [Column("customer_id")]
+        public Guid CustomerId { get; set; }
+        [ForeignKey(nameof(CustomerId))]
+        public virtual Customer? Customer { get; set; }
 
         [Required]
         [Column("create_by_id")]
