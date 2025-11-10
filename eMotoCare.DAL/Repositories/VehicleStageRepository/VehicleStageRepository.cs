@@ -40,6 +40,7 @@ namespace eMotoCare.DAL.Repositories.VehicleStageRepository
             var q = _context
                 .VehicleStages.AsNoTracking()
                 .Include(x => x.Vehicle)
+                .ThenInclude(v => v.Model)
                 .Include(x => x.MaintenanceStage)
                 .AsQueryable();
 

@@ -282,11 +282,11 @@ namespace eMototCare.BLL.Services.AccountServices
                 var entity =
                     await _unitOfWork.Accounts.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy tài khoản", HttpStatusCode.NotFound);
-
+                entity.Stattus = AccountStatus.IN_ACTIVE;
                 await _unitOfWork.Accounts.DeleteAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Deleted Account {Id}", id);
+                _logger.LogInformation("Admin deactivated account {Id}", id);
             }
             catch (AppException)
             {
@@ -294,7 +294,7 @@ namespace eMototCare.BLL.Services.AccountServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete Account failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Deactivate admin user failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

@@ -80,7 +80,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _vehicleService.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá xe thành công"));
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Vô hiệu hoá xe thành công"));
         }
     }
 }
