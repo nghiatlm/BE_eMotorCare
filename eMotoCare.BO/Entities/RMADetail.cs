@@ -1,5 +1,6 @@
 using eMotoCare.BO.Common;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -53,8 +54,8 @@ namespace eMotoCare.BO.Entities
         public virtual RMA? RMA { get; set; }
 
         [Column("status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(Status))]
-        public Status Status { get; set; }
+        [EnumDataType(typeof(RMADetailStatus))]
+        public RMADetailStatus Status { get; set; }
 
     }
 }

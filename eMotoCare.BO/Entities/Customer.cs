@@ -39,8 +39,7 @@ namespace eMotoCare.BO.Entities
         public string? AvatarUrl { get; set; }
 
         [Column("account_id")]
-        [Required]
-        public Guid AccountId { get; set; }
+        public Guid? AccountId { get; set; }
 
         [ForeignKey(nameof(AccountId))]
         [InverseProperty(nameof(Account.Customer))]
@@ -48,6 +47,7 @@ namespace eMotoCare.BO.Entities
 
         public virtual ICollection<Vehicle>? Vehilces { get; set; }
         public virtual ICollection<Appointment>? Appointments { get; set; }
+        public virtual ICollection<RMA>? RMAs { get; set; }
 
     }
 }

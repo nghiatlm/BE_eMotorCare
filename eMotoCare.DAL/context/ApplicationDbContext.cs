@@ -120,6 +120,15 @@ namespace eMotoCare.DAL.context
             modelBuilder.Entity<EVCheckDetail>()
                 .HasIndex(u => u.ReplacePartId)
                 .IsUnique(false);
+
+            modelBuilder.Entity<VehiclePartItem>()
+                .HasIndex(u => u.ReplaceForId)
+                .IsUnique(false);
+
+            modelBuilder.Entity<Customer>()
+                .HasIndex(u => u.CitizenId)
+                .IsUnique(true);
+
             base.OnModelCreating(modelBuilder);
         }
     }

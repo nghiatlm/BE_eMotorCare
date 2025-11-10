@@ -58,13 +58,18 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
         public Task<IReadOnlyList<Customer>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds) =>
             _context
                 .Customers.AsNoTracking()
-                .Where(c => accountIds.Contains(c.AccountId))
+                .Where(c => accountIds.Contains(c.AccountId.Value) && c.AccountId.HasValue)
                 .ToListAsync()
                 .ContinueWith(task => (IReadOnlyList<Customer>)task.Result);
 
         public Task<Customer?> GetAccountIdAsync(Guid id)
         {
             return _context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.AccountId == id);
+        }
+
+        public Task<Customer?> GetByCitizenId(string citizenId)
+        {
+            return _context.Customers.FirstOrDefaultAsync(x => x.CitizenId == citizenId);
         }
     }
 }

@@ -216,5 +216,23 @@ namespace eMototCare.BLL.Services.CustomerServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task<bool> MapAccountIdByCitizenIdAsync(string citizenId, Guid accountId)
+        {
+            if (string.IsNullOrWhiteSpace(citizenId))
+                throw new AppException("Citizen ID không hợp lệ", HttpStatusCode.BadRequest);
+
+            var customer = await _unitOfWork.Customers.GetByCitizenId(citizenId);
+
+            if (customer == null)
+                throw new AppException("Không tìm thấy khách hàng có Citizen ID này", HttpStatusCode.NotFound);
+
+            customer.AccountId = accountId;
+
+            _unitOfWork.Customers.Update(customer);
+            await _unitOfWork.SaveAsync();
+
+            return true;
+        }
     }
 }

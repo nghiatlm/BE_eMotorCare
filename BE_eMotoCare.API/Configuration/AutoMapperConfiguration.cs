@@ -30,6 +30,8 @@ namespace BE_eMotoCare.API.Configuration
             services.AddAutoMapper(typeof(VehicleStageMapper));
             services.AddAutoMapper(typeof(PriceServiceMapper));
             services.AddAutoMapper(typeof(PaymentMapper));
+            services.AddAutoMapper(typeof(RMAMapper));
+            services.AddAutoMapper(typeof(RMADetailMapper));
             return services;
         }
     }
