@@ -421,21 +421,19 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ExportTo = customerName + " - " + phone
 
                 };
-                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
+                
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;
-                    partItem.ExportNoteId = exportNote.Id;
-                    partItem.ServiceCenterInventoryId = null;
 
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
-                    partItem.Quantity = 0;
-                    _unitOfWork.PartItems.Update(partItem);
                 }
+                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
             }
+
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
-            _unitOfWork.EVChecks.Update(evCheck);
+            await _unitOfWork.EVChecks.UpdateAsync(evCheck);
             await _unitOfWork.SaveAsync();
             return true;
         }
