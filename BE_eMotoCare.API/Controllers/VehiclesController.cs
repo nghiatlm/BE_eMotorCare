@@ -82,5 +82,13 @@ namespace BE_eMotoCare.API.Controllers
             await _vehicleService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Vô hiệu hoá xe thành công"));
         }
+
+        [HttpGet("vin/{vinNumber}")]
+        [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
+        public async Task<IActionResult> GetByVinNumber(string vinNumber)
+        {
+            var item = await _vehicleService.GetByVinNumber(vinNumber);
+            return Ok(ApiResponse<VehicleResponse>.SuccessResponse(item, "Lấy xe thành công"));
+        }
     }
 }
