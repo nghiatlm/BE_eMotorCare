@@ -80,7 +80,7 @@ namespace eMototCare.BLL.Services.VehicleServices
                 await _unitOfWork.Vehicles.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Created Vehicle {Id} ({Vin})", entity.Id, entity.VinNUmber);
+                _logger.LogInformation("Created Vehicle {Id})", entity.Id);
                 return entity.Id;
             }
             catch (AppException)

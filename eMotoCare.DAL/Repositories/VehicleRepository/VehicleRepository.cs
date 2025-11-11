@@ -57,8 +57,8 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
             {
                 var s = search.Trim().ToLower();
                 q = q.Where(x =>
-                    x.VinNUmber.ToLower().Contains(s)
-                    || x.ChassisNumber.ToLower().Contains(s)
+                    
+                    x.ChassisNumber.ToLower().Contains(s)
                     || x.EngineNumber.ToLower().Contains(s)
                     || x.Color.ToLower().Contains(s)
                 );
@@ -77,7 +77,6 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
 
             var total = await q.LongCountAsync();
             var items = await q.OrderByDescending(x => x.PurchaseDate)
-                .ThenBy(x => x.VinNUmber)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
