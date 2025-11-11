@@ -14,10 +14,6 @@ namespace eMotoCare.BO.Entities
         public Guid Id { get; set; }
 
         [Required]
-        [Column("vin_number", TypeName = "nvarchar(300)")]
-        public string VinNUmber { get; set; } = string.Empty;
-
-        [Required]
         [Column("image")]
         public string Image { get; set; } = string.Empty;
 
