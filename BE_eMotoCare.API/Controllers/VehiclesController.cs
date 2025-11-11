@@ -85,9 +85,9 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpGet("vin/{vinNumber}")]
         [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
-        public async Task<IActionResult> GetByVinNumber(string vinNumber)
+        public async Task<IActionResult> GetByChassisNumber(string chassisNumber)
         {
-            var item = await _vehicleService.GetByVinNumber(vinNumber);
+            var item = await _vehicleService.GetByChassisNumber(chassisNumber);
             return Ok(ApiResponse<VehicleResponse>.SuccessResponse(item, "Lấy xe thành công"));
         }
     }
