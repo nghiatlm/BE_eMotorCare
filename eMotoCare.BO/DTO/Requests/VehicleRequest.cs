@@ -5,8 +5,7 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class VehicleRequest
     {
-        [Required]
-        public string VinNumber { get; set; } = default!;
+
 
         [Required]
         public string Image { get; set; } = default!;

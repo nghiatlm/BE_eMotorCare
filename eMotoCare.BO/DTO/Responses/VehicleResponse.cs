@@ -5,7 +5,6 @@ namespace eMotoCare.BO.DTO.Responses
     public class VehicleResponse
     {
         public Guid Id { get; set; }
-        public string VinNumber { get; set; } = default!;
         public string Image { get; set; } = default!;
         public string Color { get; set; } = default!;
         public string ChassisNumber { get; set; } = default!;
