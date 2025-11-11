@@ -11,6 +11,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             PositionEnum? position,
             Guid? serviceCenterId,
             Guid? staffId,
+            Guid? accountId,
             int page,
             int pageSize
         );
