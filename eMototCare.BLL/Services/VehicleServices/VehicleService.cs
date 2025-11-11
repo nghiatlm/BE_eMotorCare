@@ -142,5 +142,15 @@ namespace eMototCare.BLL.Services.VehicleServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        
+
+        public async Task<VehicleResponse?> GetByVinNumber(string vinNumber)
+        {
+            var v =
+                await _unitOfWork.Vehicles.GetByVinNumber(vinNumber)
+                ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
+            return _mapper.Map<VehicleResponse>(v);
+        }
     }
 }
