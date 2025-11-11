@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251111064627_initCreateDB")]
+    partial class initCreateDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,10 +130,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(200)")
                         .HasColumnName("type");
 
-                    b.Property<Guid?>("VehicleId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("vehicle_id");
-
                     b.Property<Guid?>("VehicleStageId")
                         .HasColumnType("char(36)")
                         .HasColumnName("vehicle_stage_id");
@@ -144,8 +143,6 @@ namespace eMotoCare.DAL.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("ServiceCenterId");
-
-                    b.HasIndex("VehicleId");
 
                     b.HasIndex("VehicleStageId");
 
@@ -1615,10 +1612,6 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eMotoCare.BO.Entities.Vehicle", "Vehicle")
-                        .WithMany()
-                        .HasForeignKey("VehicleId");
-
                     b.HasOne("eMotoCare.BO.Entities.VehicleStage", "VehicleStage")
                         .WithMany("Appointments")
                         .HasForeignKey("VehicleStageId");
@@ -1630,8 +1623,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("ServiceCenter");
-
-                    b.Navigation("Vehicle");
 
                     b.Navigation("VehicleStage");
                 });

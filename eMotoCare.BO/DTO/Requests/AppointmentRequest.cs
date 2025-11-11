@@ -11,7 +11,7 @@ namespace eMotoCare.BO.DTO.Requests
 
         [Required]
         public Guid CustomerId { get; set; }
-
+        public Guid? VehicleId { get; set; }
         public Guid? VehicleStageId { get; set; }
 
         [Required]
@@ -28,5 +28,6 @@ namespace eMotoCare.BO.DTO.Requests
 
         [Required]
         public ServiceType Type { get; set; }
+        public string? Note { get; set; }
     }
 }

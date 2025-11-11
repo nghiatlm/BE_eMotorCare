@@ -34,6 +34,12 @@ namespace eMotoCare.BO.Entities
         [InverseProperty(nameof(EVCheck.Appointment))]
         public virtual EVCheck? EVCheck { get; set; }
 
+        [Column("vehicle_id")]
+        public Guid? VehicleId { get; set; }
+
+        [ForeignKey(nameof(VehicleId))]
+        public virtual Vehicle? Vehicle { get; set; }
+
         [Column("vehicle_stage_id")]
         public Guid? VehicleStageId { get; set; }
 
@@ -78,6 +84,9 @@ namespace eMotoCare.BO.Entities
 
         [Column("checkin_qr_code", TypeName = "varchar(200)")]
         public string? CheckinQRCode { get; set; }
+
+        [Column("note", TypeName = "varchar(500)")]
+        public string? Note { get; set; }
 
         public virtual ICollection<Payment>? Payments { get; set; }
     }
