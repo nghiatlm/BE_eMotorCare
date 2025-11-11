@@ -22,7 +22,7 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Include(x => x.Customer)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-        public Task<Vehicle?> GetByVinNumber(string vinNumber) =>
+        public Task<Vehicle?> GetByChassisNumber(string chassisNumber) =>
             _context
             .Vehicles.AsNoTracking()
                 .Include(x => x.Model)
@@ -30,7 +30,7 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Include(x => x.Model)
                 .ThenInclude(m => m.ModelPartTypes)
                 .Include(x => x.Customer)
-                .FirstOrDefaultAsync(x => x.VinNUmber == vinNumber);
+                .FirstOrDefaultAsync(x => x.ChassisNumber == chassisNumber);
 
         public async Task<(IReadOnlyList<Vehicle> Items, long Total)> GetPagedAsync(
             string? search,

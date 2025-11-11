@@ -12,7 +12,7 @@ namespace eMotoCare.BO.DTO.Requests
         [EnumDataType(typeof(EVCheckStatus))]
         public EVCheckStatus? Status { get; set; }
         public int? Odometer { get; set; }
-        public string? VinNumber { get; set; }
+        public string? ChassisNumber { get; set; }
         public Guid? AppointmentId { get; set; }
         public Guid? TaskExecutorId { get; set; }
     }
