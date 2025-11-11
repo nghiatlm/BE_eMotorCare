@@ -20,6 +20,7 @@ using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.PayosServices;
 using eMototCare.BLL.Services.PriceServiceServices;
+using eMototCare.BLL.Services.RMADetailServices;
 using eMototCare.BLL.Services.RMAServices;
 using eMototCare.BLL.Services.ServiceCenterInventoryServices;
 using eMototCare.BLL.Services.ServiceCenterServices;
@@ -65,6 +66,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IPartItemService, PartItemService>();
             services.AddScoped<IRMAService, RMAService>();
             services.AddScoped<IServiceCenterInventoryService, ServiceCenterInventoryService>();
+            services.AddScoped<IRMADetailService, RMADetailService>();
             return services;
         }
     }

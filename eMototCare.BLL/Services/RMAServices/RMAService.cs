@@ -95,7 +95,7 @@ namespace eMototCare.BLL.Services.RMAServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Create Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Create RMA failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
@@ -139,8 +139,17 @@ namespace eMototCare.BLL.Services.RMAServices
                         HttpStatusCode.NotFound
                     );
 
-                if (req.Code != null) 
-                    entity.Code = req.Code;
+                if (req.Code != null)
+                {
+                    var code = req.Code.Trim();
+                    if (
+                        !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
+                        && await _unitOfWork.RMAs.ExistsCodeAsync(code)
+                    )
+                        throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+                    entity.Code = code;
+                }
+                    
 
                 if (req.RMADate != null)
                     entity.RMADate = req.RMADate.Value;
@@ -149,7 +158,18 @@ namespace eMototCare.BLL.Services.RMAServices
                     entity.ReturnAddress = req.ReturnAddress;
 
                 if (req.Status != null)
+                {
+                    if (req.Status == RMAStatus.APPROVED)
+                    {
+                       var rmaDetails = await _unitOfWork.RMADetails.GetByRmaId(entity.Id);
+                       foreach (var detail in rmaDetails)
+                        {
+                            detail.Status = RMADetailStatus.APPROVED;
+                            await _unitOfWork.RMADetails.UpdateAsync(detail);
+                        }
+                    }
                     entity.Status = req.Status.Value;
+                }
 
                 if (req.Note != null)
                     entity.Note = req.Note;
