@@ -427,7 +427,12 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     var partItem = detail.ReplacePart;
                     partItem.ExportNoteId = exportNote.Id;
                     partItem.ServiceCenterInventoryId = null;
-
+                    if (partItem.WarrantyPeriod != null)
+                    {
+                        int month = partItem.WarrantyPeriod ?? 0;
+                        partItem.WarantyStartDate = DateTime.UtcNow;
+                        partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
+                    }
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
                     partItem.Quantity = 0;
