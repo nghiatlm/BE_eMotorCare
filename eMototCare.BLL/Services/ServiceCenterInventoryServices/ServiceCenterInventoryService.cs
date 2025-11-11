@@ -67,8 +67,9 @@ namespace eMototCare.BLL.Services.ServiceCenterInventoryServices
             {
 
                 var entity = _mapper.Map<ServiceCenterInventory>(req);
-                var sc = await _unitOfWork.ServiceCenterInventories.GetByServiceCenterId(entity.ServiceCenterId) 
-                    ?? throw new AppException(
+                var sc = await _unitOfWork.ServiceCenterInventories.GetByServiceCenterId(req.ServiceCenterId);
+                    
+                    if (sc != null) throw new AppException(
                         "SC đã tồn tại kho.",
                         HttpStatusCode.NotFound
                     );
