@@ -93,9 +93,9 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                         .ThenInclude (a => a.Account)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
-                .ThenInclude(p => p.PartItem)
+                    .ThenInclude(p => p.PartItem)
                 .Include(x => x.EVCheckDetails)
-                .ThenInclude(p => p.ReplacePart)
+                    .ThenInclude(p => p.ReplacePart)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }

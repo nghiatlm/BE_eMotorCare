@@ -34,12 +34,6 @@ namespace eMotoCare.BO.Entities
         [InverseProperty(nameof(EVCheck.Appointment))]
         public virtual EVCheck? EVCheck { get; set; }
 
-        [Column("vehicle_id")]
-        public Guid? VehicleId { get; set; }
-
-        [ForeignKey(nameof(VehicleId))]
-        public virtual Vehicle? Vehicle { get; set; }
-
         [Column("vehicle_stage_id")]
         public Guid? VehicleStageId { get; set; }
 
