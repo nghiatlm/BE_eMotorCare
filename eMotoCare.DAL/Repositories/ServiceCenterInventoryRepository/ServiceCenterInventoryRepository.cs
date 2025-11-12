@@ -25,6 +25,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
 
             var q = _context.ServiceCenterInventorys
                 .Include(x => x.PartItems)
+                    .ThenInclude(x => x.Part)
                 .Include(s => s.ServiceCenter)
                 .AsNoTracking()
                 .AsQueryable();

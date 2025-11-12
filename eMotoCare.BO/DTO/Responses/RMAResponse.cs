@@ -26,9 +26,6 @@ namespace eMotoCare.BO.DTO.Responses
 
         public string? Note { get; set; }
 
-
-        public CustomerResponse? Customer { get; set; }
-
         public StaffResponse? Staff { get; set; }
 
         public ICollection<RMADetailResponse>? RMADetails { get; set; }

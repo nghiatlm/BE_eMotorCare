@@ -36,7 +36,6 @@ namespace eMototCare.BLL.Services.RMAServices
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
-             Guid? customerId,
              int page,
              int pageSize
         )
@@ -50,7 +49,6 @@ namespace eMototCare.BLL.Services.RMAServices
                     returnAddress,
                     status,
                     createdById,
-                    customerId,
                     page,
                     pageSize
                 );
@@ -95,7 +93,7 @@ namespace eMototCare.BLL.Services.RMAServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Create Part failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Create RMA failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
@@ -139,8 +137,17 @@ namespace eMototCare.BLL.Services.RMAServices
                         HttpStatusCode.NotFound
                     );
 
-                if (req.Code != null) 
-                    entity.Code = req.Code;
+                if (req.Code != null)
+                {
+                    var code = req.Code.Trim();
+                    if (
+                        !string.Equals(entity.Code, code, StringComparison.OrdinalIgnoreCase)
+                        && await _unitOfWork.RMAs.ExistsCodeAsync(code)
+                    )
+                        throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
+                    entity.Code = code;
+                }
+                    
 
                 if (req.RMADate != null)
                     entity.RMADate = req.RMADate.Value;
@@ -149,7 +156,18 @@ namespace eMototCare.BLL.Services.RMAServices
                     entity.ReturnAddress = req.ReturnAddress;
 
                 if (req.Status != null)
+                {
+                    if (req.Status == RMAStatus.APPROVED)
+                    {
+                       var rmaDetails = await _unitOfWork.RMADetails.GetByRmaId(entity.Id);
+                       foreach (var detail in rmaDetails)
+                        {
+                            detail.Status = RMADetailStatus.APPROVED;
+                            await _unitOfWork.RMADetails.UpdateAsync(detail);
+                        }
+                    }
                     entity.Status = req.Status.Value;
+                }
 
                 if (req.Note != null)
                     entity.Note = req.Note;
@@ -157,8 +175,6 @@ namespace eMototCare.BLL.Services.RMAServices
                 if (req.CreateById != null)
                     entity.CreateById = req.CreateById.Value;
 
-                if (req.CustomerId != null)
-                    entity.CustomerId = req.CustomerId.Value;
 
 
 
@@ -199,6 +215,14 @@ namespace eMototCare.BLL.Services.RMAServices
                 _logger.LogError(ex, "GetById RMA failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
+        }
+
+        public async Task<List<RMAResponse?>> GetByCustomerIdAsync(Guid customerId)
+        {
+            var rmas = await _unitOfWork.RMAs.GetByCustomerIdAsync(customerId);
+            if (!rmas.Any())
+                throw new AppException("Không tìm thấy RMA", HttpStatusCode.NotFound);
+            return _mapper.Map<List<RMAResponse>>(rmas);
         }
 
     }

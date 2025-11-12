@@ -8,6 +8,7 @@ namespace eMotoCare.BO.Enums
         APPROVED,
         MANUFACTURER_UPDATED,
         COMPLETED,
-        REJECTED 
+        REJECTED,
+        CANCELED
     }
 }
