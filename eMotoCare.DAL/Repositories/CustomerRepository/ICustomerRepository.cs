@@ -17,5 +17,6 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
             int pageSize
         );
         Task<Customer?> GetByCitizenId(string citizenId);
+        Task<Customer?> GetByRmaId(Guid rmaId);
     }
 }
