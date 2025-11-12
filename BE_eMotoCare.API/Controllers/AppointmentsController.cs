@@ -147,5 +147,18 @@ namespace BE_eMotoCare.API.Controllers
             await _appointmentService.CheckInByCodeAsync(req.Code);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
         }
+
+        [HttpGet("{appointmentId}/missing-parts")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> GetMissingParts(Guid appointmentId)
+        {
+            var data = await _appointmentService.GetMissingPartsAsync(appointmentId);
+            return Ok(
+                ApiResponse<List<MissingPartResponse>>.SuccessResponse(
+                    data,
+                    "Lấy danh sách phụ tùng còn thiếu thành công"
+                )
+            );
+        }
     }
 }

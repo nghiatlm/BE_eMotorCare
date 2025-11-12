@@ -399,5 +399,178 @@ namespace eMototCare.BLL.Services.AppointmentServices
             var appointments = await _unitOfWork.Appointments.GetByTechnicianIdAsync(technicianId);
             return _mapper.Map<List<AppointmentResponse>>(appointments);
         }
+
+        public async Task<List<MissingPartResponse>> GetMissingPartsAsync(Guid appointmentId)
+        {
+            try
+            {
+                // 1) Lấy appointment (để biết ServiceCenter + thông tin hiển thị)
+                var appt =
+                    await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
+                    ?? throw new AppException(
+                        "Không tìm thấy Appointment",
+                        HttpStatusCode.NotFound
+                    );
+
+                // 2) Lấy EVCheck (kèm EVCheckDetails). Repo nên include MSD + PartItem(+Part) nếu có thể
+                var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appointmentId);
+                if (
+                    evCheck == null
+                    || evCheck.EVCheckDetails == null
+                    || !evCheck.EVCheckDetails.Any()
+                )
+                    return new List<MissingPartResponse>();
+
+                // 3) Tồn kho theo Service Center
+                var scId = appt.ServiceCenterId;
+                var inventoryItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(scId);
+
+                var availableByPart = inventoryItems
+                    .Where(pi => pi.Status == PartItemStatus.ACTIVE && pi.Quantity > 0)
+                    .GroupBy(pi => pi.PartId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => new
+                        {
+                            AvailableQty = g.Sum(x => x.Quantity),
+                            Part = g.FirstOrDefault()?.Part // để lấy Code/Name nếu có
+                            ,
+                        }
+                    );
+
+                // 4) Gom nhu cầu: mọi detail CHƯA có ReplacePartId và KHÔNG CANCELED được coi là "đang cần"
+                var needed = new Dictionary<Guid, int>(); // PartId -> NeededQty
+                var neededDetails = new Dictionary<Guid, List<EVCheckDetail>>(); // PartId -> các detail đóng góp
+
+                foreach (var d in evCheck.EVCheckDetails)
+                {
+                    if (d.Status == EVCheckDetailStatus.CANCELED)
+                        continue;
+                    if (d.ReplacePartId.HasValue)
+                        continue; // đã chọn item cụ thể, không coi là thiếu
+
+                    Guid? requiredPartId = null;
+
+                    // Ưu tiên từ MaintenanceStageDetail.PartId
+                    if (d.MaintenanceStageDetailId.HasValue)
+                    {
+                        var msd =
+                            d.MaintenanceStageDetail
+                            ?? await _unitOfWork.MaintenanceStageDetails.GetByIdAsync(
+                                d.MaintenanceStageDetailId.Value
+                            );
+                        requiredPartId = msd?.PartId;
+                    }
+
+                    // Fallback: Part hiện lắp trên xe (từ PartItem.PartId) cho case sửa chữa
+                    if (!requiredPartId.HasValue && d.PartItemId != Guid.Empty)
+                    {
+                        var pi =
+                            d.PartItem ?? await _unitOfWork.PartItems.GetByIdAsync(d.PartItemId);
+                        requiredPartId = pi?.PartId;
+                    }
+
+                    if (!requiredPartId.HasValue)
+                        continue;
+
+                    var pid = requiredPartId.Value;
+                    if (!needed.ContainsKey(pid))
+                        needed[pid] = 0;
+                    needed[pid] += 1; // mỗi detail = 1 đơn vị cần
+
+                    if (!neededDetails.ContainsKey(pid))
+                        neededDetails[pid] = new List<EVCheckDetail>();
+                    neededDetails[pid].Add(d);
+                }
+
+                // 5) Build kết quả cho các Part còn thiếu
+                var results = new List<MissingPartResponse>();
+
+                foreach (var kv in needed)
+                {
+                    var partId = kv.Key;
+                    var neededQty = kv.Value;
+
+                    var availInfo = availableByPart.TryGetValue(partId, out var ai) ? ai : null;
+                    var availableQty = availInfo?.AvailableQty ?? 0;
+                    var missingQty = Math.Max(neededQty - availableQty, 0);
+
+                    // chỉ trả những cái còn thiếu
+                    if (missingQty <= 0)
+                        continue;
+
+                    // Lấy Code/Name
+                    string code = "",
+                        name = "";
+                    if (availInfo?.Part != null)
+                    {
+                        code = availInfo.Part.Code;
+                        name = availInfo.Part.Name;
+                    }
+                    else
+                    {
+                        var part = await _unitOfWork.Parts.GetByIdAsync(partId);
+                        if (part != null)
+                        {
+                            code = part.Code;
+                            name = part.Name;
+                        }
+                    }
+
+                    // Ghi chú: tổng hợp Result của các detail góp phần tạo nhu cầu cho part này
+                    string? note = null;
+                    if (neededDetails.TryGetValue(partId, out var dets) && dets != null)
+                    {
+                        var joined = string.Join(
+                            "; ",
+                            dets.Select(x => x.Result)
+                                .Where(r => !string.IsNullOrWhiteSpace(r))
+                                .Distinct()
+                        );
+                        note = string.IsNullOrWhiteSpace(joined) ? null : joined;
+                    }
+
+                    results.Add(
+                        new MissingPartResponse
+                        {
+                            PartId = partId,
+                            Code = code,
+                            Name = name,
+                            NeededQty = neededQty,
+                            AvailableQty = availableQty,
+                            MissingQty = missingQty,
+
+                            AppointmentId = appt.Id,
+                            //AppointmentCode = appt.Code ?? "",
+                            ServiceCenterId = appt.ServiceCenterId,
+                            ServiceCenterName = appt.ServiceCenter?.Name ?? "",
+
+                            TaskExecutorId = evCheck.TaskExecutorId,
+
+                            RequestedAt = evCheck.CheckDate,
+                            CreatedById = evCheck.TaskExecutorId,
+                            Status = "MISSING",
+                            Note = note,
+                        }
+                    );
+                }
+
+                return results.OrderByDescending(x => x.MissingQty).ToList();
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "GetMissingPartsAsync failed for Appointment {AppointmentId}: {Message}",
+                    appointmentId,
+                    ex.Message
+                );
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
     }
 }
