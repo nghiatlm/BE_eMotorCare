@@ -83,5 +83,21 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.RMAs.AnyAsync(x => x.Code == code);
+
+        public async Task<List<RMA?>> GetByCustomerIdAsync(Guid customerId)
+        {
+            return await _context.Appointments
+                        .Where(a => a.CustomerId == customerId)
+                        .Select(a => a.EVCheck)                     // 1-1
+                        .Where(ev => ev != null)
+                        .SelectMany(ev => ev.EVCheckDetails)        // 1-N
+                        .Select(ecd => ecd.RMADetail)               // 1-1
+                        .Where(rmad => rmad != null)
+                        .Select(rmad => rmad.RMA)                   // N-1
+                        .Where(rma => rma != null)
+                        .Distinct()
+                        .ToListAsync();
+        }
+
     }
 }

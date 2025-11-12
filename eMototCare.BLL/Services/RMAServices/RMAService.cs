@@ -217,5 +217,13 @@ namespace eMototCare.BLL.Services.RMAServices
             }
         }
 
+        public async Task<List<RMAResponse?>> GetByCustomerIdAsync(Guid customerId)
+        {
+            var rmas = await _unitOfWork.RMAs.GetByCustomerIdAsync(customerId);
+            if (!rmas.Any())
+                throw new AppException("Không tìm thấy RMA", HttpStatusCode.NotFound);
+            return _mapper.Map<List<RMAResponse>>(rmas);
+        }
+
     }
 }

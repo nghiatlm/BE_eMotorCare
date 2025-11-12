@@ -1,12 +1,11 @@
 ﻿using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
-using eMotoCare.BO.Enum;
+using Microsoft.AspNetCore.Mvc;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.RMAServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
@@ -82,6 +81,17 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật RMA thành công")
             );
+        }
+
+        [HttpGet("customer/{customerId}")]
+        [Authorize(Roles = "ROLE_CUSTOMER")]
+        public async Task<IActionResult> GetByCustomerId(Guid customerId)
+        {
+            var rmas = await _service.GetByCustomerIdAsync(customerId);
+            if (rmas == null || !rmas.Any())
+                return NotFound(ApiResponse<string>.NotFound("Không tìm thấy RMA"));
+
+            return Ok(ApiResponse<List<RMAResponse>>.SuccessResponse(rmas, "Lấy danh sách RMA theo Customer Id thành công"));
         }
     }
 }
