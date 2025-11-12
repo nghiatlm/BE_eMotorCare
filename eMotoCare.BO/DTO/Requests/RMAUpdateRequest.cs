@@ -22,7 +22,6 @@ namespace eMotoCare.BO.DTO.Requests
 
         public string? Note { get; set; }
 
-        public Guid? CustomerId { get; set; }
 
         public Guid? CreateById { get; set; }
 

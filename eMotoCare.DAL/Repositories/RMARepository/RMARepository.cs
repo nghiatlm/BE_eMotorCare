@@ -20,7 +20,6 @@ namespace eMotoCare.DAL.Repositories.RMARepository
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
-             Guid? customerId,
              int page,
              int pageSize
         )
@@ -29,7 +28,6 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             var q = _context.RMAs
-                .Include(x => x.Customer)
                 .Include(x => x.Staff)
                 .AsNoTracking()
                 .AsQueryable();
@@ -47,8 +45,6 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             if (createdById.HasValue)
                 q = q.Where(x => x.CreateById == createdById.Value);
 
-            if (customerId.HasValue)
-                q = q.Where(x => x.CustomerId == customerId.Value);
 
             if (fromDate.HasValue && toDate.HasValue)
             {
@@ -82,7 +78,6 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 
         public Task<RMA?> GetByIdAsync(Guid id) =>
         _context.RMAs
-            .Include(x => x.Customer)
             .Include(x => x.Staff)
             .FirstOrDefaultAsync(x => x.Id == id);
 

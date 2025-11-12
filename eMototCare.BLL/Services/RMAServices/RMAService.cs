@@ -36,7 +36,6 @@ namespace eMototCare.BLL.Services.RMAServices
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
-             Guid? customerId,
              int page,
              int pageSize
         )
@@ -50,7 +49,6 @@ namespace eMototCare.BLL.Services.RMAServices
                     returnAddress,
                     status,
                     createdById,
-                    customerId,
                     page,
                     pageSize
                 );
@@ -177,8 +175,6 @@ namespace eMototCare.BLL.Services.RMAServices
                 if (req.CreateById != null)
                     entity.CreateById = req.CreateById.Value;
 
-                if (req.CustomerId != null)
-                    entity.CustomerId = req.CustomerId.Value;
 
 
 

@@ -8,6 +8,6 @@ namespace eMotoCare.DAL.Repositories.RMARepository
     {
         Task<bool> ExistsCodeAsync(string code);
         Task<RMA?> GetByIdAsync(Guid id);
-        Task<(IReadOnlyList<RMA> Items, long Total)> GetPagedAsync(string? code, DateTime? fromDate, DateTime? toDate, string? returnAddress, RMAStatus? status, Guid? createdById, Guid? customerId, int page, int pageSize);
+        Task<(IReadOnlyList<RMA> Items, long Total)> GetPagedAsync(string? code, DateTime? fromDate, DateTime? toDate, string? returnAddress, RMAStatus? status, Guid? createdById, int page, int pageSize);
     }
 }
