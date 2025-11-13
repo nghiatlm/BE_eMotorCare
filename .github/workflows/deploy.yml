@@ -3,7 +3,7 @@ name: Deploy to VM
 on:
   push:
     branches:
-      - main  # Chỉ chạy khi push vào nhánh main
+      - production  # Chỉ chạy khi push vào nhánh main
 
 jobs:
   deploy:
