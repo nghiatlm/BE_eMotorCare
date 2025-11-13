@@ -49,7 +49,8 @@ namespace eMotoCare.BO.Entities
         public virtual ICollection<ImportNote>? ImportNotes { get; set; }
         public virtual ICollection<ExportNote>? ExportNotes { get; set; }
         public virtual ICollection<Staff>? Staffs { get; set; }
-        public virtual ICollection<ServiceCenterInventory>? ServiceCenterInventories { get; set; }
+        [InverseProperty(nameof(ServiceCenterInventory.ServiceCenter))]
+        public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
         public virtual ICollection<Appointment>? Appointments { get; set; }
     }
 }

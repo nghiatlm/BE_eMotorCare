@@ -19,6 +19,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.Customer)
                 .Include(x => x.VehicleStage)
                 .Include(x => x.EVCheck)
+                .Include(x => x.VehicleStage)
+                .ThenInclude(vs => vs.MaintenanceStage)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
@@ -28,6 +30,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -41,6 +44,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.AsNoTracking()
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
+                .Include(x => x.VehicleStage)
+                .ThenInclude(vs => vs.MaintenanceStage)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -48,7 +53,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 var s = search.Trim().ToLower();
                 q = q.Where(x => x.Code.ToLower().Contains(s));
             }
-
+            if (customerId.HasValue)
+                q = q.Where(a => a.CustomerId == customerId.Value);
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
             if (serviceCenterId.HasValue)
@@ -130,6 +136,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             _context
                 .Appointments.Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
+                .Include(x => x.EVCheck)
                 .FirstOrDefaultAsync(x => x.Code == code);
 
         public Task UpdateStatusByIdAsync(Guid id, AppointmentStatus status)
@@ -138,6 +145,18 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             _context.Attach(appt);
             _context.Entry(appt).Property(a => a.Status).IsModified = true;
             return Task.CompletedTask;
+        }
+
+        public async Task<IReadOnlyList<Appointment>> GetByTechnicianIdAsync(Guid technicianId)
+        {
+            return await _context
+                .Appointments.Include(a => a.Customer)
+                .Include(a => a.ServiceCenter)
+                .Include(a => a.VehicleStage)
+                .Include(a => a.EVCheck)
+                .Where(a => a.EVCheck != null && a.EVCheck.TaskExecutorId == technicianId)
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

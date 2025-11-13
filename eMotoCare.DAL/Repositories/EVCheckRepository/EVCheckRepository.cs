@@ -87,13 +87,14 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
         public async Task<EVCheck?> GetByIdAsync(Guid id)
         {
             var evCheck = await _context
-                .EVChecks
-                .Include(x => x.Appointment)
+                .EVChecks.Include(x => x.Appointment)
+                .ThenInclude(c => c.Customer)
+                .ThenInclude(a => a.Account)
                 .Include(x => x.TaskExecutor)
                 .Include(x => x.EVCheckDetails)
-                    .ThenInclude(p => p.PartItem)
+                .ThenInclude(p => p.PartItem)
                 .Include(x => x.EVCheckDetails)
-                    .ThenInclude(p => p.ReplacePart)
+                .ThenInclude(p => p.ReplacePart)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }
@@ -101,6 +102,10 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
         public Task<EVCheck?> GetByAppointmentIdAsync(Guid appointmentId) =>
             _context
                 .EVChecks.Include(x => x.EVCheckDetails)
+                .ThenInclude(d => d.MaintenanceStageDetail)
+                .Include(x => x.EVCheckDetails)
+                .ThenInclude(d => d.PartItem)
+                .ThenInclude(pi => pi.Part)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.AppointmentId == appointmentId);
 

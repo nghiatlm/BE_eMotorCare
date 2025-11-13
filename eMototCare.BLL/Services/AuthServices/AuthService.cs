@@ -94,18 +94,28 @@ namespace eMototCare.BLL.Services.AuthServices
                 );
                 if (!checkPasswo5rd)
                     throw new AppException("Mật khẩu không đúng", HttpStatusCode.BadRequest);
-                if (account.RoleName != RoleName.ROLE_STAFF &&
-                    account.RoleName != RoleName.ROLE_MANAGER &&
-                    account.RoleName != RoleName.ROLE_ADMIN &&
-                    account.RoleName != RoleName.ROLE_STOREKEEPER)
+                if (
+                    account.RoleName != RoleName.ROLE_STAFF
+                    && account.RoleName != RoleName.ROLE_MANAGER
+                    && account.RoleName != RoleName.ROLE_ADMIN
+                    && account.RoleName != RoleName.ROLE_STOREKEEPER
+                    && account.RoleName != RoleName.ROLE_TECHNICIAN
+                )
                 {
-                    throw new AppException("Tài khoản không phải nhân viên", HttpStatusCode.Forbidden);
+                    throw new AppException(
+                        "Tài khoản không phải nhân viên",
+                        HttpStatusCode.Forbidden
+                    );
                 }
                 if (account.Stattus == AccountStatus.IN_ACTIVE)
                 {
                     var otp = new Random().Next(100000, 999999).ToString();
                     _cache.Set($"OTP_{account.Email}", otp, TimeSpan.FromMinutes(5));
-                    await _mailService.SendLoginEmailAsync(account.Email, "Xác minh đăng nhập nhân viên", otp);
+                    await _mailService.SendLoginEmailAsync(
+                        account.Email,
+                        "Xác minh đăng nhập nhân viên",
+                        otp
+                    );
                     return null;
                 }
 
@@ -119,10 +129,9 @@ namespace eMototCare.BLL.Services.AuthServices
                         Email = account.Email,
                         Phone = account.Phone,
                         RoleName = account.RoleName,
-                        Stattus = account.Stattus
-                    }
+                        Stattus = account.Stattus,
+                    },
                 };
-
             }
             catch (AppException aex)
             {
@@ -142,7 +151,10 @@ namespace eMototCare.BLL.Services.AuthServices
                 throw new AppException("Tài khoản không tồn tại", HttpStatusCode.NotFound);
 
             if (!_cache.TryGetValue($"OTP_{request.Email}", out string cachedOtp))
-                throw new AppException("OTP đã hết hạn hoặc không tồn tại", HttpStatusCode.BadRequest);
+                throw new AppException(
+                    "OTP đã hết hạn hoặc không tồn tại",
+                    HttpStatusCode.BadRequest
+                );
 
             if (cachedOtp != request.Otp)
                 throw new AppException("OTP không đúng", HttpStatusCode.BadRequest);
@@ -152,9 +164,7 @@ namespace eMototCare.BLL.Services.AuthServices
             await _unitOfWork.Accounts.UpdateAsync(account);
             await _unitOfWork.SaveAsync();
             return true;
-
         }
-
 
         public async Task<bool> Register(RegisterRequest request)
         {
@@ -164,14 +174,17 @@ namespace eMototCare.BLL.Services.AuthServices
                 if (await _unitOfWork.Accounts.ExistsPhoneAsync(phone))
                     throw new AppException("Code đã tồn tại", HttpStatusCode.Conflict);
 
-                var account = await _unitOfWork.Accounts.CreateAsync(new Account
-                {
-                    Phone = phone,
-                    Password = _passwordHasher.HashPassword(request.Password),
-                    RoleName = RoleName.ROLE_CUSTOMER,
-                    Stattus = AccountStatus.IN_ACTIVE,
-                });
-                if (account < 1) throw new AppException("Tạo không thành công", HttpStatusCode.BadRequest);
+                var account = await _unitOfWork.Accounts.CreateAsync(
+                    new Account
+                    {
+                        Phone = phone,
+                        Password = _passwordHasher.HashPassword(request.Password),
+                        RoleName = RoleName.ROLE_CUSTOMER,
+                        Stattus = AccountStatus.IN_ACTIVE,
+                    }
+                );
+                if (account < 1)
+                    throw new AppException("Tạo không thành công", HttpStatusCode.BadRequest);
                 var result = await _unitOfWork.SaveAsync();
                 return result > 0 ? true : false;
             }

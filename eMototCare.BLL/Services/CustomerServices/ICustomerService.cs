@@ -13,5 +13,7 @@ namespace eMototCare.BLL.Services.CustomerServices
         Task UpdateAsync(Guid id, CustomerRequest req);
         Task DeleteAsync(Guid id);
         Task<CustomerResponse?> GetAccountIdAsync(Guid id);
+        Task<bool> MapAccountIdByCitizenIdAsync(string citizenId, Guid accountId);
+        Task<CustomerResponse?> GetCustomerByRmaIdAsync(Guid rmaId);
     }
 }

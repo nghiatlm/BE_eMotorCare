@@ -79,6 +79,9 @@ namespace eMotoCare.BO.Entities
         [Column("checkin_qr_code", TypeName = "varchar(200)")]
         public string? CheckinQRCode { get; set; }
 
+        [Column("note", TypeName = "varchar(500)")]
+        public string? Note { get; set; }
+
         public virtual ICollection<Payment>? Payments { get; set; }
     }
 }

@@ -183,7 +183,10 @@ namespace eMototCare.BLL.Services.ExportServices
                     entity.Note = req.Note.Trim();
                 }
 
-                entity.ExportById = req.ExportById;
+                if (req.ExportById != null)
+                {
+                    entity.ExportById = req.ExportById;
+                }
 
                 if (req.ServiceCenterId != null)
                 {
@@ -193,15 +196,32 @@ namespace eMototCare.BLL.Services.ExportServices
                 {
                     if (req.ExportNoteStatus == ExportNoteStatus.COMPLETED && entity.Type == ExportType.REPLACEMENT)
                     {
-                        var guidString = entity.ExportTo.Replace("EVCheck: ", "").Trim();
-                        var evCheckId = Guid.Parse(guidString);
-                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(evCheckId);
+                        var appointmentCode = entity.Note.Replace("Xuất phụ tùng cho appointment: ", "").Trim();
+                        var appointment = await _unitOfWork.Appointments.GetByCodeAsync(appointmentCode);
+                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(appointment.EVCheck.Id);
                         evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
-                        await _unitOfWork.EVChecks.UpdateAsync(evCheck);
+
+                        var replaceDetails = evCheck
+                                            .EVCheckDetails.Where(d => d.ReplacePartId != null)
+                                            .ToList();
+                        foreach (var detail in replaceDetails)
+                        {
+                            var partItem = detail.ReplacePart;
+                            partItem.ExportNoteId = entity.Id;
+                            partItem.ServiceCenterInventoryId = null;
+                            if (partItem.WarrantyPeriod != null)
+                            {
+                                int month = partItem.WarrantyPeriod ?? 0;
+                                partItem.WarantyStartDate = DateTime.UtcNow;
+                                partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
+                            }
+                            partItem.Quantity = 0;
+                            await _unitOfWork.PartItems.UpdateAsync(partItem);
+                        }
+
                     }
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;
                 }
-
 
                 await _unitOfWork.ExportNotes.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();

@@ -10,6 +10,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -22,5 +23,6 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
 
         Task<IReadOnlyList<string>> GetAvailableSlotsAsync(Guid serviceCenterId, DateTime date);
         Task UpdateStatusByIdAsync(Guid appointmentId, AppointmentStatus appointmentStatus);
+        Task<IReadOnlyList<Appointment>> GetByTechnicianIdAsync(Guid technicianId);
     }
 }

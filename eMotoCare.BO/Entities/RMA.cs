@@ -33,7 +33,6 @@ namespace eMotoCare.BO.Entities
         [Column("note")]
         public string? Note { get; set; }
 
-
         [Required]
         [Column("create_by_id")]
         public Guid CreateById { get; set; }

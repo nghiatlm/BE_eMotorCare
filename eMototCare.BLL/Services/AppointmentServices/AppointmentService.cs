@@ -4,6 +4,7 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
@@ -32,6 +33,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             string? search,
             AppointmentStatus? status,
             Guid? serviceCenterId,
+            Guid? customerId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -44,6 +46,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     search,
                     status,
                     serviceCenterId,
+                    customerId,
                     fromDate,
                     toDate,
                     page,
@@ -51,6 +54,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 );
 
                 var rows = _mapper.Map<List<AppointmentResponse>>(items);
+                foreach (var appt in rows)
+                {
+                    var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appt.Id);
+                    if (evCheck != null)
+                        appt.EVCheckId = evCheck.Id;
+                }
                 return new PageResult<AppointmentResponse>(rows, pageSize, page, (int)total);
             }
             catch (Exception ex)
@@ -74,8 +83,61 @@ namespace eMototCare.BLL.Services.AppointmentServices
             try
             {
                 var dateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
-                var dow = (eMotoCare.BO.Enums.DayOfWeeks)req.AppointmentDate.DayOfWeek;
+                var dow = (DayOfWeeks)req.AppointmentDate.DayOfWeek;
 
+                var now = DateTime.UtcNow.AddHours(7).Date;
+                if (req.AppointmentDate.Date < now)
+                {
+                    throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
+                }
+
+                if (req.VehicleStageId.HasValue)
+                {
+                    var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                        req.VehicleStageId.Value
+                    );
+                    if (stage is null)
+                        throw new AppException(
+                            "Mốc bảo dưỡng không tồn tại.",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    switch (stage.Status)
+                    {
+                        case VehicleStageStatus.UPCOMING:
+
+                            break;
+
+                        case VehicleStageStatus.COMPLETED:
+                            throw new AppException(
+                                "Mốc bảo dưỡng này đã hoàn thành.",
+                                HttpStatusCode.BadRequest
+                            );
+
+                        case VehicleStageStatus.EXPIRED:
+                            throw new AppException(
+                                "Mốc bảo dưỡng này đã hết hạn.",
+                                HttpStatusCode.BadRequest
+                            );
+
+                        case VehicleStageStatus.NO_START:
+                            throw new AppException(
+                                "Mốc bảo dưỡng này chưa đến thời điểm bắt đầu.",
+                                HttpStatusCode.BadRequest
+                            );
+                    }
+                    var allAppointments = await _unitOfWork.Appointments.FindAllAsync();
+                    var existed = allAppointments.Any(a =>
+                        a.VehicleStageId == req.VehicleStageId.Value
+                        && a.Status != AppointmentStatus.CANCELED
+                    );
+
+                    if (existed)
+                        throw new AppException(
+                            "Mốc bảo dưỡng này đã có đặt lịch.",
+                            HttpStatusCode.BadRequest
+                        );
+                }
                 // 1) Có cấu hình slot không?
                 var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
                     s =>
@@ -115,6 +177,22 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
+
+                var current = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
+                    req.ServiceCenterId,
+                    dateOnly,
+                    req.SlotTime
+                );
+                if (current >= slotCfg.Capacity && slotCfg.IsActive)
+                {
+                    slotCfg.IsActive = false;
+                    await _unitOfWork.ServiceCenterSlot.UpdateAsync(slotCfg);
+                    await _unitOfWork.SaveAsync();
+                    _logger.LogInformation(
+                        "Slot {SlotId} đã đủ số lượng, tự động đóng.",
+                        slotCfg.Id
+                    );
+                }
                 _logger.LogInformation("Created Appointment {Code} ({Id})", entity.Code, entity.Id);
                 return entity.Id;
             }
@@ -140,7 +218,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var changingCore =
                     entity.ServiceCenterId != req.ServiceCenterId
                     || entity.AppointmentDate.Date != req.AppointmentDate.Date
-                    || entity.SlotTime != req.SlotTime; // CHANGE
+                    || entity.SlotTime != req.SlotTime;
 
                 if (changingCore)
                 {
@@ -155,11 +233,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
                         && s.SlotTime == req.SlotTime
                     );
-                    if (slotCfg is null)
-                        throw new AppException(
-                            "Ngày này không có khung giờ đó.",
-                            HttpStatusCode.Conflict
-                        );
 
                     // Nếu đổi sang slot mới, phải check capacity của slot đó ở ngày mới
                     var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
@@ -249,17 +322,18 @@ namespace eMototCare.BLL.Services.AppointmentServices
             return entity.Code;
         }
 
-        public async Task ApproveAsync(Guid id, Guid staffId)
+        public async Task ApproveAsync(Guid id, Guid staffId, string checkinQRCode)
         {
+            if (string.IsNullOrWhiteSpace(checkinQRCode))
+                throw new AppException("Mã check-in không hợp lệ", HttpStatusCode.BadRequest);
+
             var entity =
                 await _unitOfWork.Appointments.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
 
             entity.Status = AppointmentStatus.APPROVED;
             entity.ApproveById = staffId;
-
-            if (string.IsNullOrWhiteSpace(entity.CheckinQRCode))
-                entity.CheckinQRCode = $"APPT|{entity.Code}|{entity.Id}";
+            entity.CheckinQRCode = checkinQRCode;
 
             await _unitOfWork.Appointments.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
@@ -318,6 +392,171 @@ namespace eMototCare.BLL.Services.AppointmentServices
             appt.Status = AppointmentStatus.APPROVED;
             await _unitOfWork.Appointments.UpdateAsync(appt);
             await _unitOfWork.SaveAsync();
+        }
+
+        public async Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId)
+        {
+            var appointments = await _unitOfWork.Appointments.GetByTechnicianIdAsync(technicianId);
+            return _mapper.Map<List<AppointmentResponse>>(appointments);
+        }
+
+        public async Task<List<MissingPartResponse>> GetMissingPartsAsync(Guid appointmentId)
+        {
+            try
+            {
+                // 1) Lấy appointment (để biết ServiceCenter + thông tin hiển thị)
+                var appt =
+                    await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
+                    ?? throw new AppException(
+                        "Không tìm thấy Appointment",
+                        HttpStatusCode.NotFound
+                    );
+
+                // 2) Lấy EVCheck (kèm EVCheckDetails). Repo nên include MSD + PartItem(+Part) nếu có thể
+                var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appointmentId);
+                if (
+                    evCheck == null
+                    || evCheck.EVCheckDetails == null
+                    || !evCheck.EVCheckDetails.Any()
+                )
+                    return new List<MissingPartResponse>();
+
+                // 3) Tồn kho theo Service Center
+                var scId = appt.ServiceCenterId;
+                var inventoryItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(scId);
+
+                var availableByPart = inventoryItems
+                    .Where(pi => pi.Status == PartItemStatus.ACTIVE && pi.Quantity > 0)
+                    .GroupBy(pi => pi.PartId)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => new
+                        {
+                            AvailableQty = g.Sum(x => x.Quantity),
+                            Part = g.FirstOrDefault()?.Part // để lấy Code/Name nếu có
+                            ,
+                        }
+                    );
+
+                // 4) Gom nhu cầu: mọi detail CHƯA có ReplacePartId và KHÔNG CANCELED được coi là "đang cần"
+                var needed = new Dictionary<Guid, int>(); // PartId -> NeededQty
+                var neededDetails = new Dictionary<Guid, List<EVCheckDetail>>(); // PartId -> các detail đóng góp
+
+                foreach (var d in evCheck.EVCheckDetails)
+                {
+                    if (d.Status == EVCheckDetailStatus.CANCELED)
+                        continue;
+                    if (d.ReplacePartId.HasValue)
+                        continue; // đã chọn item cụ thể, không coi là thiếu
+
+                    Guid? requiredPartId = null;
+
+                    // Ưu tiên từ MaintenanceStageDetail.PartId
+                    if (d.MaintenanceStageDetailId.HasValue)
+                    {
+                        var msd =
+                            d.MaintenanceStageDetail
+                            ?? await _unitOfWork.MaintenanceStageDetails.GetByIdAsync(
+                                d.MaintenanceStageDetailId.Value
+                            );
+                        requiredPartId = msd?.PartId;
+                    }
+
+                    // Fallback: Part hiện lắp trên xe (từ PartItem.PartId) cho case sửa chữa
+                    if (!requiredPartId.HasValue && d.PartItemId != Guid.Empty)
+                    {
+                        var pi =
+                            d.PartItem ?? await _unitOfWork.PartItems.GetByIdAsync(d.PartItemId);
+                        requiredPartId = pi?.PartId;
+                    }
+
+                    if (!requiredPartId.HasValue)
+                        continue;
+
+                    var pid = requiredPartId.Value;
+                    if (!needed.ContainsKey(pid))
+                        needed[pid] = 0;
+                    needed[pid] += 1; // mỗi detail = 1 đơn vị cần
+
+                    if (!neededDetails.ContainsKey(pid))
+                        neededDetails[pid] = new List<EVCheckDetail>();
+                    neededDetails[pid].Add(d);
+                }
+
+                // 5) Build kết quả cho các Part còn thiếu
+                var details = new List<MissingPartDetailResponse>(); // FIX: Declare the 'details' list
+                int index = 1;
+                foreach (var kv in needed)
+                {
+                    var partId = kv.Key;
+                    var neededQty = kv.Value;
+
+                    var availInfo = availableByPart.TryGetValue(partId, out var ai) ? ai : null;
+                    var availableQty = availInfo?.AvailableQty ?? 0;
+                    var missingQty = Math.Max(neededQty - availableQty, 0);
+
+                    // chỉ trả những cái còn thiếu
+                    if (missingQty <= 0)
+                        continue;
+
+                    var part = availInfo?.Part ?? await _unitOfWork.Parts.GetByIdAsync(partId);
+
+                    var suggest = "CN khác (có thể điều chuyển)";
+                    if (availableQty > 0)
+                        suggest = $"{appt.ServiceCenter?.Name} (Kho hiện có {availableQty})";
+
+                    details.Add(
+                        new MissingPartDetailResponse
+                        {
+                            Index = index++,
+                            Image = part?.Image,
+                            Code = part?.Code ?? "",
+                            Name = part?.Name ?? "",
+                            RequestedQty = neededQty,
+                            SuggestCenter = suggest,
+                            StockStatus = availableQty > 0 ? "Có thể điều chuyển" : "Hết hàng",
+                        }
+                    );
+                }
+
+                var note = string.Join(
+                    "; ",
+                    evCheck
+                        .EVCheckDetails.Select(x => x.Result)
+                        .Where(r => !string.IsNullOrWhiteSpace(r))
+                        .Distinct()
+                );
+
+                return new List<MissingPartResponse>
+                {
+                    new MissingPartResponse
+                    {
+                        AppointmentId = appt.Id,
+                        ServiceCenterId = appt.ServiceCenterId,
+                        ServiceCenterName = appt.ServiceCenter?.Name ?? "",
+                        TaskExecutorId = evCheck.TaskExecutorId,
+                        RequestedAt = evCheck.CheckDate,
+                        CreatedById = evCheck.TaskExecutorId,
+                        Status = "DRAFT",
+                        Note = string.IsNullOrWhiteSpace(note) ? null : note,
+                        Details = details,
+                    },
+                };
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "GetMissingPartsAsync failed for {AppointmentId}: {Message}",
+                    appointmentId,
+                    ex.Message
+                );
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -10,7 +11,6 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Ocsp;
-using System.Net;
 
 namespace eMototCare.BLL.Services.EVCheckServices
 {
@@ -245,42 +245,57 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         .OrderByDescending(vs => (int)vs.Mileage)
                         .FirstOrDefault();
 
-                    if (matchedStage == null)
-                        throw new AppException(
-                            "No matching maintenance stage for Odo",
-                            HttpStatusCode.NotFound
-                        );
+
 
                     var nextStage = maintenanceStages
                         .Where(vs => (int)vs.Mileage > entity.Odometer)
                         .OrderBy(vs => (int)vs.Mileage)
                         .FirstOrDefault();
-
+                    var closestStage = maintenanceStages
+                        .Where(ms => (int)ms.Mileage <= entity.Odometer)
+                        .OrderByDescending(ms => ms.Mileage)
+                        .FirstOrDefault();
                     foreach (var vs in allVehicleStages)
                     {
+                        if (matchedStage == null)
+                            continue;
                         var stage = maintenanceStages.FirstOrDefault(ms =>
                             ms.Id == vs.MaintenanceStageId
                         );
                         if (stage == null)
                             continue;
 
-                        if ((int)stage.Mileage <= entity.Odometer)
+                        // Nếu là stage gần nhất
+                        if (closestStage != null && stage.Id == closestStage.Id)
+                        {
+                            var diff = entity.Odometer - (int)stage.Mileage;
+                            if (diff > 5000 && vs.Status != VehicleStageStatus.COMPLETED)
+                                vs.Status = VehicleStageStatus.EXPIRED;
+                            else
+                                vs.Status = VehicleStageStatus.UPCOMING;
+                        }
+                        // Nếu là stage trước đó
+                        else if (closestStage != null && stage.Mileage < closestStage.Mileage)
                         {
                             if (vs.Status != VehicleStageStatus.COMPLETED)
                                 vs.Status = VehicleStageStatus.EXPIRED;
-                        }
-                        else if (nextStage != null && stage.Id == nextStage.Id)
-                        {
-                            vs.Status = VehicleStageStatus.UPCOMING;
-                        }
-                        else
-                        {
-                            vs.Status = VehicleStageStatus.NO_START;
                         }
 
                         _unitOfWork.VehicleStages.Update(vs);
                     }
                 }
+                if (req.Status == EVCheckStatus.WAITING_FOR_QUOTE)
+                {
+                    var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(entity.Id);
+
+                    entity.ServicePrice = evCheckDetails.Sum(d => d.PriceService ?? 0);
+                    entity.PartPrice = evCheckDetails.Sum(d => d.PricePart ?? 0);
+                    var totalBeforeTax = evCheckDetails.Sum(d => d.TotalAmount ?? 0);
+                    entity.VAT = totalBeforeTax * 0.08m;
+                    entity.TotalAmout = totalBeforeTax + entity.VAT;
+
+                }
+
                 if (req.Status == EVCheckStatus.REPAIR_COMPLETED)
                 {
                     if (appt != null)
@@ -295,6 +310,48 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         await _unitOfWork.Appointments.UpdateStatusByIdAsync(
                             entity.AppointmentId,
                             AppointmentStatus.REPAIR_COMPLETED
+                        );
+                    }
+                }
+                var isCompletedNow = (req.Status ?? entity.Status) == EVCheckStatus.COMPLETED;
+                if (isCompletedNow)
+                {
+                    Guid? vehicleStageId = null;
+
+                    if (!vehicleStageId.HasValue)
+                    {
+                        var evCheckId = entity.Id;
+                        if (evCheckId != Guid.Empty)
+                        {
+                            var evCheck = await _unitOfWork.EVChecks.GetByIdWithAppointmentAsync(
+                                evCheckId
+                            );
+                            vehicleStageId = evCheck?.Appointment?.VehicleStageId;
+                        }
+                    }
+
+                    if (vehicleStageId.HasValue)
+                    {
+                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                            vehicleStageId.Value
+                        );
+                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                        {
+                            stage.Status = VehicleStageStatus.COMPLETED;
+                            stage.DateOfImplementation = DateTime.UtcNow;
+                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                            _logger.LogInformation(
+                                "VehicleStage {StageId} -> COMPLETED (từ EVCheck {Id})",
+                                stage.Id,
+                                entity.Id
+                            );
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "EVCheck {Id}: không tìm thấy VehicleStageId để cập nhật COMPLETED",
+                            entity.Id
                         );
                     }
                 }
@@ -343,11 +400,13 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 throw new AppException("EVCheck not found", HttpStatusCode.NotFound);
             }
             evCheck.Status = EVCheckStatus.QUOTE_APPROVED;
-            var replaceDetails = evCheck.EVCheckDetails
-                                .Where(d => d.ReplacePartId != null)
-                                .ToList();
+            var replaceDetails = evCheck
+                .EVCheckDetails.Where(d => d.ReplacePartId != null)
+                .ToList();
             if (replaceDetails.Any())
             {
+                var customerName = evCheck.Appointment.Customer.LastName + " " + evCheck.Appointment.Customer.FirstName;
+                var phone = evCheck.Appointment.Customer.Account.Phone;
                 var exportNote = new ExportNote
                 {
                     Id = Guid.NewGuid(),
@@ -355,29 +414,28 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
-                    ExportTo = "EVCheck: " + evCheck.Id.ToString(),
+                    Note = "Xuất phụ tùng cho appointment: " + evCheck.Appointment.Code,
                     ExportNoteStatus = ExportNoteStatus.PENDING,
-                    TotalValue = 0,      // tổng giá trị phiếu xuất
-                    TotalQuantity = 0    // tổng số lượng xuất
+                    TotalValue = 0, // tổng giá trị phiếu xuất
+                    TotalQuantity = 0, // tổng số lượng xuất
+                    ExportTo = customerName + " - " + phone
+
                 };
-                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
+                
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;
-                    partItem.ExportNoteId = exportNote.Id;
-                    partItem.ServiceCenterInventoryId = null;
 
                     exportNote.TotalValue += partItem.Price;
-                    exportNote.TotalQuantity += partItem.Quantity;
-                    partItem.Quantity = 0;
-                    _unitOfWork.PartItems.Update(partItem);
+                    exportNote.TotalQuantity += 1;
                 }
+                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
             }
+
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
-            _unitOfWork.EVChecks.Update(evCheck);
+            await _unitOfWork.EVChecks.UpdateAsync(evCheck);
             await _unitOfWork.SaveAsync();
             return true;
-
         }
     }
 }

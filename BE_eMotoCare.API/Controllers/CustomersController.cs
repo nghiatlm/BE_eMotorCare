@@ -21,7 +21,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] int page = 1,
@@ -38,7 +38,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _customerService.GetByIdAsync(id);
@@ -48,7 +48,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("account/{accountId}")]
-        [Authorize(Roles = "ROLE_CUSTOMER,ROLE_MANAGER")]
+        [Authorize(Roles = "ROLE_CUSTOMER,ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetAccountIdAsync(Guid accountId)
         {
             var item = await _customerService.GetAccountIdAsync(accountId);
@@ -79,6 +79,25 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _customerService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá khách hàng thành công"));
+        }
+
+        [HttpPost("map-account")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_CUSTOMER")]
+        public async Task<IActionResult> MapAccount([FromQuery] string citizenId, [FromQuery] Guid accountId)
+        {
+            await _customerService.MapAccountIdByCitizenIdAsync(citizenId, accountId);
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Đã map AccountId vào Customer thành công"));
+        }
+
+        [HttpGet("get-customer-by-rma/{rmaId}")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> GetCustomerByRmaId(Guid rmaId)
+        {
+            var customer = await _customerService.GetCustomerByRmaIdAsync(rmaId);
+            if (customer == null)
+                return NotFound(ApiResponse<string>.NotFound("Không tìm thấy khách hàng."));
+
+            return Ok(ApiResponse<CustomerResponse>.SuccessResponse(customer, "Lấy khách hàng thành công"));
         }
     }
 }

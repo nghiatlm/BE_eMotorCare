@@ -28,6 +28,8 @@ namespace eMototCare.BLL.Services.StaffServices
             string? search,
             PositionEnum? position,
             Guid? serviceCenterId,
+            Guid? staffId,
+            Guid? accountId,
             int page,
             int pageSize
         )
@@ -38,6 +40,8 @@ namespace eMototCare.BLL.Services.StaffServices
                     search,
                     position,
                     serviceCenterId,
+                    staffId,
+                    accountId,
                     page,
                     pageSize
                 );

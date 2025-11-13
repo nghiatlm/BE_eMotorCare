@@ -11,6 +11,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid CustomerId { get; set; }
         public Guid? ApproveById { get; set; }
         public Guid? VehicleStageId { get; set; }
+        public MaintenanceStageResponse? MaintenanceStage { get; set; }
         public DateTime AppointmentDate { get; set; }
         public SlotTime SlotTime { get; set; }
         public AppointmentStatus Status { get; set; }
@@ -24,5 +25,8 @@ namespace eMotoCare.BO.DTO.Responses
         public string? CheckinCode { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
         public CustomerResponse? Customer { get; set; }
+        public string? CheckinQRCode { get; set; }
+        public Guid? EVCheckId { get; set; }
+        public string? Note { get; set; }
     }
 }

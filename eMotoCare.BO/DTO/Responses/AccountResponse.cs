@@ -18,6 +18,7 @@ namespace eMotoCare.BO.DTO.Responses
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public StaffResponse? Staff { get; set; }
+        public object Status { get; set; }
         // public Customer? Customer { get; set; }
         // public Staff? Staff { get; set; }
     }

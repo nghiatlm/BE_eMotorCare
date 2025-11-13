@@ -15,6 +15,8 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             string? search,
             PositionEnum? position,
             Guid? serviceCenterId,
+            Guid? staffId,
+            Guid? accountId,
             int page,
             int pageSize
         )
@@ -37,6 +39,10 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
 
             if (position.HasValue)
                 q = q.Where(x => x.Position == position.Value);
+            if (staffId.HasValue)
+                q = q.Where(x => x.Id == staffId.Value);
+            if (accountId.HasValue)
+                q = q.Where(x => x.AccountId == accountId.Value);
 
             var total = await q.LongCountAsync();
             var items = await q.OrderByDescending(x => x.CreatedAt)

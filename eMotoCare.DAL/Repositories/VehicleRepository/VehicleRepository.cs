@@ -15,11 +15,22 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
         public Task<Vehicle?> GetByIdAsync(Guid id) =>
             _context
                 .Vehicles.AsNoTracking()
-                .Include(x => x.Model) // Includes the Model entity
-                .ThenInclude(m => m.MaintenancePlan) // Includes related MaintenancePlan
-                .Include(x => x.Model.ModelPartTypes) // Includes related ModelPartTypes
-                .Include(x => x.Customer) // Includes the Customer entity
+                .Include(x => x.Model)
+                .ThenInclude(m => m.MaintenancePlan)
+                .Include(x => x.Model)
+                .ThenInclude(m => m.ModelPartTypes)
+                .Include(x => x.Customer)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
+        public Task<Vehicle?> GetByChassisNumber(string chassisNumber) =>
+            _context
+            .Vehicles.AsNoTracking()
+                .Include(x => x.Model)
+                .ThenInclude(m => m.MaintenancePlan)
+                .Include(x => x.Model)
+                .ThenInclude(m => m.ModelPartTypes)
+                .Include(x => x.Customer)
+                .FirstOrDefaultAsync(x => x.ChassisNumber == chassisNumber);
 
         public async Task<(IReadOnlyList<Vehicle> Items, long Total)> GetPagedAsync(
             string? search,
@@ -40,13 +51,14 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Include(x => x.Model)
                 .Include(x => x.Customer)
                 .AsQueryable();
+            ;
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var s = search.Trim().ToLower();
                 q = q.Where(x =>
-                    x.VinNUmber.ToLower().Contains(s)
-                    || x.ChassisNumber.ToLower().Contains(s)
+                    
+                    x.ChassisNumber.ToLower().Contains(s)
                     || x.EngineNumber.ToLower().Contains(s)
                     || x.Color.ToLower().Contains(s)
                 );
@@ -65,7 +77,6 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
 
             var total = await q.LongCountAsync();
             var items = await q.OrderByDescending(x => x.PurchaseDate)
-                .ThenBy(x => x.VinNUmber)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

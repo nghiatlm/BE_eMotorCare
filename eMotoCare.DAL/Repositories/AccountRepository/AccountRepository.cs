@@ -48,6 +48,8 @@ namespace eMotoCare.DAL.Repositories.AccountRepository
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             var q = _context.Accounts.AsNoTracking().AsQueryable();
+            if (!role.HasValue)
+                q = q.Where(x => x.RoleName != RoleName.ROLE_ADMIN);
 
             if (!string.IsNullOrWhiteSpace(search))
             {

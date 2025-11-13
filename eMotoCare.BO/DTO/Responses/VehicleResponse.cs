@@ -5,7 +5,6 @@ namespace eMotoCare.BO.DTO.Responses
     public class VehicleResponse
     {
         public Guid Id { get; set; }
-        public string VinNumber { get; set; } = default!;
         public string Image { get; set; } = default!;
         public string Color { get; set; } = default!;
         public string ChassisNumber { get; set; } = default!;
@@ -15,8 +14,8 @@ namespace eMotoCare.BO.DTO.Responses
         public DateTime PurchaseDate { get; set; }
         public DateTime WarrantyExpiry { get; set; }
         public Guid ModelId { get; set; }
-        public Guid? CustomerId { get; set; }
         public string? ModelName { get; set; }
+        public Guid? CustomerId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

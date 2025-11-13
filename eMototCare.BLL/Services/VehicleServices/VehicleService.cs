@@ -80,7 +80,7 @@ namespace eMototCare.BLL.Services.VehicleServices
                 await _unitOfWork.Vehicles.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Created Vehicle {Id} ({Vin})", entity.Id, entity.VinNUmber);
+                _logger.LogInformation("Created Vehicle {Id})", entity.Id);
                 return entity.Id;
             }
             catch (AppException)
@@ -126,11 +126,11 @@ namespace eMototCare.BLL.Services.VehicleServices
                 var entity =
                     await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
-
+                entity.Status = StatusEnum.IN_ACTIVE;
                 await _unitOfWork.Vehicles.DeleteAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Deleted Vehicle {Id}", id);
+                _logger.LogInformation("Vehicle {Id} đã được vô hiệu hóa", id);
             }
             catch (AppException)
             {
@@ -138,9 +138,19 @@ namespace eMototCare.BLL.Services.VehicleServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete Vehicle failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Deactivate Vehicle failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
+        }
+
+        
+
+        public async Task<VehicleResponse?> GetByChassisNumber(string chassisNumber)
+        {
+            var v =
+                await _unitOfWork.Vehicles.GetByChassisNumber(chassisNumber)
+                ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
+            return _mapper.Map<VehicleResponse>(v);
         }
     }
 }

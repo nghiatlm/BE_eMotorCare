@@ -67,7 +67,9 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _accountService.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá người dùng thành công"));
+            return Ok(
+                ApiResponse<string>.SuccessResponse(null, "Vô hiệu hoá tài khoản thành công")
+            );
         }
     }
 }

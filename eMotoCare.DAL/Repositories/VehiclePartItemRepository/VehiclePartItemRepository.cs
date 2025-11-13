@@ -45,10 +45,10 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
             {
                 var s = search.Trim().ToLower();
                 q = q.Where(x =>
-                    (x.Vehicle != null && x.Vehicle.VinNUmber.ToLower().Contains(s))
-                    || x.PartItemId.ToString().ToLower().Contains(s)
+                    (
+                    x.PartItemId.ToString().ToLower().Contains(s)
                     || (x.ReplaceForId.HasValue && x.ReplaceForId.ToString()!.ToLower().Contains(s))
-                );
+                ));
             }
 
             if (vehicleId.HasValue)
