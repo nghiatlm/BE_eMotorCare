@@ -484,8 +484,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 }
 
                 // 5) Build kết quả cho các Part còn thiếu
-                var results = new List<MissingPartResponse>();
-
+                var details = new List<MissingPartDetailResponse>(); // FIX: Declare the 'details' list
+                int index = 1;
                 foreach (var kv in needed)
                 {
                     var partId = kv.Key;
@@ -499,63 +499,49 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     if (missingQty <= 0)
                         continue;
 
-                    // Lấy Code/Name
-                    string code = "",
-                        name = "";
-                    if (availInfo?.Part != null)
-                    {
-                        code = availInfo.Part.Code;
-                        name = availInfo.Part.Name;
-                    }
-                    else
-                    {
-                        var part = await _unitOfWork.Parts.GetByIdAsync(partId);
-                        if (part != null)
+                    var part = availInfo?.Part ?? await _unitOfWork.Parts.GetByIdAsync(partId);
+
+                    var suggest = "CN khác (có thể điều chuyển)";
+                    if (availableQty > 0)
+                        suggest = $"{appt.ServiceCenter?.Name} (Kho hiện có {availableQty})";
+
+                    details.Add(
+                        new MissingPartDetailResponse
                         {
-                            code = part.Code;
-                            name = part.Name;
-                        }
-                    }
-
-                    // Ghi chú: tổng hợp Result của các detail góp phần tạo nhu cầu cho part này
-                    string? note = null;
-                    if (neededDetails.TryGetValue(partId, out var dets) && dets != null)
-                    {
-                        var joined = string.Join(
-                            "; ",
-                            dets.Select(x => x.Result)
-                                .Where(r => !string.IsNullOrWhiteSpace(r))
-                                .Distinct()
-                        );
-                        note = string.IsNullOrWhiteSpace(joined) ? null : joined;
-                    }
-
-                    results.Add(
-                        new MissingPartResponse
-                        {
-                            PartId = partId,
-                            Code = code,
-                            Name = name,
-                            NeededQty = neededQty,
-                            AvailableQty = availableQty,
-                            MissingQty = missingQty,
-
-                            AppointmentId = appt.Id,
-                            //AppointmentCode = appt.Code ?? "",
-                            ServiceCenterId = appt.ServiceCenterId,
-                            ServiceCenterName = appt.ServiceCenter?.Name ?? "",
-
-                            TaskExecutorId = evCheck.TaskExecutorId,
-
-                            RequestedAt = evCheck.CheckDate,
-                            CreatedById = evCheck.TaskExecutorId,
-                            Status = "MISSING",
-                            Note = note,
+                            Index = index++,
+                            Image = part?.Image,
+                            Code = part?.Code ?? "",
+                            Name = part?.Name ?? "",
+                            RequestedQty = neededQty,
+                            SuggestCenter = suggest,
+                            StockStatus = availableQty > 0 ? "Có thể điều chuyển" : "Hết hàng",
                         }
                     );
                 }
 
-                return results.OrderByDescending(x => x.MissingQty).ToList();
+                var note = string.Join(
+                    "; ",
+                    evCheck
+                        .EVCheckDetails.Select(x => x.Result)
+                        .Where(r => !string.IsNullOrWhiteSpace(r))
+                        .Distinct()
+                );
+
+                return new List<MissingPartResponse>
+                {
+                    new MissingPartResponse
+                    {
+                        AppointmentId = appt.Id,
+                        ServiceCenterId = appt.ServiceCenterId,
+                        ServiceCenterName = appt.ServiceCenter?.Name ?? "",
+                        TaskExecutorId = evCheck.TaskExecutorId,
+                        RequestedAt = evCheck.CheckDate,
+                        CreatedById = evCheck.TaskExecutorId,
+                        Status = "DRAFT",
+                        Note = string.IsNullOrWhiteSpace(note) ? null : note,
+                        Details = details,
+                    },
+                };
             }
             catch (AppException)
             {
@@ -565,7 +551,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             {
                 _logger.LogError(
                     ex,
-                    "GetMissingPartsAsync failed for Appointment {AppointmentId}: {Message}",
+                    "GetMissingPartsAsync failed for {AppointmentId}: {Message}",
                     appointmentId,
                     ex.Message
                 );
