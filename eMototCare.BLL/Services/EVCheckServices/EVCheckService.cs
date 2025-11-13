@@ -245,8 +245,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         .OrderByDescending(vs => (int)vs.Mileage)
                         .FirstOrDefault();
 
-
-
                     var nextStage = maintenanceStages
                         .Where(vs => (int)vs.Mileage > entity.Odometer)
                         .OrderBy(vs => (int)vs.Mileage)
@@ -280,6 +278,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             if (vs.Status != VehicleStageStatus.COMPLETED)
                                 vs.Status = VehicleStageStatus.EXPIRED;
                         }
+                        if (vs.Status == VehicleStageStatus.COMPLETED)
+                            continue;
 
                         _unitOfWork.VehicleStages.Update(vs);
                     }
@@ -293,7 +293,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     var totalBeforeTax = evCheckDetails.Sum(d => d.TotalAmount ?? 0);
                     entity.VAT = totalBeforeTax * 0.08m;
                     entity.TotalAmout = totalBeforeTax + entity.VAT;
-
                 }
 
                 if (req.Status == EVCheckStatus.REPAIR_COMPLETED)
@@ -313,48 +312,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         );
                     }
                 }
-                var isCompletedNow = (req.Status ?? entity.Status) == EVCheckStatus.COMPLETED;
-                if (isCompletedNow)
-                {
-                    Guid? vehicleStageId = null;
 
-                    if (!vehicleStageId.HasValue)
-                    {
-                        var evCheckId = entity.Id;
-                        if (evCheckId != Guid.Empty)
-                        {
-                            var evCheck = await _unitOfWork.EVChecks.GetByIdWithAppointmentAsync(
-                                evCheckId
-                            );
-                            vehicleStageId = evCheck?.Appointment?.VehicleStageId;
-                        }
-                    }
-
-                    if (vehicleStageId.HasValue)
-                    {
-                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
-                            vehicleStageId.Value
-                        );
-                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
-                        {
-                            stage.Status = VehicleStageStatus.COMPLETED;
-                            stage.DateOfImplementation = DateTime.UtcNow;
-                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
-                            _logger.LogInformation(
-                                "VehicleStage {StageId} -> COMPLETED (từ EVCheck {Id})",
-                                stage.Id,
-                                entity.Id
-                            );
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "EVCheck {Id}: không tìm thấy VehicleStageId để cập nhật COMPLETED",
-                            entity.Id
-                        );
-                    }
-                }
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -405,7 +363,10 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 .ToList();
             if (replaceDetails.Any())
             {
-                var customerName = evCheck.Appointment.Customer.LastName + " " + evCheck.Appointment.Customer.FirstName;
+                var customerName =
+                    evCheck.Appointment.Customer.LastName
+                    + " "
+                    + evCheck.Appointment.Customer.FirstName;
                 var phone = evCheck.Appointment.Customer.Account.Phone;
                 var exportNote = new ExportNote
                 {
@@ -418,10 +379,9 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ExportNoteStatus = ExportNoteStatus.PENDING,
                     TotalValue = 0, // tổng giá trị phiếu xuất
                     TotalQuantity = 0, // tổng số lượng xuất
-                    ExportTo = customerName + " - " + phone
-
+                    ExportTo = customerName + " - " + phone,
                 };
-                
+
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;

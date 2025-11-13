@@ -69,7 +69,12 @@ namespace eMototCare.BLL.Services.BackgroundServices
                     .Date;
             var pastThreshold = today.AddDays(-10);
             var futureThreshold = today.AddDays(10);
-
+            var activeStatuses = new[]
+            {
+                VehicleStageStatus.NO_START,
+                VehicleStageStatus.UPCOMING,
+                VehicleStageStatus.EXPIRED,
+            };
             // 1) Set EXPIRED: quá 10 ngày trước today
             var expired = await db
                 .VehicleStages.Where(vs =>

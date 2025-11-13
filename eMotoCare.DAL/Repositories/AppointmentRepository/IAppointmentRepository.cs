@@ -22,6 +22,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
         Task<bool> ExistsCodeAsync(string code);
 
         Task<IReadOnlyList<string>> GetAvailableSlotsAsync(Guid serviceCenterId, DateTime date);
+
         Task UpdateStatusByIdAsync(Guid appointmentId, AppointmentStatus appointmentStatus);
         Task<IReadOnlyList<Appointment>> GetByTechnicianIdAsync(Guid technicianId);
     }
