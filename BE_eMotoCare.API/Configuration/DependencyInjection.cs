@@ -1,8 +1,6 @@
 using BE_eMotoCare.API.Realtime.Services;
 using eMotoCare.DAL.Configuration;
-using eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository;
 using eMototCare.BLL.Configuration;
-using eMototCare.BLL.Services.ServiceCenterServices;
 
 namespace BE_eMotoCare.API.Configuration
 {
@@ -12,8 +10,6 @@ namespace BE_eMotoCare.API.Configuration
         {
             services.AddScoped<INotifierExportNoteService, NotifierExportNoteService>();
             services.AddServiceDI().AddRepoDI().AddSwaggerDependencies().MapperInjection();
-            services.AddScoped<INotifierExportNoteService, NotifierExportNoteService>();
-
             return services;
         }
     }
