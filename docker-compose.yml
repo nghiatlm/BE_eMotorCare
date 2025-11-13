@@ -19,3 +19,4 @@ services:
     volumes:
       - /etc/letsencrypt/live/bemodernestate.site/fullchain.pem:/https/fullchain.pem:ro
       - /etc/letsencrypt/live/bemodernestate.site/privkey.pem:/https/privkey.pem:ro
+    user: root
