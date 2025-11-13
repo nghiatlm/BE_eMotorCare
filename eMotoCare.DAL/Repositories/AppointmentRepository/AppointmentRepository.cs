@@ -67,7 +67,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 q = q.Where(x => x.AppointmentDate.Date <= toDate.Value.Date);
 
             var total = await q.LongCountAsync();
-            var items = await q.OrderByDescending(x => x.AppointmentDate)
+            var items = await q.OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.AppointmentDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

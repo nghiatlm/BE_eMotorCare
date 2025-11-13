@@ -159,7 +159,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
                     s =>
                         s.ServiceCenterId == req.ServiceCenterId
-                        && s.IsActive
+                        //&& s.IsActive
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
                         && s.SlotTime == req.SlotTime
                 );
@@ -177,6 +177,15 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 );
                 if (booked >= slotCfg.Capacity)
                     throw new AppException("Khung giờ này đã đầy.", HttpStatusCode.Conflict);
+                var remaining = slotCfg.Capacity - booked;
+
+                if (!slotCfg.IsActive || remaining <= 0)
+                {
+                    throw new AppException(
+                        "Mốc thời gian này đã quá hạn hoặc đã không còn chỗ trống",
+                        HttpStatusCode.BadRequest
+                    );
+                }
 
                 // 3) Sinh code
                 string code;
@@ -200,6 +209,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     dateOnly,
                     req.SlotTime
                 );
+
                 if (current >= slotCfg.Capacity && slotCfg.IsActive)
                 {
                     slotCfg.IsActive = false;

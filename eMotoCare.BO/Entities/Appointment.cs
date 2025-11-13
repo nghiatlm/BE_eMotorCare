@@ -1,12 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Common;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
     [Table("appointment")]
-    public class Appointment
+    public class Appointment : BaseEntity
     {
         [Key]
         [Column("appointment_id")]
