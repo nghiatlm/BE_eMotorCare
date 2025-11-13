@@ -45,8 +45,6 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(TaskExecutorId))]
         public virtual Staff? TaskExecutor { get; set; }
 
-        [Column("chassis_number")]
-        public string? ChassisNumber { get; set; }
         public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
     }
 }

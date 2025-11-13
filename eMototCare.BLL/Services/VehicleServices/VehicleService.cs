@@ -145,12 +145,5 @@ namespace eMototCare.BLL.Services.VehicleServices
 
         
 
-        public async Task<VehicleResponse?> GetByChassisNumber(string chassisNumber)
-        {
-            var v =
-                await _unitOfWork.Vehicles.GetByChassisNumber(chassisNumber)
-                ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
-            return _mapper.Map<VehicleResponse>(v);
-        }
     }
 }

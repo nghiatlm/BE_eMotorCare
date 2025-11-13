@@ -121,33 +121,6 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá lịch hẹn thành công"));
         }
 
-        [HttpPost("{id}/approve")]
-        [Authorize(Roles = "ROLE_STAFF")]
-        public async Task<IActionResult> Approve(Guid id, ApproveAppointmentRequest req)
-        {
-            await _appointmentService.ApproveAsync(id, req.StaffId, req.CheckinQRCode);
-            await _notifierAppointment.NotifyApproveAsync("Appointment", new { Id = id });
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Duyệt lịch hẹn thành công"));
-        }
-
-        [HttpGet("{id}/getcode")]
-        [Authorize(Roles = "ROLE_STAFF")]
-        public async Task<IActionResult> GetCheckinCode(Guid id)
-        {
-            var code = await _appointmentService.GetCheckinCodeAsync(id);
-            return Ok(
-                ApiResponse<object>.SuccessResponse(new { code }, "Lấy mã check-in thành công")
-            );
-        }
-
-        [HttpPost("checkin/by-code")]
-        [Authorize(Roles = "ROLE_STAFF")]
-        public async Task<IActionResult> CheckInByCode([FromBody] CheckInRequest req)
-        {
-            await _appointmentService.CheckInByCodeAsync(req.Code);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Check-in thành công"));
-        }
-
         [HttpGet("{appointmentId}/missing-parts")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetMissingParts(Guid appointmentId)

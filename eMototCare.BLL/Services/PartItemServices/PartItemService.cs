@@ -11,6 +11,7 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 using System.Net;
 
 namespace eMototCare.BLL.Services.PartItemServices
@@ -253,6 +254,18 @@ namespace eMototCare.BLL.Services.PartItemServices
 
 
             return _mapper.Map<List<PartItemResponse>>(filtered);
+        }
+
+        public async Task<List<PartItemResponse>> GetByServiceCenterIdAsync(Guid serviceCenterId)
+        {
+            var partItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(serviceCenterId);
+            if (partItems is null || !partItems.Any())
+                throw new AppException("Không tìm thấy Part Item nào cho Trung tâm dịch vụ này", HttpStatusCode.NotFound);
+
+            var filtered = partItems.Where(pi => pi.Quantity == 1)
+                                    .ToList();
+
+            return _mapper.Map<List<PartItemResponse>>(partItems);
         }
     }
 }

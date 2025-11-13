@@ -40,6 +40,12 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(VehicleStageId))]
         public virtual VehicleStage? VehicleStage { get; set; }
 
+        [Column("vehicle_id")]
+        public Guid? VehicleId { get; set; }
+
+        [ForeignKey(nameof(VehicleId))]
+        public virtual Vehicle? Vehicle { get; set; }
+
         [Column("campaign_id")]
         public Guid? CampaignId { get; set; }
 

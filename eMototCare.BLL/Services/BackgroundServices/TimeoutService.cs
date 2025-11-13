@@ -12,7 +12,7 @@ namespace eMototCare.BLL.Services.BackgroundServices
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<TimeoutService> _logger;
-        private static readonly TimeSpan Period = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan Period = TimeSpan.FromMinutes(1);
         private const string TimeZoneId = "SE Asia Standard Time";
 
         public TimeoutService(IServiceScopeFactory scopeFactory, ILogger<TimeoutService> logger)
@@ -69,7 +69,12 @@ namespace eMototCare.BLL.Services.BackgroundServices
                     .Date;
             var pastThreshold = today.AddDays(-10);
             var futureThreshold = today.AddDays(10);
-
+            var activeStatuses = new[]
+            {
+                VehicleStageStatus.NO_START,
+                VehicleStageStatus.UPCOMING,
+                VehicleStageStatus.EXPIRED,
+            };
             // 1) Set EXPIRED: quá 10 ngày trước today
             var expired = await db
                 .VehicleStages.Where(vs =>

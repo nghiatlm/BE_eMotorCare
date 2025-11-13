@@ -90,7 +90,24 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
                 }
+                if (req.Type == ServiceType.MAINTENANCE_TYPE)
+                {
+                    if (!req.VehicleStageId.HasValue)
+                        throw new AppException(
+                            "Lịch bảo dưỡng phải chọn mốc bảo dưỡng (VehicleStage).",
+                            HttpStatusCode.BadRequest
+                        );
+                }
+                else
+                {
+                    if (!req.VehicleId.HasValue)
+                        throw new AppException(
+                            "Lịch sửa chữa/bảo hành phải chọn xe (Vehicle).",
+                            HttpStatusCode.BadRequest
+                        );
 
+                    req.VehicleStageId = null;
+                }
                 if (req.VehicleStageId.HasValue)
                 {
                     var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
@@ -214,7 +231,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var entity =
                     await _unitOfWork.Appointments.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-
+                var oldStatus = entity.Status;
                 var changingCore =
                     entity.ServiceCenterId != req.ServiceCenterId
                     || entity.AppointmentDate.Date != req.AppointmentDate.Date
@@ -223,7 +240,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 if (changingCore)
                 {
                     var dateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
-                    var dow = (eMotoCare.BO.Enums.DayOfWeeks)req.AppointmentDate.DayOfWeek;
+                    var dow = (DayOfWeeks)req.AppointmentDate.DayOfWeek;
 
                     var slotCfg = (
                         await _unitOfWork.ServiceCenterSlot.FindAllAsync()
@@ -259,17 +276,106 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     entity.ServiceCenterId = req.ServiceCenterId;
                     entity.AppointmentDate = req.AppointmentDate;
-                    entity.SlotTime = req.SlotTime; // CHANGE
+                    entity.SlotTime = req.SlotTime;
+                }
+                //update vehiclestage khi appointment completed
+                if (req.Status == AppointmentStatus.COMPLETED)
+                {
+                    if (entity.VehicleStageId.HasValue)
+                    {
+                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                            entity.VehicleStageId.Value
+                        );
+                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                        {
+                            stage.Status = VehicleStageStatus.COMPLETED;
+                            stage.DateOfImplementation = DateTime.UtcNow;
+
+                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                            _logger.LogInformation(
+                                "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
+                                stage.Id,
+                                entity.Id
+                            );
+                        }
+                    }
                 }
 
-                // map các field khác
                 entity.CustomerId = req.CustomerId;
                 entity.VehicleStageId = req.VehicleStageId;
                 entity.EstimatedCost = req.EstimatedCost;
                 entity.ActualCost = req.ActualCost;
                 entity.Status = req.Status;
                 entity.Type = req.Type;
+                if (oldStatus != req.Status)
+                {
+                    switch (req.Status)
+                    {
+                        case AppointmentStatus.APPROVED:
+                            if (oldStatus != AppointmentStatus.PENDING)
+                                throw new AppException(
+                                    "Chỉ lịch hẹn PENDING mới được duyệt.",
+                                    HttpStatusCode.Conflict
+                                );
 
+                            if (!req.ApproveById.HasValue)
+                                throw new AppException(
+                                    "Thiếu thông tin nhân viên duyệt.",
+                                    HttpStatusCode.BadRequest
+                                );
+
+                            if (string.IsNullOrWhiteSpace(req.CheckinQRCode))
+                                throw new AppException(
+                                    "Mã check-in không hợp lệ.",
+                                    HttpStatusCode.BadRequest
+                                );
+
+                            entity.ApproveById = req.ApproveById.Value;
+                            entity.CheckinQRCode = req.CheckinQRCode;
+                            break;
+
+                        case AppointmentStatus.CHECKED_IN:
+
+                            if (oldStatus != AppointmentStatus.APPROVED)
+                                throw new AppException(
+                                    "Chỉ lịch hẹn APPROVED mới được check-in.",
+                                    HttpStatusCode.Conflict
+                                );
+
+                            if (string.IsNullOrWhiteSpace(req.Code))
+                                throw new AppException(
+                                    "Mã check-in không hợp lệ.",
+                                    HttpStatusCode.BadRequest
+                                );
+
+                            if (string.IsNullOrWhiteSpace(entity.CheckinQRCode))
+                                throw new AppException(
+                                    "Lịch hẹn chưa có mã check-in.",
+                                    HttpStatusCode.Conflict
+                                );
+
+                            // So sánh code FE gửi với CheckinQRCode lưu trong DB
+                            if (
+                                !string.Equals(
+                                    req.Code.Trim(),
+                                    entity.CheckinQRCode.Trim(),
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            )
+                            {
+                                throw new AppException(
+                                    "Mã check-in không đúng.",
+                                    HttpStatusCode.Conflict
+                                );
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    entity.Status = req.Status;
+                }
                 await _unitOfWork.Appointments.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
                 _logger.LogInformation("Updated Appointment {Id}", id);
@@ -314,31 +420,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
             DateTime date
         ) => _unitOfWork.Appointments.GetAvailableSlotsAsync(serviceCenterId, date);
 
-        public async Task<string> GetCheckinCodeAsync(Guid id)
-        {
-            var entity =
-                await _unitOfWork.Appointments.GetByIdAsync(id)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-            return entity.Code;
-        }
-
-        public async Task ApproveAsync(Guid id, Guid staffId, string checkinQRCode)
-        {
-            if (string.IsNullOrWhiteSpace(checkinQRCode))
-                throw new AppException("Mã check-in không hợp lệ", HttpStatusCode.BadRequest);
-
-            var entity =
-                await _unitOfWork.Appointments.GetByIdAsync(id)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-
-            entity.Status = AppointmentStatus.APPROVED;
-            entity.ApproveById = staffId;
-            entity.CheckinQRCode = checkinQRCode;
-
-            await _unitOfWork.Appointments.UpdateAsync(entity);
-            await _unitOfWork.SaveAsync();
-        }
-
         public async Task UpdateStatusAsync(Guid id, AppointmentStatus status)
         {
             var entity =
@@ -347,50 +428,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
             entity.Status = status;
             await _unitOfWork.Appointments.UpdateAsync(entity);
-            await _unitOfWork.SaveAsync();
-        }
-
-        public async Task CheckInByCodeAsync(string code)
-        {
-            if (string.IsNullOrWhiteSpace(code))
-                throw new AppException("Mã check-in không hợp lệ", HttpStatusCode.BadRequest);
-
-            var appt =
-                await _unitOfWork.Appointments.GetByCodeAsync(code.Trim())
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-
-            switch (appt.Status)
-            {
-                case AppointmentStatus.PENDING:
-                case AppointmentStatus.APPROVED:
-                    appt.Status = AppointmentStatus.CHECKED_IN;
-                    await _unitOfWork.Appointments.UpdateAsync(appt);
-                    await _unitOfWork.SaveAsync();
-                    break;
-
-                case AppointmentStatus.CHECKED_IN:
-                    break;
-
-                default:
-                    throw new AppException(
-                        "Trạng thái lịch hẹn không cho phép check-in",
-                        HttpStatusCode.Conflict
-                    );
-            }
-        }
-
-        public async Task AssignTechnicianAsync(
-            Guid appointmentId,
-            Guid technicianId,
-            Guid approveById
-        )
-        {
-            var appt =
-                await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
-                ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
-            appt.ApproveById = approveById;
-            appt.Status = AppointmentStatus.APPROVED;
-            await _unitOfWork.Appointments.UpdateAsync(appt);
             await _unitOfWork.SaveAsync();
         }
 
@@ -433,25 +470,22 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         g => new
                         {
                             AvailableQty = g.Sum(x => x.Quantity),
-                            Part = g.FirstOrDefault()?.Part // để lấy Code/Name nếu có
-                            ,
+                            Part = g.FirstOrDefault()?.Part,
                         }
                     );
 
-                // 4) Gom nhu cầu: mọi detail CHƯA có ReplacePartId và KHÔNG CANCELED được coi là "đang cần"
-                var needed = new Dictionary<Guid, int>(); // PartId -> NeededQty
-                var neededDetails = new Dictionary<Guid, List<EVCheckDetail>>(); // PartId -> các detail đóng góp
+                var needed = new Dictionary<Guid, int>();
+                var neededDetails = new Dictionary<Guid, List<EVCheckDetail>>();
 
                 foreach (var d in evCheck.EVCheckDetails)
                 {
                     if (d.Status == EVCheckDetailStatus.CANCELED)
                         continue;
                     if (d.ReplacePartId.HasValue)
-                        continue; // đã chọn item cụ thể, không coi là thiếu
+                        continue;
 
                     Guid? requiredPartId = null;
 
-                    // Ưu tiên từ MaintenanceStageDetail.PartId
                     if (d.MaintenanceStageDetailId.HasValue)
                     {
                         var msd =
@@ -462,7 +496,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         requiredPartId = msd?.PartId;
                     }
 
-                    // Fallback: Part hiện lắp trên xe (từ PartItem.PartId) cho case sửa chữa
                     if (!requiredPartId.HasValue && d.PartItemId != Guid.Empty)
                     {
                         var pi =
@@ -476,7 +509,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     var pid = requiredPartId.Value;
                     if (!needed.ContainsKey(pid))
                         needed[pid] = 0;
-                    needed[pid] += 1; // mỗi detail = 1 đơn vị cần
+                    needed[pid] += 1;
 
                     if (!neededDetails.ContainsKey(pid))
                         neededDetails[pid] = new List<EVCheckDetail>();
@@ -484,7 +517,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 }
 
                 // 5) Build kết quả cho các Part còn thiếu
-                var details = new List<MissingPartDetailResponse>(); // FIX: Declare the 'details' list
+                var details = new List<MissingPartDetailResponse>();
                 int index = 1;
                 foreach (var kv in needed)
                 {
