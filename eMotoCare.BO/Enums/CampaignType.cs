@@ -1,4 +1,8 @@
 ﻿namespace eMotoCare.BO.Enum
 {
-    public enum CampaignType { }
+    public enum CampaignType 
+    { 
+        CAMPAIGN,
+        RECALL
+    }
 }

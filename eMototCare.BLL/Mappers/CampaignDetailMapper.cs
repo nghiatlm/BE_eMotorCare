@@ -1,6 +1,8 @@
 ﻿
 
 using AutoMapper;
+using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Entities;
 
 namespace eMototCare.BLL.Mappers
 {
@@ -8,7 +10,7 @@ namespace eMototCare.BLL.Mappers
     {
         public CampaignDetailMapper()
         {
-            CreateMap<eMotoCare.BO.Entities.CampaignDetail, eMotoCare.BO.DTO.Responses.CampaignDetailResponse>();
+            CreateMap<CampaignDetail, CampaignDetailResponse>();
         }
     }
 }

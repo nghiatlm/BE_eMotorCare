@@ -29,6 +29,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 
             var q = _context.RMAs
                 .Include(x => x.Staff)
+                .Include(x => x.RMADetails)
                 .AsNoTracking()
                 .AsQueryable();
             
@@ -79,6 +80,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
         public Task<RMA?> GetByIdAsync(Guid id) =>
         _context.RMAs
             .Include(x => x.Staff)
+            .Include(x => x.RMADetails)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
