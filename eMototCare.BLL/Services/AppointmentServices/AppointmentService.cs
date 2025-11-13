@@ -90,7 +90,24 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
                 }
+                if (req.Type == ServiceType.MAINTENANCE_TYPE)
+                {
+                    if (!req.VehicleStageId.HasValue)
+                        throw new AppException(
+                            "Lịch bảo dưỡng phải chọn mốc bảo dưỡng (VehicleStage).",
+                            HttpStatusCode.BadRequest
+                        );
+                }
+                else
+                {
+                    if (!req.VehicleId.HasValue)
+                        throw new AppException(
+                            "Lịch sửa chữa/bảo hành phải chọn xe (Vehicle).",
+                            HttpStatusCode.BadRequest
+                        );
 
+                    req.VehicleStageId = null;
+                }
                 if (req.VehicleStageId.HasValue)
                 {
                     var stage = await _unitOfWork.VehicleStages.GetByIdAsync(

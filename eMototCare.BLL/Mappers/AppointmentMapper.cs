@@ -28,7 +28,8 @@ namespace eMototCare.BLL.Mappers
                 .ForMember(
                     dest => dest.CheckinQRCode,
                     opt => opt.MapFrom(src => src.CheckinQRCode ?? "")
-                );
+                )
+                .ForMember(d => d.Vehicle, opt => opt.MapFrom(s => s.Vehicle));
         }
     }
 }
