@@ -71,5 +71,13 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
         {
             return _context.Customers.FirstOrDefaultAsync(x => x.CitizenId == citizenId);
         }
+
+        public Task<Customer?> GetByRmaId(Guid rmaId)
+        {
+            return _context.RMADetails
+                .Where(r => r.RMAId == rmaId)
+                .Select(r => r.EVCheckDetail.EVCheck.Appointment.Customer)
+                .FirstOrDefaultAsync();
+        }
     }
 }

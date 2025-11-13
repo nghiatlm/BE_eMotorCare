@@ -1,12 +1,13 @@
-﻿using System.Net;
-using AutoMapper;
+﻿using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace eMototCare.BLL.Services.CustomerServices
 {
@@ -233,6 +234,13 @@ namespace eMototCare.BLL.Services.CustomerServices
             await _unitOfWork.SaveAsync();
 
             return true;
+        }
+
+        public async Task<CustomerResponse?> GetCustomerByRmaIdAsync(Guid rmaId)
+        {
+            var customer = await _unitOfWork.Customers.GetByRmaId(rmaId);
+            if (customer == null) throw new AppException("Không tìm thấy khách hàng có RMA ID này", HttpStatusCode.NotFound);
+            return _mapper.Map<CustomerResponse>(customer);
         }
     }
 }
