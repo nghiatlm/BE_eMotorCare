@@ -55,7 +55,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             )
     );
 });
-builder.Services.AddHostedService<TimeoutService>();
 
 var PayOS = builder.Configuration.GetSection("PAYOS");
 var ClientId = PayOS["CLIENT_ID"];
