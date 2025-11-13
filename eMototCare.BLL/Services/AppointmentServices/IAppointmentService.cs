@@ -21,7 +21,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
         Task<AppointmentResponse?> GetByIdAsync(Guid id);
 
         Task<Guid> CreateAsync(AppointmentRequest req);
-        Task UpdateAsync(Guid id, AppointmentRequest req);
+        Task UpdateAsync(Guid id, AppointmentUpdateRequest req);
         Task DeleteAsync(Guid id);
 
         Task<IReadOnlyList<string>> GetAvailableSlotsAsync(Guid serviceCenterId, DateTime date);
