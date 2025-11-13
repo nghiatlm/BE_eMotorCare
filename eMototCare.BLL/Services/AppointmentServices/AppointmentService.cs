@@ -159,7 +159,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
                     s =>
                         s.ServiceCenterId == req.ServiceCenterId
-                        && s.IsActive
+                        //&& s.IsActive
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
                         && s.SlotTime == req.SlotTime
                 );
@@ -177,6 +177,15 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 );
                 if (booked >= slotCfg.Capacity)
                     throw new AppException("Khung giờ này đã đầy.", HttpStatusCode.Conflict);
+                var remaining = slotCfg.Capacity - booked;
+
+                if (!slotCfg.IsActive || remaining <= 0)
+                {
+                    throw new AppException(
+                        "Mốc thời gian này đã quá hạn hoặc đã không còn chỗ trống",
+                        HttpStatusCode.BadRequest
+                    );
+                }
 
                 // 3) Sinh code
                 string code;
@@ -200,6 +209,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     dateOnly,
                     req.SlotTime
                 );
+
                 if (current >= slotCfg.Capacity && slotCfg.IsActive)
                 {
                     slotCfg.IsActive = false;
@@ -224,7 +234,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, AppointmentRequest req)
+        public async Task UpdateAsync(Guid id, AppointmentUpdateRequest req)
         {
             try
             {
@@ -232,81 +242,41 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     await _unitOfWork.Appointments.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
                 var oldStatus = entity.Status;
-                var changingCore =
-                    entity.ServiceCenterId != req.ServiceCenterId
-                    || entity.AppointmentDate.Date != req.AppointmentDate.Date
-                    || entity.SlotTime != req.SlotTime;
-
-                if (changingCore)
+                if (entity.SlotTime != req.SlotTime)
                 {
-                    var dateOnly = DateOnly.FromDateTime(req.AppointmentDate.Date);
-                    var dow = (DayOfWeeks)req.AppointmentDate.DayOfWeek;
+                    var dateOnly = DateOnly.FromDateTime(entity.AppointmentDate.Date);
+                    var dow = (DayOfWeeks)entity.AppointmentDate.DayOfWeek;
 
                     var slotCfg = (
                         await _unitOfWork.ServiceCenterSlot.FindAllAsync()
                     ).FirstOrDefault(s =>
-                        s.ServiceCenterId == req.ServiceCenterId
+                        s.ServiceCenterId == entity.ServiceCenterId
                         && s.IsActive
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
                         && s.SlotTime == req.SlotTime
                     );
 
-                    // Nếu đổi sang slot mới, phải check capacity của slot đó ở ngày mới
+                    if (slotCfg is null)
+                        throw new AppException(
+                            "Ngày này không có khung giờ đó.",
+                            HttpStatusCode.Conflict
+                        );
+
                     var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
-                        req.ServiceCenterId,
+                        entity.ServiceCenterId,
                         dateOnly,
                         req.SlotTime
                     );
 
-                    // trừ chính record hiện tại nếu nó đang ở cùng ngày+slot
-                    if (
-                        !(
-                            entity.ServiceCenterId == req.ServiceCenterId
-                            && DateOnly.FromDateTime(entity.AppointmentDate.Date) == dateOnly
-                            && entity.SlotTime == req.SlotTime
-                        )
-                    )
-                    {
-                        if (booked >= slotCfg.Capacity)
-                            throw new AppException(
-                                "Khung giờ này đã đầy.",
-                                HttpStatusCode.Conflict
-                            );
-                    }
+                    if (booked >= slotCfg.Capacity)
+                        throw new AppException("Khung giờ này đã đầy.", HttpStatusCode.Conflict);
 
-                    entity.ServiceCenterId = req.ServiceCenterId;
-                    entity.AppointmentDate = req.AppointmentDate;
                     entity.SlotTime = req.SlotTime;
                 }
-                //update vehiclestage khi appointment completed
-                if (req.Status == AppointmentStatus.COMPLETED)
-                {
-                    if (entity.VehicleStageId.HasValue)
-                    {
-                        var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
-                            entity.VehicleStageId.Value
-                        );
-                        if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
-                        {
-                            stage.Status = VehicleStageStatus.COMPLETED;
-                            stage.DateOfImplementation = DateTime.UtcNow;
-
-                            await _unitOfWork.VehicleStages.UpdateAsync(stage);
-                            _logger.LogInformation(
-                                "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
-                                stage.Id,
-                                entity.Id
-                            );
-                        }
-                    }
-                }
-
-                entity.CustomerId = req.CustomerId;
-                entity.VehicleStageId = req.VehicleStageId;
                 entity.EstimatedCost = req.EstimatedCost;
                 entity.ActualCost = req.ActualCost;
-                entity.Status = req.Status;
-                entity.Type = req.Type;
+                entity.Note = req.Note;
+
                 if (oldStatus != req.Status)
                 {
                     switch (req.Status)
@@ -370,6 +340,26 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             }
                             break;
 
+                        case AppointmentStatus.COMPLETED:
+                            if (entity.VehicleStageId.HasValue)
+                            {
+                                var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
+                                    entity.VehicleStageId.Value
+                                );
+                                if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                                {
+                                    stage.Status = VehicleStageStatus.COMPLETED;
+                                    stage.DateOfImplementation = DateTime.UtcNow;
+
+                                    await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                                    _logger.LogInformation(
+                                        "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
+                                        stage.Id,
+                                        entity.Id
+                                    );
+                                }
+                            }
+                            break;
                         default:
                             break;
                     }

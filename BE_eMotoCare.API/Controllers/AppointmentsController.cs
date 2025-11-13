@@ -106,7 +106,10 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] AppointmentRequest request)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] AppointmentUpdateRequest request
+        )
         {
             await _appointmentService.UpdateAsync(id, request);
             await _notifierAppointment.NotifyUpdateAsync("Appointment", new { Id = id });
