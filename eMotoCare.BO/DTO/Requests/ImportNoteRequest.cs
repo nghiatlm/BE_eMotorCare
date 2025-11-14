@@ -25,5 +25,7 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public Guid ServiceCenterId { get; set; }
 
+        public List<Guid?> PartItemId { get; set; }
+
     }
 }

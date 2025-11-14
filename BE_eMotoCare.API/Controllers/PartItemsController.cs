@@ -82,7 +82,7 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
-        [HttpGet("{evCheckDetailId}/part-items")]
+        [HttpGet("ev-check-detail/{evCheckDetailId}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetPartItemsByEVCheckDetail(Guid evCheckDetailId)
         {
@@ -94,7 +94,7 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<List<PartItemResponse>>.SuccessResponse(partItems, "Lấy danh sách thành công"));
         }
 
-        [HttpGet("service-center/{serviceCenterId}/part-items")]
+        [HttpGet("service-center/{serviceCenterId}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetPartItemsByServiceCenter(Guid serviceCenterId)
         {

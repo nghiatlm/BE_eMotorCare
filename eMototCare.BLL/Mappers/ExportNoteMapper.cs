@@ -12,8 +12,9 @@ namespace eMototCare.BLL.Mappers
         public ExportNoteMapper()
         {
             CreateMap<ExportNote, ExportNoteResponse>();
-            CreateMap<ExportNoteRequest, ExportNote>();
-            CreateMap<ExportNoteUpdateRequest, ExportNote>();
+            CreateMap<ExportNoteRequest, ExportNote>()
+                .ForSourceMember(src => src.PartItemId, opt => opt.DoNotValidate());
+            CreateMap<ExportNoteUpdateRequest, ExportNote>();   
         }
     }
 }

@@ -83,13 +83,29 @@ namespace eMototCare.BLL.Services.ImportNoteServices
             try
             {
 
-
+                var importNoteId = Guid.NewGuid();
                 var entity = _mapper.Map<ImportNote>(req);
-                entity.Id = Guid.NewGuid();
+                entity.Id = importNoteId;
                 entity.ImportDate = DateTime.UtcNow;
                 entity.Code = $"IMPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
                 entity.ImportNoteStatus = ImportNoteStatus.APPROVE;
-                
+                if (req.PartItemId != null && req.PartItemId.Any())
+                {
+                    foreach (var partItemId in req.PartItemId)
+                    {
+                        var partItem = await _unitOfWork.PartItems.GetByIdAsync(partItemId.Value);
+
+                        if (partItem == null)
+                            throw new Exception($"PartItem {partItemId} không tồn tại.");
+
+                        var serviceCenterInventory = await _unitOfWork.ServiceCenterInventories.GetByServiceCenterId(req.ServiceCenterId);
+
+                        partItem.ImportNoteId = importNoteId;
+                        partItem.ServiceCenterInventoryId = serviceCenterInventory.Id;
+
+                        await _unitOfWork.PartItems.UpdateAsync(partItem);
+                    }
+                }
 
                 await _unitOfWork.ImportNotes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
