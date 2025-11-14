@@ -4,11 +4,7 @@ using BE_eMotoCare.API.Realtime.Hubs;
 
 namespace BE_eMotoCare.API.Realtime.Services
 {
-    public interface INotifierService
-    {
-        Task NotifyUpdateAsync(string entity, object data);
-        Task NotifyDeleteAsync(string entity, object data);
-    }
+    
 
     public class NotifierService : INotifierService
     {

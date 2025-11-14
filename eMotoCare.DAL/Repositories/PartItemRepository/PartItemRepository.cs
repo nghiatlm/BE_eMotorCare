@@ -52,7 +52,10 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
         }
 
         public Task<PartItem?> GetByIdAsync(Guid id) =>
-        _context.PartItems.FirstOrDefaultAsync(x => x.Id == id);
+        _context.PartItems
+            .Include(x => x.ServiceCenterInventory)
+                .ThenInclude(x => x.ServiceCenter)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsSerialNumberAsync(string serialNumber) =>
             _context.PartItems.AnyAsync(x => x.SerialNumber == serialNumber);

@@ -81,14 +81,31 @@ namespace eMototCare.BLL.Services.ExportServices
 
             try
             {
-
+                var exportNoteId = Guid.NewGuid();
 
                 var entity = _mapper.Map<ExportNote>(req);
-                entity.Id = Guid.NewGuid();
+                entity.Id = exportNoteId;
                 entity.Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
-                entity.ExportNoteStatus = ExportNoteStatus.APPROVED;
                 entity.ExportDate = DateTime.UtcNow;
+                if (req.PartItemId != null && req.PartItemId.Any())
+                {
+                    foreach (var partItemId in req.PartItemId)
+                    {
+                        var partItem = await _unitOfWork.PartItems.GetByIdAsync(partItemId.Value);
 
+                        if (partItem == null)
+                            throw new Exception($"PartItem {partItemId} không tồn tại.");
+
+                        if (partItem.ServiceCenterInventory.ServiceCenterId != req.ServiceCenterId)
+                            throw new Exception($"PartItem {partItemId} không thuộc ServiceCenter {req.ServiceCenterId}.");
+
+                        // Update trạng thái hoặc exportNoteId tùy nghiệp vụ
+                        partItem.ExportNoteId = exportNoteId;
+                        partItem.ServiceCenterInventoryId = null;
+
+                        await _unitOfWork.PartItems.UpdateAsync(partItem);
+                    }
+                }
                 await _unitOfWork.ExportNotes.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 

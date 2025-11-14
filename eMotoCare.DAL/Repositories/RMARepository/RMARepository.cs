@@ -30,6 +30,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             var q = _context.RMAs
                 .Include(x => x.Staff)
                 .Include(x => x.RMADetails)
+                    .ThenInclude(x => x.EVCheckDetail)
                 .AsNoTracking()
                 .AsQueryable();
             
@@ -81,6 +82,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
         _context.RMAs
             .Include(x => x.Staff)
             .Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheckDetail)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
