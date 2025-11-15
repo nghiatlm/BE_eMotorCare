@@ -22,10 +22,10 @@ namespace eMotoCare.BO.DTO.Requests
 
         [Required]
         [Url]
-        public string ReturnUrl { get; set; }
+        public string? ReturnUrl { get; set; }
 
         [Required]
         [Url]
-        public string CallbackUrl { get; set; }
+        public string? CallbackUrl { get; set; }
     }
 }

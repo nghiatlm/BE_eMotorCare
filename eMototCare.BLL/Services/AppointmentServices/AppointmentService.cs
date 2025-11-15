@@ -242,7 +242,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     await _unitOfWork.Appointments.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
                 var oldStatus = entity.Status;
-                if (entity.SlotTime != req.SlotTime)
+                if (req.SlotTime.HasValue && entity.SlotTime != req.SlotTime.Value)
                 {
                     var dateOnly = DateOnly.FromDateTime(entity.AppointmentDate.Date);
                     var dow = (DayOfWeeks)entity.AppointmentDate.DayOfWeek;
@@ -253,7 +253,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         s.ServiceCenterId == entity.ServiceCenterId
                         && s.IsActive
                         && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
-                        && s.SlotTime == req.SlotTime
+                        && s.SlotTime == req.SlotTime.Value
                     );
 
                     if (slotCfg is null)
@@ -265,13 +265,13 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
                         entity.ServiceCenterId,
                         dateOnly,
-                        req.SlotTime
+                        req.SlotTime.Value
                     );
 
                     if (booked >= slotCfg.Capacity)
                         throw new AppException("Khung giờ này đã đầy.", HttpStatusCode.Conflict);
 
-                    entity.SlotTime = req.SlotTime;
+                    entity.SlotTime = req.SlotTime.Value;
                 }
                 entity.EstimatedCost = req.EstimatedCost;
                 entity.ActualCost = req.ActualCost;
@@ -312,29 +312,43 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     HttpStatusCode.Conflict
                                 );
 
-                            if (string.IsNullOrWhiteSpace(req.Code))
+                            if (string.IsNullOrWhiteSpace(req.CheckinQRCode))
                                 throw new AppException(
-                                    "Mã check-in không hợp lệ.",
+                                    "Thiếu đường dẫn QR check-in.",
                                     HttpStatusCode.BadRequest
                                 );
 
                             if (string.IsNullOrWhiteSpace(entity.CheckinQRCode))
                                 throw new AppException(
-                                    "Lịch hẹn chưa có mã check-in.",
+                                    "Lịch hẹn chưa có QR check-in được lưu.",
                                     HttpStatusCode.Conflict
                                 );
 
-                            // So sánh code FE gửi với CheckinQRCode lưu trong DB
                             if (
                                 !string.Equals(
-                                    req.Code.Trim(),
+                                    req.CheckinQRCode.Trim(),
                                     entity.CheckinQRCode.Trim(),
+                                    StringComparison.Ordinal
+                                )
+                            )
+                            {
+                                throw new AppException(
+                                    "QR check-in không khớp.",
+                                    HttpStatusCode.Conflict
+                                );
+                            }
+
+                            if (
+                                !string.IsNullOrWhiteSpace(req.Code)
+                                && !string.Equals(
+                                    req.Code.Trim(),
+                                    entity.Code.Trim(),
                                     StringComparison.OrdinalIgnoreCase
                                 )
                             )
                             {
                                 throw new AppException(
-                                    "Mã check-in không đúng.",
+                                    "Mã lịch hẹn không khớp với QR.",
                                     HttpStatusCode.Conflict
                                 );
                             }
