@@ -5,6 +5,8 @@ using eMototCare.BLL.Services.AccountService;
 using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
+using eMototCare.BLL.Services.CampaignDetailServices;
+using eMototCare.BLL.Services.CampaignServices;
 using eMototCare.BLL.Services.BackgroundServices;
 using eMototCare.BLL.Services.CustomerServices;
 using eMototCare.BLL.Services.EmailServices;
@@ -68,6 +70,8 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IRMAService, RMAService>();
             services.AddScoped<IServiceCenterInventoryService, ServiceCenterInventoryService>();
             services.AddScoped<IRMADetailService, RMADetailService>();
+            services.AddScoped<ICampaignService, CampaignService>();
+            services.AddScoped<ICampaignDetailService, CampaignDetailService>();
 
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();

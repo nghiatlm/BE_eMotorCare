@@ -15,5 +15,6 @@ namespace eMotoCare.BO.DTO.Responses
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public Status Status { get; set; }
+        public ICollection<CampaignDetailResponse?> CampaignDetails { get; set; }
     }
 }

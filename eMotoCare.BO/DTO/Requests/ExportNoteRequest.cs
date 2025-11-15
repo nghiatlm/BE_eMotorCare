@@ -33,6 +33,7 @@ namespace eMotoCare.BO.DTO.Requests
         [EnumDataType(typeof(ExportNoteStatus))]
         public ExportNoteStatus ExportNoteStatus { get; set; }
 
+        public List<Guid?> PartItemId { get; set; }
 
     }
 }
