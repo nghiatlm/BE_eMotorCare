@@ -221,20 +221,6 @@ namespace eMototCare.BLL.Services.ExportServices
                         var replaceDetails = evCheck
                                             .EVCheckDetails.Where(d => d.ReplacePartId != null)
                                             .ToList();
-                        foreach (var detail in replaceDetails)
-                        {
-                            var partItem = detail.ReplacePart;
-                            partItem.ExportNoteId = entity.Id;
-                            partItem.ServiceCenterInventoryId = null;
-                            if (partItem.WarrantyPeriod != null)
-                            {
-                                int month = partItem.WarrantyPeriod ?? 0;
-                                partItem.WarantyStartDate = DateTime.UtcNow;
-                                partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
-                            }
-                            partItem.Quantity = 0;
-                            await _unitOfWork.PartItems.UpdateAsync(partItem);
-                        }
 
                     }
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;

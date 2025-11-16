@@ -368,9 +368,10 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     + " "
                     + evCheck.Appointment.Customer.FirstName;
                 var phone = evCheck.Appointment.Customer.Account.Phone;
+                var exportNoteId = Guid.NewGuid();
                 var exportNote = new ExportNote
                 {
-                    Id = Guid.NewGuid(),
+                    Id = exportNoteId,
                     Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
                     ExportDate = DateTime.UtcNow,
                     Type = ExportType.REPLACEMENT,
@@ -381,15 +382,24 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     TotalQuantity = 0, // tổng số lượng xuất
                     ExportTo = customerName + " - " + phone,
                 };
+                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
 
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;
-
+                    partItem.ExportNoteId = exportNoteId;
+                    partItem.ServiceCenterInventoryId = null;
+                    if (partItem.WarrantyPeriod != null)
+                    {
+                        int month = partItem.WarrantyPeriod ?? 0;
+                        partItem.WarantyStartDate = DateTime.UtcNow;
+                        partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
+                    }
+                    partItem.Quantity = 0;
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
                 }
-                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
+                
             }
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
