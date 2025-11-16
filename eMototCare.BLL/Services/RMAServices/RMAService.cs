@@ -203,8 +203,8 @@ namespace eMototCare.BLL.Services.RMAServices
                 var entity = await _unitOfWork.RMAs.GetByIdAsync(id);
                 if (entity is null)
                     throw new AppException("Không tìm thấy RMA", HttpStatusCode.NotFound);
-
-                return _mapper.Map<RMAResponse>(entity);
+                var rma = _mapper.Map<RMAResponse>(entity);
+                return rma; 
             }
             catch (AppException)
             {
