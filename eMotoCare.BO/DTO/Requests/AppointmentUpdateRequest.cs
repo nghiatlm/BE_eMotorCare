@@ -6,8 +6,7 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class AppointmentUpdateRequest
     {
-        [Required]
-        public SlotTime SlotTime { get; set; }
+        public SlotTime? SlotTime { get; set; }
         public decimal? EstimatedCost { get; set; }
         public decimal? ActualCost { get; set; }
 

@@ -9,28 +9,24 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
 {
     public class CampaignRepository : GenericRepository<Campaign>, ICampaignRepository
     {
-        public CampaignRepository(ApplicationDbContext context) : base(context)
-        {
-        }
+        public CampaignRepository(ApplicationDbContext context)
+            : base(context) { }
+
         public async Task<(IReadOnlyList<Campaign> Items, long Total)> GetPagedAsync(
-             string? code,
-             string? name,
-             CampaignType? campaignType,
-             DateTime? fromDate,
-             DateTime? toDate,
-             CampaignStatus? status,
-             int page,
-             int pageSize
+            string? code,
+            string? name,
+            CampaignType? campaignType,
+            DateTime? fromDate,
+            DateTime? toDate,
+            CampaignStatus? status,
+            int page,
+            int pageSize
         )
         {
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.Campaigns
-                .Include(x => x.CampaignDetails)
-                .AsNoTracking()
-                .AsQueryable();
-
+            var q = _context.Campaigns.Include(x => x.CampaignDetails).AsNoTracking().AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(code))
                 q = q.Where(x => x.Code.Contains(code));
@@ -45,14 +41,10 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
                 q = q.Where(x => x.Status == status.Value);
 
             if (fromDate.HasValue)
-                q = q.Where(x => x.EndDate >= fromDate.Value); 
+                q = q.Where(x => x.EndDate >= fromDate.Value);
 
             if (toDate.HasValue)
                 q = q.Where(x => x.StartDate <= toDate.Value);
-
-
-
-
 
             var total = await q.LongCountAsync();
 
@@ -65,11 +57,14 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
         }
 
         public Task<Campaign?> GetByIdAsync(Guid id) =>
-        _context.Campaigns
-            .Include(x => x.CampaignDetails)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            _context.Campaigns.Include(x => x.CampaignDetails).FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.Campaigns.AnyAsync(x => x.Code == code);
+
+        public Task<List<Campaign>> GetExpiredActiveAsync(DateTime nowLocal) =>
+            _context
+                .Campaigns.Where(x => x.Status == CampaignStatus.ACTIVE && x.EndDate <= nowLocal)
+                .ToListAsync();
     }
 }
