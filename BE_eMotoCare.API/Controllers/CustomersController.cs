@@ -89,7 +89,7 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Đã map AccountId vào Customer thành công"));
         }
 
-        [HttpGet("get-customer-by-rma/{rmaId}")]
+        [HttpGet("rma/{rmaId}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetCustomerByRmaId(Guid rmaId)
         {
