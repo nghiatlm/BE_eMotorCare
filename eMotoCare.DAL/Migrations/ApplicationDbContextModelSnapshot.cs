@@ -97,6 +97,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("varchar(50)")
                         .HasColumnName("code");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("char(36)")
                         .HasColumnName("customer_id");
@@ -126,6 +129,9 @@ namespace eMotoCare.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(200)")
                         .HasColumnName("type");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<Guid?>("VehicleId")
                         .HasColumnType("char(36)")
@@ -1134,10 +1140,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("customer_id");
-
                     b.Property<string>("Note")
                         .HasColumnType("longtext")
                         .HasColumnName("note");
@@ -1162,8 +1164,6 @@ namespace eMotoCare.DAL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreateById");
-
-                    b.HasIndex("CustomerId");
 
                     b.ToTable("rma");
                 });
@@ -1492,11 +1492,6 @@ namespace eMotoCare.DAL.Migrations
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("VinNUmber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(300)")
-                        .HasColumnName("vin_number");
 
                     b.Property<DateTime>("WarrantyExpiry")
                         .HasColumnType("datetime(6)")
@@ -1897,14 +1892,6 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eMotoCare.BO.Entities.Customer", "Customer")
-                        .WithMany("RMAs")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
                     b.Navigation("Staff");
                 });
 
@@ -2053,8 +2040,6 @@ namespace eMotoCare.DAL.Migrations
             modelBuilder.Entity("eMotoCare.BO.Entities.Customer", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("RMAs");
 
                     b.Navigation("Vehilces");
                 });

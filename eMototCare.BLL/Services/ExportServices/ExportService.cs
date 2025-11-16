@@ -9,7 +9,6 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -226,7 +225,7 @@ namespace eMototCare.BLL.Services.ExportServices
 
                     }
 
-                    if (req.ExportNoteStatus == ExportNoteStatus.CANCELLED && entity.Type == ExportType.REPLACEMENT)
+
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;
                 }
 
