@@ -9,6 +9,16 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
     {
         Task<bool> ExistsCodeAsync(string code);
         Task<Campaign?> GetByIdAsync(Guid id);
-        Task<(IReadOnlyList<Campaign> Items, long Total)> GetPagedAsync(string? code, string? name, CampaignType? campaignType, DateTime? fromDate, DateTime? toDate, CampaignStatus? status, int page, int pageSize);
+        Task<(IReadOnlyList<Campaign> Items, long Total)> GetPagedAsync(
+            string? code,
+            string? name,
+            CampaignType? campaignType,
+            DateTime? fromDate,
+            DateTime? toDate,
+            CampaignStatus? status,
+            int page,
+            int pageSize
+        );
+        Task<List<Campaign>> GetExpiredActiveAsync(DateTime nowLocal);
     }
 }

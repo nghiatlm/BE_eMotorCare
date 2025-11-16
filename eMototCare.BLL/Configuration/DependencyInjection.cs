@@ -5,9 +5,9 @@ using eMototCare.BLL.Services.AccountService;
 using eMototCare.BLL.Services.AccountServices;
 using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
+using eMototCare.BLL.Services.BackgroundServices;
 using eMototCare.BLL.Services.CampaignDetailServices;
 using eMototCare.BLL.Services.CampaignServices;
-using eMototCare.BLL.Services.BackgroundServices;
 using eMototCare.BLL.Services.CustomerServices;
 using eMototCare.BLL.Services.EmailServices;
 using eMototCare.BLL.Services.EVCheckDetailServices;
@@ -75,6 +75,7 @@ namespace eMototCare.BLL.Configuration
 
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();
+            services.AddHostedService<CampaignBackgroundService>();
             return services;
         }
     }
