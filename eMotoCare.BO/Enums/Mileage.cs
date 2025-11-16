@@ -1,7 +1,7 @@
 ﻿namespace eMotoCare.BO.Enum
 {
     public enum Mileage
-    { 
+    {
         KM3000 = 3000,
         KM5000 = 5000,
         KM50000 = 50000,
