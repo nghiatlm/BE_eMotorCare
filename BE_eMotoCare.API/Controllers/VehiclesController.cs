@@ -83,5 +83,18 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Vô hiệu hoá xe thành công"));
         }
 
+        [HttpGet("{vehicleId}/history")]
+        [Authorize(Roles = "ROLE_CUSTOMER,ROLE_STAFF,ROLE_MANAGER,ROLE_ADMIN")]
+        public async Task<IActionResult> GetHistory(Guid vehicleId)
+        {
+            var data = await _vehicleService.GetHistoryAsync(vehicleId);
+
+            return Ok(
+                ApiResponse<VehicleHistoryResponse>.SuccessResponse(
+                    data,
+                    "Lấy lịch sử xe thành công"
+                )
+            );
+        }
     }
 }

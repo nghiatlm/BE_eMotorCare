@@ -22,5 +22,6 @@ namespace eMototCare.BLL.Services.VehicleServices
         Task<Guid> CreateAsync(VehicleRequest req);
         Task UpdateAsync(Guid id, VehicleRequest req);
         Task DeleteAsync(Guid id);
+        Task<VehicleHistoryResponse> GetHistoryAsync(Guid vehicleId);
     }
 }

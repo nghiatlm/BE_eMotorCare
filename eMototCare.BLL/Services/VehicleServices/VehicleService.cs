@@ -3,6 +3,7 @@ using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
@@ -143,7 +144,49 @@ namespace eMototCare.BLL.Services.VehicleServices
             }
         }
 
-        
+        public async Task<VehicleHistoryResponse> GetHistoryAsync(Guid vehicleId)
+        {
+            var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleId);
+            if (vehicle is null)
+                throw new AppException("Không tìm thấy xe.", HttpStatusCode.NotFound);
 
+            var appointments = await _unitOfWork.Appointments.GetByVehicleIdAsync(vehicleId);
+
+            var appointmentDtos = _mapper.Map<List<AppointmentResponse>>(appointments);
+
+            var maintenanceHistory = appointmentDtos
+                .Where(a => a.Type == ServiceType.MAINTENANCE_TYPE)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToList();
+
+            var repairHistory = appointmentDtos
+                .Where(a => a.Type == ServiceType.REPAIR_TYPE)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToList();
+
+            var warrantyHistory = appointmentDtos
+                .Where(a => a.Type == ServiceType.WARRANTY_TYPE)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToList();
+
+            var campaignEntities = appointments
+                .Where(a => a.CampaignId != null && a.Campaign != null)
+                .GroupBy(a => a.CampaignId)
+                .Select(g => g.First().Campaign!)
+                .ToList();
+
+            var campaignDtos = _mapper.Map<List<CampaignResponse>>(campaignEntities);
+
+            var response = new VehicleHistoryResponse
+            {
+                Vehicle = _mapper.Map<VehicleResponse>(vehicle),
+                MaintenanceHistory = maintenanceHistory,
+                RepairHistory = repairHistory,
+                WarrantyHistory = warrantyHistory,
+                CampaignHistory = campaignDtos,
+            };
+
+            return response;
+        }
     }
 }

@@ -22,6 +22,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.VehicleStage)
                 .ThenInclude(vs => vs.MaintenanceStage)
                 .Include(x => x.Vehicle)
+                .ThenInclude(v => v.Model)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
@@ -48,6 +49,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.VehicleStage)
                 .ThenInclude(vs => vs.MaintenanceStage)
                 .Include(x => x.Vehicle)
+                .ThenInclude(v => v.Model)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -160,6 +162,18 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(a => a.Vehicle)
                 .Where(a => a.EVCheck != null && a.EVCheck.TaskExecutorId == technicianId)
                 .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public Task<List<Appointment>> GetByVehicleIdAsync(Guid vehicleId)
+        {
+            return _context
+                .Appointments.AsNoTracking()
+                .Include(a => a.ServiceCenter)
+                .Include(a => a.Campaign)
+                .Where(a => a.VehicleId == vehicleId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ThenByDescending(a => a.AppointmentDate)
                 .ToListAsync();
         }
     }
