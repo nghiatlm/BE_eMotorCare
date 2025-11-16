@@ -12,6 +12,7 @@ namespace eMotoCare.BO.DTO.Responses
         public DateTime InstallDate { get; set; }
         public Guid VehicleId { get; set; }
         public Guid PartItemId { get; set; }
+        public PartItemResponse? PartItem { get; set; }
         public Guid? ReplaceForId { get; set; }
     }
 }
