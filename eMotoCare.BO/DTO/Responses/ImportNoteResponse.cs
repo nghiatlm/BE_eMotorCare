@@ -15,5 +15,6 @@ namespace eMotoCare.BO.DTO.Responses
         public decimal? TotalAmout { get; set; }
         public StaffResponse? ImportBy { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
+        public ICollection<PartItemResponse>? PartItems { get; set; }
     }
 }

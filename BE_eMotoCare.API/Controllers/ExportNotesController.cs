@@ -37,6 +37,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? exportById,
             [FromQuery] Guid? serviceCenterId,
             [FromQuery] ExportNoteStatus? exportNoteStatus,
+            [FromQuery] Guid? partItemId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
@@ -52,6 +53,7 @@ namespace BE_eMotoCare.API.Controllers
                 exportById,
                 serviceCenterId,
                 exportNoteStatus,
+                partItemId,
                 page,
                 pageSize);
             return Ok(
