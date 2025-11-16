@@ -41,6 +41,7 @@ namespace eMototCare.BLL.Services.ExportServices
              Guid? exportById,
              Guid? serviceCenterId,
              ExportNoteStatus? exportNoteStatus,
+             Guid? partItemId,
              int page,
              int pageSize
         )
@@ -58,6 +59,7 @@ namespace eMototCare.BLL.Services.ExportServices
                 exportById,
                 serviceCenterId,
                 exportNoteStatus,
+                partItemId,
                 page,
                 pageSize
                 );
@@ -223,6 +225,8 @@ namespace eMototCare.BLL.Services.ExportServices
                                             .ToList();
 
                     }
+
+                    if (req.ExportNoteStatus == ExportNoteStatus.CANCELLED && entity.Type == ExportType.REPLACEMENT)
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;
                 }
 
