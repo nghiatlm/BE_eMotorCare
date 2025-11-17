@@ -90,6 +90,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
                 }
+
                 if (req.Type == ServiceType.MAINTENANCE_TYPE)
                 {
                     if (!req.VehicleStageId.HasValue)
@@ -275,7 +276,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 }
                 entity.EstimatedCost = req.EstimatedCost;
                 entity.ActualCost = req.ActualCost;
-                entity.Note = req.Note;
+                if (req.Note != null)
+                    entity.Note = req.Note;
 
                 if (oldStatus != req.Status)
                 {

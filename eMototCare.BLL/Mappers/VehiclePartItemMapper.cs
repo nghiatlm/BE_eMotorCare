@@ -12,7 +12,8 @@ namespace eMototCare.BLL.Mappers
             CreateMap<VehiclePartItemRequest, VehiclePartItem>()
                 .ForMember(d => d.Id, opt => opt.Ignore());
 
-            CreateMap<VehiclePartItem, VehiclePartItemResponse>();
+            CreateMap<VehiclePartItem, VehiclePartItemResponse>()
+                .ForMember(d => d.PartItem, opt => opt.MapFrom(s => s.PartItem));
         }
     }
 }

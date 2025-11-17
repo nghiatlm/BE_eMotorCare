@@ -17,6 +17,7 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
                 .VehiclePartItems.AsNoTracking()
                 .Include(x => x.Vehicle)
                 .Include(x => x.PartItem)
+                .ThenInclude(x => x.Part)
                 .Include(x => x.ReplaceFor)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -38,6 +39,7 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
                 .VehiclePartItems.AsNoTracking()
                 .Include(x => x.Vehicle)
                 .Include(x => x.PartItem)
+                .ThenInclude(x => x.Part)
                 .Include(x => x.ReplaceFor)
                 .AsQueryable();
 
@@ -46,9 +48,13 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
                 var s = search.Trim().ToLower();
                 q = q.Where(x =>
                     (
-                    x.PartItemId.ToString().ToLower().Contains(s)
-                    || (x.ReplaceForId.HasValue && x.ReplaceForId.ToString()!.ToLower().Contains(s))
-                ));
+                        x.PartItemId.ToString().ToLower().Contains(s)
+                        || (
+                            x.ReplaceForId.HasValue
+                            && x.ReplaceForId.ToString()!.ToLower().Contains(s)
+                        )
+                    )
+                );
             }
 
             if (vehicleId.HasValue)
@@ -77,7 +83,7 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
             return await _context
                 .VehiclePartItems.AsNoTracking()
                 .Include(x => x.PartItem)
-                    .ThenInclude(x => x.Part)
+                .ThenInclude(x => x.Part)
                 .Where(x => x.VehicleId == id)
                 .ToListAsync();
         }
