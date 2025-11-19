@@ -29,6 +29,8 @@ namespace eMotoCare.DAL.Repositories.RMADetailRepository
 
             var q = _context.RMADetails
                 .Include(e => e.EVCheckDetail)
+                    .ThenInclude(e => e.PartItem)
+                        .ThenInclude(p => p.Part)
                 .Include(r => r.RMA)
                 .AsNoTracking()
                 .AsQueryable();
@@ -69,6 +71,8 @@ namespace eMotoCare.DAL.Repositories.RMADetailRepository
         public Task<RMADetail?> GetByIdAsync(Guid id) =>
         _context.RMADetails
             .Include(e => e.EVCheckDetail)
+                .ThenInclude(e => e.PartItem)
+                        .ThenInclude(p => p.Part)
             .Include(r => r.RMA)
             .FirstOrDefaultAsync(x => x.Id == id);
 
