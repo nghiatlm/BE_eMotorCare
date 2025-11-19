@@ -396,6 +396,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
                     }
                     partItem.Quantity = 0;
+                    partItem.Status = PartItemStatus.IN_ACTIVE;
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
                 }
