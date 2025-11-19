@@ -9,7 +9,7 @@ namespace eMototCare.BLL.Services.CampaignDetailServices
 {
     public interface ICampaignDetailService
     {
-        Task<Guid> CreateAsync(CampainDetailRequest req);
+        Task<Guid> CreateAsync(CampaignDetailRequest req);
         Task DeleteAsync(Guid id);
         Task<CampaignDetailResponse?> GetByIdAsync(Guid id);
         Task<PageResult<CampaignDetailResponse>> GetPagedAsync(Guid? campaignId, Guid? partId, CampaignActionType? actionType, bool? isMandatory, int? estimatedTime, int page, int pageSize);
