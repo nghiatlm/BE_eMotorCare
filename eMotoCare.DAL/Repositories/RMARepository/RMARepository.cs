@@ -20,6 +20,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
+             Guid? serviceCenterId,
              int page,
              int pageSize
         )
@@ -82,6 +83,13 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             {
                 var endDateInclusive = toDate.Value.Date.AddDays(1);
                 q = q.Where(x => x.RMADate < endDateInclusive);
+            }
+
+            if (serviceCenterId.HasValue)
+            {
+                q = q.Where(x => x.RMADetails.Any(rd =>
+                    rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId == serviceCenterId.Value
+                ));
             }
 
 
