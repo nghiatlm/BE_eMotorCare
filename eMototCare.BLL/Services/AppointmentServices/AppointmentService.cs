@@ -274,8 +274,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     entity.SlotTime = req.SlotTime.Value;
                 }
-                entity.EstimatedCost = req.EstimatedCost;
-                entity.ActualCost = req.ActualCost;
+                if (req.EstimatedCost.HasValue)
+                    entity.EstimatedCost = req.EstimatedCost.Value;
+
+                if (req.ActualCost.HasValue)
+                    entity.ActualCost = req.ActualCost.Value;
+
                 if (req.Note != null)
                     entity.Note = req.Note;
 

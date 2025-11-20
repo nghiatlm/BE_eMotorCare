@@ -7,6 +7,7 @@ namespace eMotoCare.BO.DTO.Responses
     {
         public Guid Id { get; set; }
         public Guid AccountId { get; set; }
+        public AccountResponse? Account { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? CustomerCode { get; set; }
