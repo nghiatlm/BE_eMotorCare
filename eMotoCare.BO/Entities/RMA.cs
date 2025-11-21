@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
@@ -41,6 +40,5 @@ namespace eMotoCare.BO.Entities
         public virtual Staff? Staff { get; set; }
 
         public virtual ICollection<RMADetail>? RMADetails { get; set; }
-
     }
 }

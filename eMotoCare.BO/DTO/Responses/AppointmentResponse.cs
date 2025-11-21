@@ -9,6 +9,7 @@ namespace eMotoCare.BO.DTO.Responses
         public string Code { get; set; } = default!;
         public Guid ServiceCenterId { get; set; }
         public Guid CustomerId { get; set; }
+        public string? Phone { get; set; }
         public Guid? ApproveById { get; set; }
         public Guid? VehicleStageId { get; set; }
         public MaintenanceStageResponse? MaintenanceStage { get; set; }
