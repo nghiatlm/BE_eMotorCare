@@ -36,6 +36,7 @@ namespace eMototCare.BLL.Services.RMAServices
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
+             Guid? serviceCenterId,
              int page,
              int pageSize
         )
@@ -49,6 +50,7 @@ namespace eMototCare.BLL.Services.RMAServices
                     returnAddress,
                     status,
                     createdById,
+                    serviceCenterId,
                     page,
                     pageSize
                 );

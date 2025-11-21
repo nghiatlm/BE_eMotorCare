@@ -25,7 +25,7 @@ namespace eMotoCare.BO.Entities
         public string Code { get; set; } = default!;
 
         [Required]
-        [Column("remedies")]
+        [Column("remedies", TypeName = "varchar(200)")]
         public Remedies Remedies { get; set; }
 
         [Required]

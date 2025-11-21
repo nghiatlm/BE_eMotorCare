@@ -29,11 +29,12 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] string? returnAddress,
             [FromQuery] RMAStatus? status,
             [FromQuery] Guid? createdById,
+            [FromQuery] Guid? serviceCenterId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(code,fromDate,toDate,returnAddress,status,createdById, page, pageSize);
+            var data = await _service.GetPagedAsync(code,fromDate,toDate,returnAddress,status,createdById, serviceCenterId, page, pageSize);
             return Ok(
                 ApiResponse<PageResult<RMAResponse>>.SuccessResponse(
                     data,

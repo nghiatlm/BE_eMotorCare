@@ -35,6 +35,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
                 .Include(x => x.ExportBy)
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.PartItems)
+                    .ThenInclude(pi => pi.Part)
                 .AsNoTracking()
                 .AsQueryable();
             if (!string.IsNullOrWhiteSpace(code))
@@ -96,6 +97,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             .Include(x => x.ExportBy)
             .Include(x => x.ServiceCenter)
             .Include(x => x.PartItems)
+                .ThenInclude(pi => pi.Part)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>

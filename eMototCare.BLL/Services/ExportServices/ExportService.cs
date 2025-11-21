@@ -105,6 +105,7 @@ namespace eMototCare.BLL.Services.ExportServices
                         partItem.ServiceCenterInventoryId = null;
                         partItem.Quantity = 0;
                         partItem.Status = PartItemStatus.IN_ACTIVE;
+                        partItem.Part.Quantity -= 1;
                         await _unitOfWork.PartItems.UpdateAsync(partItem);
                     }
                 }
