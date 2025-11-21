@@ -17,12 +17,13 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.AsNoTracking()
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
+                .ThenInclude(x => x.Account)
                 .Include(x => x.VehicleStage)
                 .Include(x => x.EVCheck)
                 .Include(x => x.VehicleStage)
-                .ThenInclude(vs => vs.MaintenanceStage)
+                .ThenInclude(x => x.MaintenanceStage)
                 .Include(x => x.Vehicle)
-                .ThenInclude(v => v.Model)
+                .ThenInclude(x => x.Model)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
@@ -46,16 +47,24 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.AsNoTracking()
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
+                .ThenInclude(x => x.Account)
                 .Include(x => x.VehicleStage)
-                .ThenInclude(vs => vs.MaintenanceStage)
+                .ThenInclude(x => x.MaintenanceStage)
                 .Include(x => x.Vehicle)
-                .ThenInclude(v => v.Model)
+                .ThenInclude(x => x.Model)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var s = search.Trim().ToLower();
-                q = q.Where(x => x.Code.ToLower().Contains(s));
+                q = q.Where(x =>
+                    x.Code.ToLower().Contains(s)
+                    || (
+                        x.Customer != null
+                        && x.Customer.Account != null
+                        && x.Customer.Account.Phone.ToLower().Contains(s)
+                    )
+                );
             }
             if (customerId.HasValue)
                 q = q.Where(a => a.CustomerId == customerId.Value);
@@ -175,6 +184,20 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .OrderByDescending(a => a.CreatedAt)
                 .ThenByDescending(a => a.AppointmentDate)
                 .ToListAsync();
+        }
+
+        public Task<bool> ExistsActiveByRmaIdAsync(Guid rmaId, Guid? excludeAppointmentId = null)
+        {
+            var q = _context.Appointments.AsQueryable();
+
+            q = q.Where(a => a.CampaignId == rmaId);
+
+            q = q.Where(a => a.Status != AppointmentStatus.CANCELED);
+
+            if (excludeAppointmentId.HasValue)
+                q = q.Where(a => a.Id != excludeAppointmentId.Value);
+
+            return q.AnyAsync();
         }
     }
 }

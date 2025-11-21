@@ -24,7 +24,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.Staffs.AsNoTracking().Include(s => s.Account).AsQueryable();
+            var q = _context.Staffs.AsNoTracking().Include(x => x.Account).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -34,6 +34,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
                     || (x.FirstName != null && x.FirstName.ToLower().Contains(search))
                     || (x.LastName != null && x.LastName.ToLower().Contains(search))
                     || (x.CitizenId != null && x.CitizenId.ToLower().Contains(search))
+                    || (x.Account != null && x.Account.Phone.ToLower().Contains(search))
                 );
             }
 
@@ -63,6 +64,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             _context
                 .Staffs.Include(s => s.Account)
                 .AsNoTracking()
+                .Include(x => x.Account)
                 .Include(s => s.ServiceCenter)
                 .FirstOrDefaultAsync(x => x.Id == id);
 

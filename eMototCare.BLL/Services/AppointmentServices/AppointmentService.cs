@@ -90,7 +90,30 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
                 }
+                if (req.RmaId.HasValue)
+                {
+                    var rmaId = req.RmaId.Value;
 
+                    var rma = await _unitOfWork.RMAs.GetByIdAsync(rmaId);
+                    if (rma is null)
+                        throw new AppException(
+                            "Không tìm thấy phiếu RMA.",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    if (rma.Status == RMAStatus.PENDING)
+                        throw new AppException(
+                            "Phiếu RMA đang chờ duyệt, không thể đặt lịch hẹn.",
+                            HttpStatusCode.Conflict
+                        );
+
+                    var hasAppt = await _unitOfWork.Appointments.ExistsActiveByRmaIdAsync(rmaId);
+                    if (hasAppt)
+                        throw new AppException(
+                            "Phiếu RMA này đã có lịch hẹn, không thể đặt lịch lần nữa.",
+                            HttpStatusCode.Conflict
+                        );
+                }
                 if (req.Type == ServiceType.MAINTENANCE_TYPE)
                 {
                     if (!req.VehicleStageId.HasValue)

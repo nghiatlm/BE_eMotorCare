@@ -45,6 +45,7 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
                 q = q.Where(x =>
                     (x.FirstName != null && x.FirstName.ToLower().Contains(s))
                     || (x.LastName != null && x.LastName.ToLower().Contains(s))
+                    || (x.Account != null && x.Account.Phone.ToLower().Contains(s))
                     || x.CitizenId.ToLower().Contains(s)
                 );
             }
