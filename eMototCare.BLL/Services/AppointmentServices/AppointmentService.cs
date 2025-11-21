@@ -107,10 +107,9 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             HttpStatusCode.Conflict
                         );
 
-                    var hasAppt = await _unitOfWork.Appointments.ExistsActiveByRmaIdAsync(rmaId);
-                    if (hasAppt)
+                    if (rma.AppointmentId.HasValue)
                         throw new AppException(
-                            "Phiếu RMA này đã có lịch hẹn, không thể đặt lịch lần nữa.",
+                            "Phiếu RMA này đã có lịch hẹn, không thể đặt lịch tiếp tục.",
                             HttpStatusCode.Conflict
                         );
                 }
@@ -227,7 +226,16 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
-
+                if (req.RmaId.HasValue)
+                {
+                    var rma = await _unitOfWork.RMAs.GetByIdAsync(req.RmaId.Value);
+                    if (rma != null)
+                    {
+                        rma.AppointmentId = entity.Id;
+                        await _unitOfWork.RMAs.UpdateAsync(rma);
+                        await _unitOfWork.SaveAsync();
+                    }
+                }
                 var current = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
                     req.ServiceCenterId,
                     dateOnly,

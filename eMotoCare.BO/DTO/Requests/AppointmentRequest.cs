@@ -31,7 +31,6 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public ServiceType Type { get; set; }
         public string? Note { get; set; }
-
         public Guid? RmaId { get; set; }
     }
 }

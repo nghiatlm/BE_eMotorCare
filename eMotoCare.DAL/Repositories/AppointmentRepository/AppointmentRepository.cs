@@ -185,19 +185,5 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .ThenByDescending(a => a.AppointmentDate)
                 .ToListAsync();
         }
-
-        public Task<bool> ExistsActiveByRmaIdAsync(Guid rmaId, Guid? excludeAppointmentId = null)
-        {
-            var q = _context.Appointments.AsQueryable();
-
-            q = q.Where(a => a.CampaignId == rmaId);
-
-            q = q.Where(a => a.Status != AppointmentStatus.CANCELED);
-
-            if (excludeAppointmentId.HasValue)
-                q = q.Where(a => a.Id != excludeAppointmentId.Value);
-
-            return q.AnyAsync();
-        }
     }
 }

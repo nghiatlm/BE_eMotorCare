@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
@@ -30,6 +29,9 @@ namespace eMotoCare.BO.Entities
         [EnumDataType(typeof(RMAStatus))]
         public RMAStatus Status { get; set; }
 
+        [Column("appointment_id")]
+        public Guid? AppointmentId { get; set; }
+
         [Column("note")]
         public string? Note { get; set; }
 
@@ -41,6 +43,5 @@ namespace eMotoCare.BO.Entities
         public virtual Staff? Staff { get; set; }
 
         public virtual ICollection<RMADetail>? RMADetails { get; set; }
-
     }
 }
