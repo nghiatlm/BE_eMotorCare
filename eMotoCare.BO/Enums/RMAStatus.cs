@@ -7,6 +7,7 @@ namespace eMotoCare.BO.Enums
         PROCESSING,
         REJECTED,
         CANCELED,
-        COMPLETED
+        COMPLETED,
+        APPOINTMENT_BOOKED,
     }
 }

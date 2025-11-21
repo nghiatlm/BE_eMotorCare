@@ -36,6 +36,7 @@ namespace eMototCare.BLL.Services.RMAServices
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
+             Guid? serviceCenterId,
              int page,
              int pageSize
         )
@@ -49,6 +50,7 @@ namespace eMototCare.BLL.Services.RMAServices
                     returnAddress,
                     status,
                     createdById,
+                    serviceCenterId,
                     page,
                     pageSize
                 );
@@ -203,8 +205,8 @@ namespace eMototCare.BLL.Services.RMAServices
                 var entity = await _unitOfWork.RMAs.GetByIdAsync(id);
                 if (entity is null)
                     throw new AppException("Không tìm thấy RMA", HttpStatusCode.NotFound);
-
-                return _mapper.Map<RMAResponse>(entity);
+                var rma = _mapper.Map<RMAResponse>(entity);
+                return rma; 
             }
             catch (AppException)
             {

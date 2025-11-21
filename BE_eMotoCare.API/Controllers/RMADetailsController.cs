@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
-    [Route("api/rma-details")]
+    [Route("api/v1/rma-details")]
     [ApiController]
     public class RMADetailsController : ControllerBase
     {

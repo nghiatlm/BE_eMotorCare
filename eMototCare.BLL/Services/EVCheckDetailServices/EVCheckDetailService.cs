@@ -184,13 +184,25 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                 {
                     entity.Status = req.Status.Value;
 
-                    if (req.Status == EVCheckDetailStatus.COMPLETED && entity.ReplacePartId != null)
+                    if (req.Status == EVCheckDetailStatus.COMPLETED && entity.ReplacePartId != null && entity.EVCheck.Appointment.Type == ServiceType.MAINTENANCE_TYPE)
                     {
                         var vehiclePartItem = new VehiclePartItem
                         {
                             Id = Guid.NewGuid(),
                             InstallDate = DateTime.UtcNow,
                             VehicleId = entity.EVCheck.Appointment.VehicleStage.VehicleId,
+                            PartItemId = entity.ReplacePartId.Value,
+                            ReplaceForId = entity.PartItemId,
+                        };
+                        await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
+                    }
+                    if (req.Status == EVCheckDetailStatus.COMPLETED && entity.ReplacePartId != null && entity.EVCheck.Appointment.Type == ServiceType.REPAIR_TYPE)
+                    {
+                        var vehiclePartItem = new VehiclePartItem
+                        {
+                            Id = Guid.NewGuid(),
+                            InstallDate = DateTime.UtcNow,
+                            VehicleId = entity.EVCheck.Appointment.VehicleId.Value,
                             PartItemId = entity.ReplacePartId.Value,
                             ReplaceForId = entity.PartItemId,
                         };

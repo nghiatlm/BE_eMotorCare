@@ -20,6 +20,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
              string? returnAddress,
              RMAStatus? status,
              Guid? createdById,
+             Guid? serviceCenterId,
              int page,
              int pageSize
         )
@@ -32,6 +33,25 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                 .Include(x => x.RMADetails)
                     .ThenInclude(x => x.EVCheckDetail)
                         .ThenInclude(x => x.PartItem)
+                            .ThenInclude(x => x.Part)
+                .Include(x => x.RMADetails)
+                    .ThenInclude(x => x.EVCheckDetail)
+                        .ThenInclude(x => x.EVCheck)
+                            .ThenInclude(x => x.Appointment)
+                                .ThenInclude(x => x.Customer)
+                                    .ThenInclude(x => x.Account)
+                .Include(x => x.RMADetails)
+                    .ThenInclude(x => x.EVCheckDetail)
+                        .ThenInclude(x => x.EVCheck)
+                            .ThenInclude(x => x.Appointment)
+                                .ThenInclude(x => x.VehicleStage)
+                                    .ThenInclude(x => x.Vehicle)
+                                        .ThenInclude(x => x.Model)
+                .Include(x => x.RMADetails)
+                    .ThenInclude(x => x.EVCheckDetail)
+                        .ThenInclude(x => x.EVCheck)
+                            .ThenInclude(x => x.Appointment)
+                                .ThenInclude(x => x.Vehicle)
                 .AsNoTracking()
                 .AsQueryable();
             
@@ -67,6 +87,13 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                 q = q.Where(x => x.RMADate < endDateInclusive);
             }
 
+            if (serviceCenterId.HasValue)
+            {
+                q = q.Where(x => x.RMADetails.Any(rd =>
+                    rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId == serviceCenterId.Value
+                ));
+            }
+
 
 
             var total = await q.LongCountAsync();
@@ -85,6 +112,23 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
                     .ThenInclude (x => x.PartItem)
+                        .ThenInclude(x => x.Part)
+            .Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheckDetail)
+                    .ThenInclude(x => x.EVCheck)
+                        .ThenInclude(x => x.Appointment)
+                            .ThenInclude(x => x.Customer)
+            .Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheckDetail)
+                    .ThenInclude(x => x.EVCheck)
+                        .ThenInclude(x => x.Appointment)
+                            .ThenInclude(x => x.VehicleStage)
+                                .ThenInclude(x => x.Vehicle)
+            .Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheckDetail)
+                    .ThenInclude(x => x.EVCheck)
+                        .ThenInclude(x => x.Appointment)
+                            .ThenInclude(x => x.Vehicle)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>

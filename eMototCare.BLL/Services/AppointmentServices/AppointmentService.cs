@@ -90,6 +90,29 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
                 }
+                if (req.RmaId.HasValue)
+                {
+                    var rmaId = req.RmaId.Value;
+
+                    var rma = await _unitOfWork.RMAs.GetByIdAsync(rmaId);
+                    if (rma is null)
+                        throw new AppException(
+                            "Không tìm thấy phiếu RMA.",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    if (rma.Status == RMAStatus.PENDING)
+                        throw new AppException(
+                            "Phiếu RMA đang chờ duyệt, không thể đặt lịch hẹn.",
+                            HttpStatusCode.Conflict
+                        );
+
+                    if (rma.Status == RMAStatus.APPOINTMENT_BOOKED)
+                        throw new AppException(
+                            "Phiếu RMA này đã có lịch hẹn, không thể đặt lịch tiếp tục.",
+                            HttpStatusCode.Conflict
+                        );
+                }
                 if (req.Type == ServiceType.MAINTENANCE_TYPE)
                 {
                     if (!req.VehicleStageId.HasValue)
@@ -203,7 +226,16 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
-
+                if (req.RmaId.HasValue)
+                {
+                    var rma = await _unitOfWork.RMAs.GetByIdAsync(req.RmaId.Value);
+                    if (rma != null && rma.Status != RMAStatus.APPOINTMENT_BOOKED)
+                    {
+                        rma.Status = RMAStatus.APPOINTMENT_BOOKED;
+                        await _unitOfWork.RMAs.UpdateAsync(rma);
+                        await _unitOfWork.SaveAsync();
+                    }
+                }
                 var current = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
                     req.ServiceCenterId,
                     dateOnly,
@@ -273,9 +305,14 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     entity.SlotTime = req.SlotTime.Value;
                 }
-                entity.EstimatedCost = req.EstimatedCost;
-                entity.ActualCost = req.ActualCost;
-                entity.Note = req.Note;
+                if (req.EstimatedCost.HasValue)
+                    entity.EstimatedCost = req.EstimatedCost.Value;
+
+                if (req.ActualCost.HasValue)
+                    entity.ActualCost = req.ActualCost.Value;
+
+                if (req.Note != null)
+                    entity.Note = req.Note;
 
                 if (oldStatus != req.Status)
                 {

@@ -12,7 +12,10 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
             : base(context) { }
 
         public Task<Customer?> GetByIdAsync(Guid id) =>
-            _context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            _context
+                .Customers.AsNoTracking()
+                .Include(x => x.Account)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCitizenAsync(string citizenId, Guid? excludeCustomerId = null)
         {
@@ -34,7 +37,7 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.Customers.AsNoTracking().AsQueryable();
+            var q = _context.Customers.AsNoTracking().Include(x => x.Account).AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -42,6 +45,7 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
                 q = q.Where(x =>
                     (x.FirstName != null && x.FirstName.ToLower().Contains(s))
                     || (x.LastName != null && x.LastName.ToLower().Contains(s))
+                    || (x.Account != null && x.Account.Phone.ToLower().Contains(s))
                     || x.CitizenId.ToLower().Contains(s)
                 );
             }
@@ -74,8 +78,8 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
 
         public Task<Customer?> GetByRmaId(Guid rmaId)
         {
-            return _context.RMADetails
-                .Where(r => r.RMAId == rmaId)
+            return _context
+                .RMADetails.Where(r => r.RMAId == rmaId)
                 .Select(r => r.EVCheckDetail.EVCheck.Appointment.Customer)
                 .FirstOrDefaultAsync();
         }

@@ -14,8 +14,8 @@ namespace eMotoCare.BO.DTO.Responses
         public GenderEnum? Gender { get; set; }
         public string? AvatarUrl { get; set; }
         public PositionEnum Position { get; set; }
-
         public Guid AccountId { get; set; }
+        public AccountResponse? Account { get; set; }
         public Guid ServiceCenterId { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
         public DateTime CreatedAt { get; set; }
