@@ -29,9 +29,6 @@ namespace eMotoCare.BO.Entities
         [EnumDataType(typeof(RMAStatus))]
         public RMAStatus Status { get; set; }
 
-        [Column("appointment_id")]
-        public Guid? AppointmentId { get; set; }
-
         [Column("note")]
         public string? Note { get; set; }
 

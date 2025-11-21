@@ -107,7 +107,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             HttpStatusCode.Conflict
                         );
 
-                    if (rma.AppointmentId.HasValue)
+                    if (rma.Status == RMAStatus.APPOINTMENT_BOOKED)
                         throw new AppException(
                             "Phiếu RMA này đã có lịch hẹn, không thể đặt lịch tiếp tục.",
                             HttpStatusCode.Conflict
@@ -229,9 +229,9 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 if (req.RmaId.HasValue)
                 {
                     var rma = await _unitOfWork.RMAs.GetByIdAsync(req.RmaId.Value);
-                    if (rma != null)
+                    if (rma != null && rma.Status != RMAStatus.APPOINTMENT_BOOKED)
                     {
-                        rma.AppointmentId = entity.Id;
+                        rma.Status = RMAStatus.APPOINTMENT_BOOKED;
                         await _unitOfWork.RMAs.UpdateAsync(rma);
                         await _unitOfWork.SaveAsync();
                     }
