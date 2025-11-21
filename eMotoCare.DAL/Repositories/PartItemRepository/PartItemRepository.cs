@@ -56,6 +56,10 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
             .Include(x => x.ServiceCenterInventory)
                 .ThenInclude(x => x.ServiceCenter)
             .Include(x => x.Part)
+            .Include(x => x.ExportNote)
+                .ThenInclude(x => x.ServiceCenter)
+            .Include(x => x.ImportNote)
+                .ThenInclude(x => x.ServiceCenter)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsSerialNumberAsync(string serialNumber) =>
