@@ -31,5 +31,7 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid? RMAId { get; set; }
 
         public RMADetailStatus? Status { get; set; }
+
+        public Guid? ReplacePartId { get; set; }
     }
 }
