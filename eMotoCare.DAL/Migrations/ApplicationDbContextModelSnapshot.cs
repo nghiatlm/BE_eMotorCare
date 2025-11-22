@@ -252,6 +252,10 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("end_date");
 
+                    b.Property<string>("ModelName")
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("model_name");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext")
@@ -1102,8 +1106,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("price");
 
-                    b.Property<int>("Remedies")
-                        .HasColumnType("int")
+                    b.Property<string>("Remedies")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
                         .HasColumnName("remedies");
 
                     b.Property<string>("Status")
@@ -1211,6 +1216,11 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("release_date_rma");
 
+                    b.Property<Guid?>("ReplacePartId")
+                        .IsRequired()
+                        .HasColumnType("char(36)")
+                        .HasColumnName("replace_part_id");
+
                     b.Property<string>("Result")
                         .HasColumnType("nvarchar(400)")
                         .HasColumnName("result");
@@ -1233,6 +1243,9 @@ namespace eMotoCare.DAL.Migrations
                         .IsUnique();
 
                     b.HasIndex("RMAId");
+
+                    b.HasIndex("ReplacePartId")
+                        .IsUnique();
 
                     b.ToTable("rma_detail");
                 });
@@ -1909,9 +1922,17 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("eMotoCare.BO.Entities.PartItem", "ReplacePart")
+                        .WithOne("ReplacePart")
+                        .HasForeignKey("eMotoCare.BO.Entities.RMADetail", "ReplacePartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("EVCheckDetail");
 
                     b.Navigation("RMA");
+
+                    b.Navigation("ReplacePart");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ServiceCenterInventory", b =>
@@ -2106,6 +2127,8 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("EVCheckDetails");
 
                     b.Navigation("ReplaceFor");
+
+                    b.Navigation("ReplacePart");
 
                     b.Navigation("ReplcePart");
 

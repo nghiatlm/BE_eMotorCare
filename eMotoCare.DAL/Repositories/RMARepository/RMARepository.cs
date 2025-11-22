@@ -124,11 +124,13 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                         .ThenInclude(x => x.Appointment)
                             .ThenInclude(x => x.VehicleStage)
                                 .ThenInclude(x => x.Vehicle)
+                                        .ThenInclude(x => x.Model)
             .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
                     .ThenInclude(x => x.EVCheck)
                         .ThenInclude(x => x.Appointment)
                             .ThenInclude(x => x.Vehicle)
+                                .ThenInclude(x => x.Model)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>

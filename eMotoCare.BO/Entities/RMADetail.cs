@@ -57,7 +57,7 @@ namespace eMotoCare.BO.Entities
         [EnumDataType(typeof(RMADetailStatus))]
         public RMADetailStatus Status { get; set; }
 
-        [Required]
+
         [Column("replace_part_id")]
         public Guid? ReplacePartId { get; set; }
 
