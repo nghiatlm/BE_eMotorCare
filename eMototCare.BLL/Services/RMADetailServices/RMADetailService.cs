@@ -75,7 +75,6 @@ namespace eMototCare.BLL.Services.RMADetailServices
 
                 var entity = _mapper.Map<RMADetail>(req);
                 entity.Id = Guid.NewGuid();
-                entity.RMANumber = $"RMA-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
                 entity.Status = RMADetailStatus.PENDING;
 
 
@@ -181,7 +180,7 @@ namespace eMototCare.BLL.Services.RMADetailServices
                         entity.RMA.Status = RMAStatus.PROCESSING;
                     }    
                     entity.Status = req.Status.Value;
-                }    
+                }
                     
 
 
