@@ -16,6 +16,8 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
             DateTime? fromDate,
             DateTime? toDate,
             CampaignStatus? status,
+            string? modelName,
+            Guid? vehicleId,
             int page,
             int pageSize
         );
