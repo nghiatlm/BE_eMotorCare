@@ -478,20 +478,59 @@ namespace eMototCare.BLL.Services.AppointmentServices
             return _mapper.Map<List<AppointmentResponse>>(appointments);
         }
 
-        public async Task<List<MissingPartResponse>> GetMissingPartsAsync(Guid appointmentId)
+        public async Task<List<MissingPartResponse>> GetMissingPartsAsync(
+            Guid? appointmentId,
+            string? sortBy,
+            bool sortDesc,
+            int page,
+            int pageSize
+        )
         {
             try
             {
-                // 1) Lấy appointment (để biết ServiceCenter + thông tin hiển thị)
+                // CASE 1: Không truyền appointmentId -> lấy tất cả
+                if (!appointmentId.HasValue)
+                {
+                    var result = new List<MissingPartResponse>();
+
+                    var allAppointments = await _unitOfWork.Appointments.FindAllAsync();
+
+                    foreach (var apptItem in allAppointments)
+                    {
+                        var evCheckItem = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(
+                            apptItem.Id
+                        );
+                        if (
+                            evCheckItem == null
+                            || evCheckItem.EVCheckDetails == null
+                            || !evCheckItem.EVCheckDetails.Any()
+                        )
+                            continue;
+
+                        var single = await GetMissingPartsAsync(
+                            apptItem.Id,
+                            sortBy,
+                            sortDesc,
+                            1,
+                            int.MaxValue
+                        );
+                        if (single != null && single.Any())
+                            result.AddRange(single);
+                    }
+
+                    return result;
+                }
+
                 var appt =
-                    await _unitOfWork.Appointments.GetByIdAsync(appointmentId)
+                    await _unitOfWork.Appointments.GetByIdAsync(appointmentId.Value)
                     ?? throw new AppException(
                         "Không tìm thấy Appointment",
                         HttpStatusCode.NotFound
                     );
 
-                // 2) Lấy EVCheck (kèm EVCheckDetails). Repo nên include MSD + PartItem(+Part) nếu có thể
-                var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(appointmentId);
+                var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(
+                    appointmentId.Value
+                );
                 if (
                     evCheck == null
                     || evCheck.EVCheckDetails == null
@@ -499,7 +538,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 )
                     return new List<MissingPartResponse>();
 
-                // 3) Tồn kho theo Service Center
                 var scId = appt.ServiceCenterId;
                 var inventoryItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(scId);
 
@@ -557,7 +595,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     neededDetails[pid].Add(d);
                 }
 
-                // 5) Build kết quả cho các Part còn thiếu
+                // 5) Build kết quả cho các Part còn thiếu (details)
                 var details = new List<MissingPartDetailResponse>();
                 int index = 1;
                 foreach (var kv in needed)
@@ -593,6 +631,15 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     );
                 }
 
+                // Tổng số lượng để FE dùng nếu cần
+                var totalNeeded = needed.Values.Sum();
+
+                var totalAvailable = availableByPart
+                    .Where(kv => needed.ContainsKey(kv.Key))
+                    .Sum(kv => kv.Value.AvailableQty);
+
+                var totalMissing = Math.Max(totalNeeded - totalAvailable, 0);
+
                 var note = string.Join(
                     "; ",
                     evCheck
@@ -601,18 +648,30 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         .Distinct()
                 );
 
+                var requestCode = $"REQ-{appt.AppointmentDate:yyyy}-{appt.Code}";
+                string createdByName = string.Empty;
+                var staff = await _unitOfWork.Staffs.GetByIdAsync(evCheck.TaskExecutorId);
+                if (staff != null)
+                    createdByName = $"{staff.FirstName} {staff.LastName}".Trim();
+
                 return new List<MissingPartResponse>
                 {
                     new MissingPartResponse
                     {
                         AppointmentId = appt.Id,
+
                         ServiceCenterId = appt.ServiceCenterId,
                         ServiceCenterName = appt.ServiceCenter?.Name ?? "",
-                        TaskExecutorId = evCheck.TaskExecutorId,
+
+                        RequestCode = requestCode,
                         RequestedAt = evCheck.CheckDate,
+
                         CreatedById = evCheck.TaskExecutorId,
-                        Status = "DRAFT",
+                        CreatedByName = createdByName,
+
+                        //Status = "DRAFT",
                         Note = string.IsNullOrWhiteSpace(note) ? null : note,
+
                         Details = details,
                     },
                 };
