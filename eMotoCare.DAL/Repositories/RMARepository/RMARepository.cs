@@ -54,7 +54,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                                 .ThenInclude(x => x.Vehicle)
                 .AsNoTracking()
                 .AsQueryable();
-            
+
 
             if (!string.IsNullOrWhiteSpace(code))
                 q = q.Where(x => x.Code.Contains(code));
@@ -111,7 +111,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             .Include(x => x.Staff)
             .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
-                    .ThenInclude (x => x.PartItem)
+                    .ThenInclude(x => x.PartItem)
                         .ThenInclude(x => x.Part)
             .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
@@ -147,6 +147,20 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                         .Where(rma => rma != null)
                         .Distinct()
                         .ToListAsync();
+        }
+
+        public async Task<int?> TotalRMA(Guid? serviceCenterId)
+        {
+            var query = _context.RMAs.AsQueryable();
+
+            if (serviceCenterId.HasValue)
+            {
+                query = query.Where(rma => rma.RMADetails.Any(rd =>
+                    rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId == serviceCenterId.Value
+                ));
+            }
+
+            return await query.CountAsync();
         }
 
     }

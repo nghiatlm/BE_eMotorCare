@@ -10,5 +10,6 @@ namespace eMotoCare.DAL.Repositories.RMARepository
         Task<List<RMA?>> GetByCustomerIdAsync(Guid customerId);
         Task<RMA?> GetByIdAsync(Guid id);
         Task<(IReadOnlyList<RMA> Items, long Total)> GetPagedAsync(string? code, DateTime? fromDate, DateTime? toDate, string? returnAddress, RMAStatus? status, Guid? createdById, Guid? serviceCenterId, int page, int pageSize);
+        Task<int?> TotalRMA(Guid? serviceCenterId);
     }
 }

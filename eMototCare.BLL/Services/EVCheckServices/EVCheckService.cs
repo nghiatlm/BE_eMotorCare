@@ -401,7 +401,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
                 }
-                
+
             }
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;

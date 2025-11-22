@@ -20,5 +20,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
         Task<EVCheck?> GetByAppointmentIdAsync(Guid appointmentId);
         Task<EVCheck?> GetByIdIncludeDetailsAsync(Guid evCheckId);
         Task<EVCheck?> GetByIdWithAppointmentAsync(Guid id);
+        Task<int> CountEVChecksInProgressAsync();
     }
 }

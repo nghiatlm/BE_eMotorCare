@@ -119,5 +119,14 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 .EVChecks.AsNoTracking()
                 .Include(x => x.Appointment)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
+        public async Task<int> CountEVChecksInProgressAsync()
+        {
+            var list = await _context.EVChecks
+                .Where(e => e.Status == EVCheckStatus.REPAIR_IN_PROGRESS)
+                .ToListAsync();
+
+            return list?.Count ?? 0;
+        }
     }
 }
