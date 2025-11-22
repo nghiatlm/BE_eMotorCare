@@ -74,6 +74,9 @@ namespace eMotoCare.DAL.Repositories.RMADetailRepository
                 .ThenInclude(e => e.PartItem)
                         .ThenInclude(p => p.Part)
             .Include(r => r.RMA)
+            .Include(e => e.EVCheckDetail)
+                .ThenInclude(ev => ev.EVCheck)
+                    .ThenInclude(x => x.Appointment)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsRmaNumberAsync(string rmaNumber) =>

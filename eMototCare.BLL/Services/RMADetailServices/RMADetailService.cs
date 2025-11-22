@@ -4,6 +4,7 @@ using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
@@ -178,6 +179,8 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     if (entity.Status == RMADetailStatus.APPROVED && entity.RMA.Status != RMAStatus.PROCESSING)
                     {
                         entity.RMA.Status = RMAStatus.PROCESSING;
+                        entity.EVCheckDetail.EVCheck.Status = EVCheckStatus.COMPLETED;
+                        entity.EVCheckDetail.EVCheck.Appointment.Status = AppointmentStatus.COMPLETED;
                     }    
                     entity.Status = req.Status.Value;
                 }
