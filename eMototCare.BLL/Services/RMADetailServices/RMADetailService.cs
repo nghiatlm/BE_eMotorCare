@@ -175,7 +175,14 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     entity.RMAId = req.RMAId.Value;
 
                 if (req.Status != null)
+                {
+                    if (entity.Status == RMADetailStatus.APPROVED)
+                    {
+                        entity.RMA.Status = RMAStatus.PROCESSING;
+                    }    
                     entity.Status = req.Status.Value;
+                }    
+                    
 
 
 
