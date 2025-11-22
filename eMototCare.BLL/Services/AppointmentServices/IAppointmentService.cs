@@ -28,6 +28,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
         Task UpdateStatusAsync(Guid id, AppointmentStatus status);
 
         Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId);
-        Task<List<MissingPartResponse>> GetMissingPartsAsync(Guid appointmentId);
+        Task<List<MissingPartResponse>> GetMissingPartsAsync(
+            Guid? appointmentId,
+            string? sortBy,
+            bool sortDesc,
+            int page,
+            int pageSize
+        );
     }
 }

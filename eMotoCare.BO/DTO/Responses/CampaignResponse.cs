@@ -1,7 +1,4 @@
-﻿
-
-using eMotoCare.BO.Enum;
-
+﻿using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.DTO.Responses
 {
@@ -15,6 +12,7 @@ namespace eMotoCare.BO.DTO.Responses
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public Status Status { get; set; }
+        public string? ModelName { get; set; }
         public ICollection<CampaignDetailResponse?> CampaignDetails { get; set; }
     }
 }

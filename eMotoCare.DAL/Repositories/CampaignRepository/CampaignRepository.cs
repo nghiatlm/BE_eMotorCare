@@ -19,12 +19,34 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
             DateTime? fromDate,
             DateTime? toDate,
             CampaignStatus? status,
+            string? modelName,
+            Guid? vehicleId,
             int page,
             int pageSize
         )
         {
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
+            string? effectiveModelName = null;
+
+            if (vehicleId.HasValue)
+            {
+                var vehicle = await _context
+                    .Vehicles.Include(v => v.Model)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(v => v.Id == vehicleId.Value);
+
+                if (vehicle == null || vehicle.Model == null)
+                {
+                    return (Array.Empty<Campaign>(), 0);
+                }
+
+                effectiveModelName = vehicle.Model.Name?.Trim();
+            }
+            else if (!string.IsNullOrWhiteSpace(modelName))
+            {
+                effectiveModelName = modelName.Trim();
+            }
 
             var q = _context.Campaigns.Include(x => x.CampaignDetails).AsNoTracking().AsQueryable();
 
@@ -46,6 +68,11 @@ namespace eMotoCare.DAL.Repositories.CampaignRepository
             if (toDate.HasValue)
                 q = q.Where(x => x.StartDate <= toDate.Value);
 
+            if (!string.IsNullOrWhiteSpace(effectiveModelName))
+            {
+                var m = effectiveModelName;
+                q = q.Where(c => (c.ModelName != null && c.ModelName == m) || c.ModelName == null);
+            }
             var total = await q.LongCountAsync();
 
             var items = await q.OrderByDescending(x => x.StartDate)

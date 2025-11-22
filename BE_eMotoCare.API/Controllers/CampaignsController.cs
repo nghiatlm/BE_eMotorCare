@@ -31,11 +31,24 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate,
             [FromQuery] CampaignStatus? status,
+            [FromQuery] string? modelName,
+            [FromQuery] Guid? vehicleId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(code, name, campaignType, fromDate, toDate, status, page, pageSize);
+            var data = await _service.GetPagedAsync(
+                code,
+                name,
+                campaignType,
+                fromDate,
+                toDate,
+                status,
+                modelName,
+                vehicleId,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<CampaignResponse>>.SuccessResponse(
                     data,
@@ -50,10 +63,7 @@ namespace BE_eMotoCare.API.Controllers
         {
             var item = await _service.GetByIdAsync(id);
             return Ok(
-                ApiResponse<CampaignResponse>.SuccessResponse(
-                    item,
-                    "Lấy Campaign thành công"
-                )
+                ApiResponse<CampaignResponse>.SuccessResponse(item, "Lấy Campaign thành công")
             );
         }
 
@@ -62,9 +72,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Create([FromBody] CampaignRequest request)
         {
             var id = await _service.CreateAsync(request);
-            return Ok(
-                ApiResponse<object>.SuccessResponse(new { id }, "Tạo Campaign thành công")
-            );
+            return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo Campaign thành công"));
         }
 
         [HttpDelete("{id}")]
@@ -80,9 +88,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] CampaignUpdateRequest request)
         {
             await _service.UpdateAsync(id, request);
-            return Ok(
-                ApiResponse<string>.SuccessResponse(null, "Cập nhật Campaign thành công")
-            );
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật Campaign thành công"));
         }
     }
 }
