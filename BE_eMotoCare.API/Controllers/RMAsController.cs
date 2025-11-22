@@ -6,6 +6,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.RMAServices;
 using Microsoft.AspNetCore.Authorization;
+using BE_eMotoCare.API.Realtime.Services;
 
 namespace BE_eMotoCare.API.Controllers
 {
@@ -14,10 +15,12 @@ namespace BE_eMotoCare.API.Controllers
     public class RMAsController : ControllerBase
     {
         private readonly IRMAService _service;
+        private readonly INotifierRMASerive _notifier;
 
-        public RMAsController(IRMAService service)
+        public RMAsController(IRMAService service, INotifierRMASerive notifier)
         {
             _service = service;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -79,6 +82,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] RMAUpdateRequest request)
         {
             await _service.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync("RMA", new { Id = id, RMAStatus = request.Status });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật RMA thành công")
             );

@@ -109,6 +109,7 @@ app.MapHub<NotificationHub>("/hubs/notify");
 app.MapHub<NotificationCampaignHub>("/hubs/notifycampaign");
 app.MapHub<NotificationAppointmentHub>("/hubs/notifyappointment");
 app.MapHub<NotificationExportNoteHub>("/hubs/notifyexportnote");
+app.MapHub<NotificationRMAHub>("/hubs/notifyrma");
 app.UseMiddleware<JwtMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
