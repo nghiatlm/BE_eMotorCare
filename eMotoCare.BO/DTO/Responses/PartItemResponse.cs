@@ -15,5 +15,7 @@ namespace eMotoCare.BO.DTO.Responses
         public int? WarrantyPeriod { get; set; }
         public DateTime? WarantyStartDate { get; set; }
         public DateTime? WarantyEndDate { get; set; }
+        public ExportNoteResponse? ExportNote { get; set; }
+        public ImportNoteResponse? ImportNote { get; set; }
     }
 }
