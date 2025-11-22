@@ -1,5 +1,4 @@
-﻿
-
+﻿using System.Net;
 using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -11,7 +10,6 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Net;
 
 namespace eMototCare.BLL.Services.CampaignServices
 {
@@ -21,7 +19,11 @@ namespace eMototCare.BLL.Services.CampaignServices
         private readonly IMapper _mapper;
         private ILogger<CampaignService> _logger;
 
-        public CampaignService(IUnitOfWork unitofWork, IMapper mapper, ILogger<CampaignService> logger)
+        public CampaignService(
+            IUnitOfWork unitofWork,
+            IMapper mapper,
+            ILogger<CampaignService> logger
+        )
         {
             _unitofWork = unitofWork;
             _mapper = mapper;
@@ -29,14 +31,16 @@ namespace eMototCare.BLL.Services.CampaignServices
         }
 
         public async Task<PageResult<CampaignResponse>> GetPagedAsync(
-             string? code,
-             string? name,
-             CampaignType? campaignType,
-             DateTime? fromDate,
-             DateTime? toDate,
-             CampaignStatus? status,
-             int page,
-             int pageSize
+            string? code,
+            string? name,
+            CampaignType? campaignType,
+            DateTime? fromDate,
+            DateTime? toDate,
+            CampaignStatus? status,
+            string? modelName,
+            Guid? vehicleId,
+            int page,
+            int pageSize
         )
         {
             try
@@ -48,6 +52,8 @@ namespace eMototCare.BLL.Services.CampaignServices
                     fromDate,
                     toDate,
                     status,
+                    modelName,
+                    vehicleId,
                     page,
                     pageSize
                 );
@@ -64,12 +70,10 @@ namespace eMototCare.BLL.Services.CampaignServices
                 //throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
                 throw new AppException(ex.Message);
             }
-            
         }
 
         public async Task<Guid> CreateAsync(CampaignRequest req)
         {
-
             try
             {
                 if (req.StartDate <= DateTime.UtcNow.Date)
@@ -82,13 +86,11 @@ namespace eMototCare.BLL.Services.CampaignServices
                 entity.Code = $"CAMP-{entity.StartDate:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
                 entity.Status = CampaignStatus.ACTIVE;
 
-
                 await _unitofWork.Campaigns.CreateAsync(entity);
                 await _unitofWork.SaveAsync();
 
                 _logger.LogInformation("Created Campaign");
                 return entity.Id;
-
             }
             catch (AppException)
             {
@@ -107,10 +109,7 @@ namespace eMototCare.BLL.Services.CampaignServices
             {
                 var entity =
                     await _unitofWork.Campaigns.GetByIdAsync(id)
-                    ?? throw new AppException(
-                        "Không tìm thấy Campaign",
-                        HttpStatusCode.NotFound
-                    );
+                    ?? throw new AppException("Không tìm thấy Campaign", HttpStatusCode.NotFound);
 
                 entity.Status = CampaignStatus.CANCELED;
                 await _unitofWork.Campaigns.UpdateAsync(entity);
@@ -135,10 +134,7 @@ namespace eMototCare.BLL.Services.CampaignServices
             {
                 var entity =
                     await _unitofWork.Campaigns.GetByIdAsync(id)
-                    ?? throw new AppException(
-                        "Không tìm thấy Campaign",
-                        HttpStatusCode.NotFound
-                    );
+                    ?? throw new AppException("Không tìm thấy Campaign", HttpStatusCode.NotFound);
 
                 if (req.Code != null)
                 {
@@ -152,7 +148,7 @@ namespace eMototCare.BLL.Services.CampaignServices
                 }
 
                 if (req.Name != null)
-                    entity.Name = req.Name;      
+                    entity.Name = req.Name;
 
                 if (req.Description != null)
                     entity.Description = req.Description;
@@ -166,10 +162,16 @@ namespace eMototCare.BLL.Services.CampaignServices
                 if (req.StartDate.HasValue && !req.EndDate.HasValue)
                 {
                     if (req.StartDate.Value.Date <= DateTime.Today)
-                        throw new AppException("Ngày bắt đầu phải sau hôm nay.", HttpStatusCode.BadRequest);
+                        throw new AppException(
+                            "Ngày bắt đầu phải sau hôm nay.",
+                            HttpStatusCode.BadRequest
+                        );
 
                     if (req.StartDate.Value >= entity.EndDate)
-                        throw new AppException("Ngày bắt đầu phải trước ngày kết thúc hiện tại.", HttpStatusCode.BadRequest);
+                        throw new AppException(
+                            "Ngày bắt đầu phải trước ngày kết thúc hiện tại.",
+                            HttpStatusCode.BadRequest
+                        );
 
                     entity.StartDate = req.StartDate.Value;
                 }
@@ -177,7 +179,10 @@ namespace eMototCare.BLL.Services.CampaignServices
                 if (!req.StartDate.HasValue && req.EndDate.HasValue)
                 {
                     if (req.EndDate.Value <= entity.StartDate)
-                        throw new AppException("Ngày kết thúc phải sau ngày bắt đầu hiện tại.", HttpStatusCode.BadRequest);
+                        throw new AppException(
+                            "Ngày kết thúc phải sau ngày bắt đầu hiện tại.",
+                            HttpStatusCode.BadRequest
+                        );
 
                     entity.EndDate = req.EndDate.Value;
                 }
@@ -185,16 +190,20 @@ namespace eMototCare.BLL.Services.CampaignServices
                 if (req.StartDate.HasValue && req.EndDate.HasValue)
                 {
                     if (req.StartDate.Value.Date <= DateTime.Today)
-                        throw new AppException("Ngày bắt đầu phải sau hôm nay.", HttpStatusCode.BadRequest);
+                        throw new AppException(
+                            "Ngày bắt đầu phải sau hôm nay.",
+                            HttpStatusCode.BadRequest
+                        );
 
                     if (req.StartDate.Value >= req.EndDate.Value)
-                        throw new AppException("Ngày bắt đầu phải trước ngày kết thúc.", HttpStatusCode.BadRequest);
+                        throw new AppException(
+                            "Ngày bắt đầu phải trước ngày kết thúc.",
+                            HttpStatusCode.BadRequest
+                        );
 
                     entity.StartDate = req.StartDate.Value;
                     entity.EndDate = req.EndDate.Value;
                 }
-
-
 
                 await _unitofWork.Campaigns.UpdateAsync(entity);
                 await _unitofWork.SaveAsync();
@@ -210,8 +219,6 @@ namespace eMototCare.BLL.Services.CampaignServices
                 _logger.LogError(ex, "Update Campaign failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
-
-
         }
 
         public async Task<CampaignResponse?> GetByIdAsync(Guid id)

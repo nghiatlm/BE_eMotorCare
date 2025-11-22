@@ -1,7 +1,7 @@
-using eMotoCare.BO.Enum;
-using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
@@ -22,6 +22,9 @@ namespace eMotoCare.BO.Entities
 
         [Column("description")]
         public string? Description { get; set; }
+
+        [Column("model_name", TypeName = "nvarchar(100)")]
+        public string? ModelName { get; set; }
 
         [Required]
         [Column("type", TypeName = "varchar(200)")]
