@@ -114,7 +114,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             Id = Guid.NewGuid(),
                             EVCheckId = entity.Id,
                             MaintenanceStageDetailId = detail.Id,
-                            Remedies = Remedies.NONE,
+                            Remedies = Remedies.LUBRICATE,
                             PartItemId = matchedVehiclePartItem.PartItemId,
                             Status = EVCheckDetailStatus.IN_PROGRESS,
                         };
@@ -136,7 +136,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             {
                                 Id = Guid.NewGuid(),
                                 EVCheckId = entity.Id,
-                                Remedies = Remedies.NONE,
+                                Remedies = Remedies.LUBRICATE,
                                 PartItemId = detail.EVCheckDetail.PartItemId,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Thay thế phụ tùng mới từ hãng",
@@ -150,7 +150,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             {
                                 Id = Guid.NewGuid(),
                                 EVCheckId = entity.Id,
-                                Remedies = Remedies.NONE,
+                                Remedies = Remedies.LUBRICATE,
                                 PartItemId = detail.EVCheckDetail.PartItemId,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Lắp đặt phụ tùng đã được sửa chữa từ hãng"
