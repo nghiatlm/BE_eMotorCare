@@ -176,7 +176,7 @@ namespace eMototCare.BLL.Services.RMADetailServices
 
                 if (req.Status != null)
                 {
-                    if (entity.Status == RMADetailStatus.APPROVED && entity.RMA.Status != RMAStatus.PROCESSING)
+                    if (req.Status == RMADetailStatus.APPROVED && entity.RMA.Status != RMAStatus.PROCESSING)
                     {
                         entity.RMA.Status = RMAStatus.PROCESSING;
                         entity.EVCheckDetail.EVCheck.Status = EVCheckStatus.COMPLETED;
