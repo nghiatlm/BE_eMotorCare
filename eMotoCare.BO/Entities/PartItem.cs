@@ -72,5 +72,9 @@ namespace eMotoCare.BO.Entities
 
         [InverseProperty(nameof(RMADetail.ReplacePart))]
         public virtual RMADetail? ReplacePart { get; set; }
+
+        [Required]
+        [Column("is_manufacturer_warranty")]
+        public bool IsManufacturerWarranty { get; set; }
     }
 }
