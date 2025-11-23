@@ -61,9 +61,14 @@ namespace eMototCare.BLL.Services.RMAServices
             {
                 throw;
             }
+            catch (AutoMapperMappingException ex)    
+            {
+                Console.WriteLine(ex.InnerException?.Message);
+                throw;
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "GetPaged RMA failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetPaged RMA failed: {Message}", ex.InnerException.Message);
                 //throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
                 throw new AppException(ex.Message);
             }
