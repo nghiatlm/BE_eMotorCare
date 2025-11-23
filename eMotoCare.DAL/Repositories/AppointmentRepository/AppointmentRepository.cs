@@ -167,8 +167,11 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.Include(a => a.Customer)
                 .Include(a => a.ServiceCenter)
                 .Include(a => a.VehicleStage)
+                .ThenInclude(a => a.MaintenanceStage)
+                .ThenInclude(a => a.MaintenanceStageDetails)
                 .Include(a => a.EVCheck)
                 .Include(a => a.Vehicle)
+                .ThenInclude(a => a.Model)
                 .Where(a => a.EVCheck != null && a.EVCheck.TaskExecutorId == technicianId)
                 .AsNoTracking()
                 .ToListAsync();
@@ -186,7 +189,9 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .ToListAsync();
         }
 
-        public async Task<(int totalAppointment, double totalRevenue)> TotalAppoinmentAndRevenue(Guid? serviceCenterId)
+        public async Task<(int totalAppointment, double totalRevenue)> TotalAppoinmentAndRevenue(
+            Guid? serviceCenterId
+        )
         {
             var query = _context.Appointments.AsQueryable();
             if (serviceCenterId.HasValue)
@@ -195,7 +200,9 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             }
             int totalAppointment = await query.CountAsync();
             var completedQuery = query.Where(a => a.Status == AppointmentStatus.COMPLETED);
-            var totalRevenueDecimal = await completedQuery.SumAsync(a => a.EVCheck != null ? a.EVCheck.TotalAmout : 0m);
+            var totalRevenueDecimal = await completedQuery.SumAsync(a =>
+                a.EVCheck != null ? a.EVCheck.TotalAmout : 0m
+            );
             double totalRevenue = (double)totalRevenueDecimal;
             return (totalAppointment, totalRevenue);
         }
