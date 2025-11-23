@@ -1,12 +1,13 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using AutoMapper;
+using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
-using Microsoft.AspNetCore.Mvc;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.RMAServices;
 using Microsoft.AspNetCore.Authorization;
-using BE_eMotoCare.API.Realtime.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
@@ -37,14 +38,17 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _service.GetPagedAsync(code,fromDate,toDate,returnAddress,status,createdById, serviceCenterId, page, pageSize);
-            return Ok(
-                ApiResponse<PageResult<RMAResponse>>.SuccessResponse(
-                    data,
-                    "Lấy danh sách RMA thành công"
-                )
-            );
+
+                var data = await _service.GetPagedAsync(code, fromDate, toDate, returnAddress, status, createdById, serviceCenterId, page, pageSize);
+                return Ok(
+                    ApiResponse<PageResult<RMAResponse>>.SuccessResponse(
+                        data,
+                        "Lấy danh sách RMA thành công"
+                    )
+                );
         }
+
+        
 
         [HttpGet("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_ADMIN")]

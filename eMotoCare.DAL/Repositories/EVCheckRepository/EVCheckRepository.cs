@@ -40,6 +40,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 .ThenInclude(ms => ms.PartItem)
                 .Include(x => x.EVCheckDetails)
                 .ThenInclude(ms => ms.ReplacePart)
+                .ThenInclude(p => p.Part)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -96,6 +97,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 .ThenInclude(p => p.Part)
                 .Include(x => x.EVCheckDetails)
                 .ThenInclude(p => p.ReplacePart)
+                .ThenInclude(p => p.Part)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return evCheck;
         }

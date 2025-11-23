@@ -35,6 +35,6 @@ namespace eMotoCare.BO.DTO.Responses
 
         public RMADetailStatus Status { get; set; }
 
-        public PartItemResponse? ReplacePartId { get; set; }
+        public PartItemResponse? ReplacePart { get; set; }
     }
 }
