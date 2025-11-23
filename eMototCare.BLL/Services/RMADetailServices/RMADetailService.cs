@@ -184,7 +184,17 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     }    
                     entity.Status = req.Status.Value;
                 }
+
+                if (req.ReplacePartId != null)
+                {
+                    var partItem = _mapper.Map<PartItem>(req.ReplacePartId);
+                    var partItemId = Guid.NewGuid();
+                    partItem.Id = partItemId;
+                    entity.ReplacePartId = partItemId;
+                    await _unitOfWork.PartItems.CreateAsync(partItem);
                     
+                }
+
 
 
 
