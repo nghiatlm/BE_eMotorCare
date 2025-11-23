@@ -24,6 +24,7 @@ namespace BE_eMotoCare.API.Configuration
             services.AddAutoMapper(typeof(ExportNoteMapper));
             services.AddAutoMapper(typeof(ImportNoteMapper));
             services.AddAutoMapper(typeof(EVCheckDetailMapper));
+            services.AddAutoMapper(typeof(ProgramMapper));
 
             services.AddAutoMapper(typeof(ServiceCenterSlotMapper));
             services.AddAutoMapper(typeof(EVCheckMapper));

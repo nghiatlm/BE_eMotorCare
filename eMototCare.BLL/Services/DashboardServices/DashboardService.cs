@@ -22,15 +22,15 @@ namespace eMototCare.BLL.Services.DashboardServices
         {
             try
             {
-                var campaigns = await _unitOfWork.Campaigns.FindAllAsync();
-                var TotalCampaign = campaigns?.Count ?? 0;
+                // var campaigns = await _unitOfWork.Campaigns.FindAllAsync();
+                // var TotalCampaign = campaigns?.Count ?? 0;
                 var totalEvCheck = await _unitOfWork.EVChecks.CountEVChecksInProgressAsync();
                 var appointments = await _unitOfWork.Appointments.TotalAppoinmentAndRevenue(serviceCenterId);
                 var rmas = await _unitOfWork.RMAs.TotalRMA(serviceCenterId);
 
                 var overview = new Overview
                 {
-                    TotalCampaign = TotalCampaign,
+                    TotalCampaign = 0,
                     TotalRecall = 0,
                     totalEVCheckInProgress = totalEvCheck,
                     totalAppointment = appointments.totalAppointment,

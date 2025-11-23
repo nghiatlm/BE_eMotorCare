@@ -10,9 +10,9 @@ namespace eMototCare.BLL.Mappers
     {
         public CampaignDetailMapper()
         {
-            CreateMap<CampaignDetail, CampaignDetailResponse>();
-            CreateMap<CampaignDetailRequest, CampaignDetail>();
-            CreateMap<CampaignDetailUpdateRequest, CampaignDetail>();
+            // CreateMap<CampaignDetail, CampaignDetailResponse>();
+            // CreateMap<CampaignDetailRequest, CampaignDetail>();
+            // CreateMap<CampaignDetailUpdateRequest, CampaignDetail>();
         }
     }
 }

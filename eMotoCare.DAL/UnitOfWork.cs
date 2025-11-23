@@ -3,8 +3,6 @@ using eMotoCare.DAL.context;
 using eMotoCare.DAL.Repositories.AccountRepository;
 using eMotoCare.DAL.Repositories.AppointmentRepository;
 using eMotoCare.DAL.Repositories.BatteryCheckRepository;
-using eMotoCare.DAL.Repositories.CampaignDetailRepository;
-using eMotoCare.DAL.Repositories.CampaignRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
@@ -20,6 +18,9 @@ using eMotoCare.DAL.Repositories.PartRepository;
 using eMotoCare.DAL.Repositories.PartTypeRepository;
 using eMotoCare.DAL.Repositories.PaymentRepository;
 using eMotoCare.DAL.Repositories.PriceServiceRepository;
+using eMotoCare.DAL.Repositories.ProgramDetailRepository;
+using eMotoCare.DAL.Repositories.ProgramModelRepository;
+using eMotoCare.DAL.Repositories.ProgramRepository;
 using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
 using eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository;
@@ -44,8 +45,9 @@ namespace eMotoCare.DAL
         private IAccountRepository? _accountRepository;
         private IAppointmentRepository? _appointmentRepository;
         private IBatteryCheckRepository? _batteryCheckRepository;
-        private ICampaignDetailRepository? _campaignDetailRepository;
-        private ICampaignRepository? _campaignRepository;
+        private IProgramDetailRepository? _programDetailRepository;
+        private IProgramRepository? _programRepository;
+        private IProgramModelRepository? _programModelRepository;
         private ICustomerRepository? _customerRepository;
         private IEVCheckDetailRepository? _evCheckDetailRepository;
         private IEVCheckRepository? _evCheckRepository;
@@ -78,12 +80,6 @@ namespace eMotoCare.DAL
 
         public IBatteryCheckRepository BatteryChecks =>
             _batteryCheckRepository ??= new BatteryCheckRepository(_unitOfWorkContext);
-
-        public ICampaignDetailRepository CampaignDetails =>
-            _campaignDetailRepository ??= new CampaignDetailRepository(_unitOfWorkContext);
-
-        public ICampaignRepository Campaigns =>
-            _campaignRepository ??= new CampaignRepository(_unitOfWorkContext);
 
         public ICustomerRepository Customers =>
             _customerRepository ??= new CustomerRepository(_unitOfWorkContext);
@@ -158,6 +154,11 @@ namespace eMotoCare.DAL
         public IServiceCenterSlotRepository ServiceCenterSlot =>
             _serviceCenterSlotRepository ??= new ServiceCenterSlotRepository(_unitOfWorkContext);
 
+        public IProgramDetailRepository ProgramDetails => _programDetailRepository ??= new ProgramDetailRepository(_unitOfWorkContext);
+
+        public IProgramRepository Programs => _programRepository ??= new ProgramRepository(_unitOfWorkContext);
+
+        public IProgramModelRepository ProgramModels => _programModelRepository ??= new ProgramModelRepository(_unitOfWorkContext);
 
         public void RemoveRange(List<EVCheckDetail> olds)
         {

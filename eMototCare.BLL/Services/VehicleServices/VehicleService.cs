@@ -169,13 +169,13 @@ namespace eMototCare.BLL.Services.VehicleServices
                 .OrderByDescending(a => a.CreatedAt)
                 .ToList();
 
-            var campaignEntities = appointments
-                .Where(a => a.CampaignId != null && a.Campaign != null)
-                .GroupBy(a => a.CampaignId)
-                .Select(g => g.First().Campaign!)
-                .ToList();
+            // var campaignEntities = appointments
+            //     .Where(a => a.CampaignId != null && a.Campaign != null)
+            //     .GroupBy(a => a.CampaignId)
+            //     .Select(g => g.First().Campaign!)
+            //     .ToList();
 
-            var campaignDtos = _mapper.Map<List<CampaignResponse>>(campaignEntities);
+            // var campaignDtos = _mapper.Map<List<CampaignResponse>>(campaignEntities);
 
             var response = new VehicleHistoryResponse
             {
@@ -183,7 +183,7 @@ namespace eMototCare.BLL.Services.VehicleServices
                 MaintenanceHistory = maintenanceHistory,
                 RepairHistory = repairHistory,
                 WarrantyHistory = warrantyHistory,
-                CampaignHistory = campaignDtos,
+                // CampaignHistory = campaignDtos,
             };
 
             return response;

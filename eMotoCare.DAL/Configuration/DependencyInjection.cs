@@ -2,8 +2,6 @@ using eMotoCare.DAL.Base;
 using eMotoCare.DAL.Repositories.AccountRepository;
 using eMotoCare.DAL.Repositories.AppointmentRepository;
 using eMotoCare.DAL.Repositories.BatteryCheckRepository;
-using eMotoCare.DAL.Repositories.CampaignDetailRepository;
-using eMotoCare.DAL.Repositories.CampaignRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
@@ -19,6 +17,9 @@ using eMotoCare.DAL.Repositories.PartRepository;
 using eMotoCare.DAL.Repositories.PartTypeRepository;
 using eMotoCare.DAL.Repositories.PaymentRepository;
 using eMotoCare.DAL.Repositories.PriceServiceRepository;
+using eMotoCare.DAL.Repositories.ProgramDetailRepository;
+using eMotoCare.DAL.Repositories.ProgramModelRepository;
+using eMotoCare.DAL.Repositories.ProgramRepository;
 using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
 using eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository;
@@ -42,8 +43,6 @@ namespace eMotoCare.DAL.Configuration
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             services.AddScoped<IBatteryCheckRepository, BatteryCheckRepository>();
-            services.AddScoped<ICampaignDetailRepository, CampaignDetailRepository>();
-            services.AddScoped<ICampaignRepository, CampaignRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IEVCheckDetailRepository, EVCheckDetailRepository>();
             services.AddScoped<IEVCheckRepository, EVCheckRepository>();
@@ -54,6 +53,9 @@ namespace eMotoCare.DAL.Configuration
                 IMaintenanceStageDetailRepository,
                 MaintenanceStageDetailRepository
             >();
+            services.AddScoped<IProgramRepository, ProgramRepository>();
+            services.AddScoped<IProgramModelRepository, ProgramModelRepository>();
+            services.AddScoped<IProgramDetailRepository, ProgramDetailRepository>();
             services.AddScoped<IMaintenanceStageRepository, MaintenanceStageRepository>();
             services.AddScoped<IModelPartTypeRepository, ModelPartTypeRepository>();
             services.AddScoped<IModelRepository, ModelRepository>();

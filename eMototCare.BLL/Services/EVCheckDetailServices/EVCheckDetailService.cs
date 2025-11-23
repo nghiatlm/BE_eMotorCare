@@ -147,8 +147,8 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                 if (req.MaintenanceStageDetailId != null)
                     entity.MaintenanceStageDetailId = req.MaintenanceStageDetailId.Value;
 
-                if (req.CampaignDetailId != null)
-                    entity.CampaignDetailId = req.CampaignDetailId.Value;
+                // if (req.CampaignDetailId != null)
+                //     entity.CampaignDetailId = req.CampaignDetailId.Value;
 
                 if (req.PartItemId != null)
                     entity.PartItemId = req.PartItemId.Value;
