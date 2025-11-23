@@ -6,6 +6,7 @@ using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.ProgramService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -22,6 +23,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "ROLE_ADMIN")]
         public async Task<IActionResult> CreateProgram([FromBody] ProgramRequest request)
         {
             var result = await _programService.Create(request);
@@ -47,7 +49,7 @@ namespace BE_eMotoCare.API.Controllers
                                                           [FromQuery] int pageCurrent = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _programService.GetPaged(query, startDate, endDate, type, status, modelId, pageCurrent, pageSize);
-            return Ok(ApiResponse<PageResult<ProgramDetailResponse>>.SuccessResponse(result, "Programs retrieved successfully"));
+            return Ok(ApiResponse<PageResult<ProgramResponse>>.SuccessResponse(result, "Programs retrieved successfully"));
         }
     }
 }
