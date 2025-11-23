@@ -17,5 +17,7 @@ namespace eMotoCare.BO.DTO.Requests
         public DateTime? WarantyStartDate { get; set; }
         public DateTime? WarantyEndDate { get; set; }
         public Guid? ServiceCenterInventoryId { get; set; }
+        public bool? IsManufacturerWarranty { get; set; }
+
     }
 }
