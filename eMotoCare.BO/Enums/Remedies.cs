@@ -5,6 +5,7 @@
         REPAIR,
         REPLACE,
         CHECK,
-        LUBRICATE
+        LUBRICATE,
+        NONE,
     }
 }

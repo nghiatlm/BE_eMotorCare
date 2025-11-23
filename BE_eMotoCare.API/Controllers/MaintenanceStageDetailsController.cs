@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Extensions;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
@@ -15,7 +16,9 @@ namespace BE_eMotoCare.API.Controllers
     {
         private readonly IMaintenanceStageDetailService _maintenanceStageDetailService;
 
-        public MaintenanceStageDetailsController(IMaintenanceStageDetailService maintenanceStageDetailService)
+        public MaintenanceStageDetailsController(
+            IMaintenanceStageDetailService maintenanceStageDetailService
+        )
         {
             _maintenanceStageDetailService = maintenanceStageDetailService;
         }
@@ -31,7 +34,14 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _maintenanceStageDetailService.GetPagedAsync(maintenanceStageId, partId, actionType, description, page, pageSize);
+            var data = await _maintenanceStageDetailService.GetPagedAsync(
+                maintenanceStageId,
+                partId,
+                actionType,
+                description,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<MaintenanceStageDetailResponse>>.SuccessResponse(
                     data,
@@ -59,7 +69,10 @@ namespace BE_eMotoCare.API.Controllers
         {
             var id = await _maintenanceStageDetailService.CreateAsync(request);
             return Ok(
-                ApiResponse<object>.SuccessResponse(new { id }, "Tạo Maintenance Stage Detail thành công")
+                ApiResponse<object>.SuccessResponse(
+                    new { id },
+                    "Tạo Maintenance Stage Detail thành công"
+                )
             );
         }
 
@@ -68,18 +81,49 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _maintenanceStageDetailService.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá Maintenance Stage Detail thành công"));
+            return Ok(
+                ApiResponse<string>.SuccessResponse(null, "Xoá Maintenance Stage Detail thành công")
+            );
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] MaintenanceStageDetailUpdateRequest request)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] MaintenanceStageDetailUpdateRequest request
+        )
         {
             await _maintenanceStageDetailService.UpdateAsync(id, request);
             return Ok(
-                ApiResponse<string>.SuccessResponse(null, "Cập nhật Maintenance Stage Detail thành công")
+                ApiResponse<string>.SuccessResponse(
+                    null,
+                    "Cập nhật Maintenance Stage Detail thành công"
+                )
             );
         }
 
+        [HttpPost("import")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Import([FromForm] MaintenanceStageDetailImport request)
+        {
+            if (request.File == null || request.File.Length == 0)
+                return BadRequest("File không hợp lệ.");
+
+            await using var stream = request.File.OpenReadStream();
+            int imported;
+
+            if (string.Equals(request.Format, "json", StringComparison.OrdinalIgnoreCase))
+                imported = await _maintenanceStageDetailService.ImportFromJsonAsync(stream);
+            else
+                imported = await _maintenanceStageDetailService.ImportFromCsvAsync(stream);
+
+            return Ok(
+                ApiResponse<object>.SuccessResponse(
+                    new { imported },
+                    "Import Maintenance Stage Detail thành công"
+                )
+            );
+        }
     }
 }

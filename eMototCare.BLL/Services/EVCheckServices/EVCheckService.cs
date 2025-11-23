@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using System.Text.RegularExpressions;
+using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -10,8 +12,6 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Ocsp;
-using System.Net;
-using System.Text.RegularExpressions;
 
 namespace eMototCare.BLL.Services.EVCheckServices
 {
@@ -130,7 +130,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     foreach (var detail in rma.RMADetails)
                     {
                         if (detail.ReplacePartId != null)
-                            //Trường hợp 1 đổi 1
+                        //Trường hợp 1 đổi 1
                         {
                             var evCheckDetail = new EVCheckDetail
                             {
@@ -140,11 +140,12 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 PartItemId = detail.EVCheckDetail.PartItemId,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Thay thế phụ tùng mới từ hãng",
-                                ReplacePartId = detail.ReplacePartId.Value
+                                ReplacePartId = detail.ReplacePartId.Value,
                             };
                             await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
-                        } else if (detail.ReplacePartId == null)
-                            //Trường hợp hãng sửa chữa phụ tùng
+                        }
+                        else if (detail.ReplacePartId == null)
+                        //Trường hợp hãng sửa chữa phụ tùng
                         {
                             var evCheckDetail = new EVCheckDetail
                             {
@@ -153,12 +154,11 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 Remedies = Remedies.LUBRICATE,
                                 PartItemId = detail.EVCheckDetail.PartItemId,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
-                                Result = "Lắp đặt phụ tùng đã được sửa chữa từ hãng"
+                                Result = "Lắp đặt phụ tùng đã được sửa chữa từ hãng",
                             };
                             await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
                         }
                     }
-
                 }
 
                 await _unitOfWork.SaveAsync();
@@ -440,7 +440,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
                 }
-                
             }
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
