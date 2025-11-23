@@ -176,7 +176,7 @@ namespace eMototCare.BLL.Services.RMADetailServices
 
                 if (req.Status != null)
                 {
-                    if (entity.Status == RMADetailStatus.APPROVED && entity.RMA.Status != RMAStatus.PROCESSING)
+                    if (req.Status == RMADetailStatus.APPROVED && entity.RMA.Status != RMAStatus.PROCESSING)
                     {
                         entity.RMA.Status = RMAStatus.PROCESSING;
                         entity.EVCheckDetail.EVCheck.Status = EVCheckStatus.COMPLETED;
@@ -184,9 +184,16 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     }    
                     entity.Status = req.Status.Value;
                 }
+
+                if (req.ReplacePart != null)
+                {
+                    var partItem = _mapper.Map<PartItem>(req.ReplacePart);
+                    var partItemId = Guid.NewGuid();
+                    partItem.Id = partItemId;
+                    entity.ReplacePartId = partItemId;
+                    await _unitOfWork.PartItems.CreateAsync(partItem);
                     
-
-
+                }
 
                 await _unitOfWork.RMADetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
