@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Extensions;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
@@ -33,7 +34,16 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _maintenanceStageService.GetPagedAsync(maintenancePlanId, description, durationMonth, mileage, name, status, page, pageSize);
+            var data = await _maintenanceStageService.GetPagedAsync(
+                maintenancePlanId,
+                description,
+                durationMonth,
+                mileage,
+                name,
+                status,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<MaintenanceStageResponse>>.SuccessResponse(
                     data,
@@ -70,16 +80,45 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             await _maintenanceStageService.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá Maintenance Stage thành công"));
+            return Ok(
+                ApiResponse<string>.SuccessResponse(null, "Xoá Maintenance Stage thành công")
+            );
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] MaintenanceStageUpdateRequest request)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] MaintenanceStageUpdateRequest request
+        )
         {
             await _maintenanceStageService.UpdateAsync(id, request);
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Maintenance Stage thành công")
+            );
+        }
+
+        [HttpPost("import")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Import([FromForm] MaintenanceStageImport request)
+        {
+            if (request.File == null || request.File.Length == 0)
+                return BadRequest("File không hợp lệ.");
+
+            await using var stream = request.File.OpenReadStream();
+            int imported;
+
+            if (string.Equals(request.Format, "json", StringComparison.OrdinalIgnoreCase))
+                imported = await _maintenanceStageService.ImportFromJsonAsync(stream);
+            else
+                imported = await _maintenanceStageService.ImportFromCsvAsync(stream);
+
+            return Ok(
+                ApiResponse<object>.SuccessResponse(
+                    new { imported },
+                    "Import Maintenance Stage thành công"
+                )
             );
         }
     }

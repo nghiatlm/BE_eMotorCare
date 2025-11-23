@@ -2,6 +2,7 @@
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enums;
 using eMototCare.BLL.Services.PayosServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,10 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Checkout([FromBody] PaymentRequest request)
         {
             var urlPayemt = await _payosService.CreatePaymentAsync(request);
+            if (request.PaymentMethod == PaymentMethod.CASH)
+            {
+                return Ok(ApiResponse<string>.SuccessResponse("Thanh toán tiền mặt thành công."));
+            }
             if (urlPayemt == null)
             {
                 return BadRequest(ApiResponse<string>.BadRequest("Failed to create payment link."));

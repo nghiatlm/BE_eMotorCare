@@ -6,5 +6,6 @@
         REPLACE,
         CHECK,
         LUBRICATE,
+        NONE,
     }
 }
