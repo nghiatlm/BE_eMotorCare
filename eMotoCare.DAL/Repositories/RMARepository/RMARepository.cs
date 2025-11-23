@@ -134,17 +134,30 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 
         public async Task<List<RMA?>> GetByCustomerIdAsync(Guid customerId)
         {
-            return await _context
-                .Appointments.Where(a => a.CustomerId == customerId)
-                .Select(a => a.EVCheck) // 1-1
-                .Where(ev => ev != null)
-                .SelectMany(ev => ev.EVCheckDetails) // 1-N
-                .Select(ecd => ecd.RMADetail) // 1-1
-                .Where(rmad => rmad != null)
-                .Select(rmad => rmad.RMA) // N-1
-                .Where(rma => rma != null)
-                .Distinct()
-                .ToListAsync();
+            return await _context.RMAs
+                        .Where(rma => rma.RMADetails
+                            .Any(rmad =>
+                                rmad.EVCheckDetail.EVCheck.Appointment.CustomerId == customerId))
+                        .Include(x => x.Staff)
+                        .Include(x => x.RMADetails)
+                            .ThenInclude(x => x.EVCheckDetail)
+                                .ThenInclude(x => x.PartItem)
+                                    .ThenInclude(x => x.Part)
+                        .Include(x => x.RMADetails)
+                            .ThenInclude(x => x.EVCheckDetail)
+                                .ThenInclude(x => x.EVCheck)
+                                    .ThenInclude(x => x.Appointment)
+                                        .ThenInclude(x => x.VehicleStage)
+                                            .ThenInclude(x => x.Vehicle)
+                                                    .ThenInclude(x => x.Model)
+                        .Include(x => x.RMADetails)
+                            .ThenInclude(x => x.EVCheckDetail)
+                                .ThenInclude(x => x.EVCheck)
+                                    .ThenInclude(x => x.Appointment)
+                                        .ThenInclude(x => x.Vehicle)
+                                            .ThenInclude(x => x.Model)
+                        .Distinct()
+                        .ToListAsync();
         }
 
         public async Task<RMA?> GetByCodeAsync(string code)
