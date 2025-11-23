@@ -185,9 +185,9 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     entity.Status = req.Status.Value;
                 }
 
-                if (req.ReplacePartId != null)
+                if (req.ReplacePart != null)
                 {
-                    var partItem = _mapper.Map<PartItem>(req.ReplacePartId);
+                    var partItem = _mapper.Map<PartItem>(req.ReplacePart);
                     var partItemId = Guid.NewGuid();
                     partItem.Id = partItemId;
                     entity.ReplacePartId = partItemId;
