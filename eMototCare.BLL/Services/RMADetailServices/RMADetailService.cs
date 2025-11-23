@@ -195,9 +195,6 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     
                 }
 
-
-
-
                 await _unitOfWork.RMADetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
