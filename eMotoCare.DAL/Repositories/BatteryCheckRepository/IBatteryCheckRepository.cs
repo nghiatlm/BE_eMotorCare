@@ -3,5 +3,8 @@ using eMotoCare.DAL.Base;
 
 namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
 {
-    public interface IBatteryCheckRepository : IGenericRepository<BatteryCheck> { }
+    public interface IBatteryCheckRepository : IGenericRepository<BatteryCheck>
+    {
+        Task<BatteryCheck?> GetByEVCheckDetailIdAsync(Guid evCheckDetailId);
+    }
 }

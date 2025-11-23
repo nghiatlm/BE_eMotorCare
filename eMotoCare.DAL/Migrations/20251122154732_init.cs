@@ -49,6 +49,7 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     description = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    model_name = table.Column<string>(type: "nvarchar(100)", nullable: true),
                     type = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     start_date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -259,7 +260,8 @@ namespace eMotoCare.DAL.Migrations
                     part_type_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     code = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    remedies = table.Column<int>(type: "int", nullable: false),
+                    remedies = table.Column<string>(type: "varchar(200)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     name = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     labor_cost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -970,6 +972,7 @@ namespace eMotoCare.DAL.Migrations
                     rma_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    replace_part_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -981,6 +984,12 @@ namespace eMotoCare.DAL.Migrations
                         column: x => x.ev_check_detail_id,
                         principalTable: "ev_check_detail",
                         principalColumn: "ev_check_detail_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_rma_detail_part_item_replace_part_id",
+                        column: x => x.replace_part_id,
+                        principalTable: "part_item",
+                        principalColumn: "part_item_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_rma_detail_rma_rma_id",
@@ -1179,6 +1188,12 @@ namespace eMotoCare.DAL.Migrations
                 name: "IX_rma_detail_ev_check_detail_id",
                 table: "rma_detail",
                 column: "ev_check_detail_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_rma_detail_replace_part_id",
+                table: "rma_detail",
+                column: "replace_part_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(

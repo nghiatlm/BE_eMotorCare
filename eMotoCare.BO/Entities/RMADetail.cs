@@ -20,9 +20,8 @@ namespace eMotoCare.BO.Entities
         [Column("reason", TypeName = "nvarchar(400)")]
         public string? Reason { get; set; }
 
-        [Required]
         [Column("rma_number", TypeName = "varchar(100)")]
-        public string RMANumber { get; set; } = string.Empty;
+        public string? RMANumber { get; set; } = string.Empty;
 
         [Column("release_date_rma")]
         public DateTime? ReleaseDateRMA { get; set; }
@@ -56,6 +55,13 @@ namespace eMotoCare.BO.Entities
         [Column("status", TypeName = "varchar(200)")]
         [EnumDataType(typeof(RMADetailStatus))]
         public RMADetailStatus Status { get; set; }
+
+
+        [Column("replace_part_id")]
+        public Guid? ReplacePartId { get; set; }
+
+        [ForeignKey(nameof(ReplacePartId))]
+        public virtual PartItem? ReplacePart { get; set; }
 
     }
 }

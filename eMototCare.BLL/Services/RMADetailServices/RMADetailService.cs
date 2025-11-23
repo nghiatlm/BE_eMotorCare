@@ -4,6 +4,7 @@ using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
@@ -75,7 +76,6 @@ namespace eMototCare.BLL.Services.RMADetailServices
 
                 var entity = _mapper.Map<RMADetail>(req);
                 entity.Id = Guid.NewGuid();
-                entity.RMANumber = $"RMA-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
                 entity.Status = RMADetailStatus.PENDING;
 
 
@@ -175,9 +175,25 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     entity.RMAId = req.RMAId.Value;
 
                 if (req.Status != null)
+                {
+                    if (req.Status == RMADetailStatus.APPROVED && entity.RMA.Status != RMAStatus.PROCESSING)
+                    {
+                        entity.RMA.Status = RMAStatus.PROCESSING;
+                        entity.EVCheckDetail.EVCheck.Status = EVCheckStatus.COMPLETED;
+                        entity.EVCheckDetail.EVCheck.Appointment.Status = AppointmentStatus.COMPLETED;
+                    }    
                     entity.Status = req.Status.Value;
+                }
 
-
+                if (req.ReplacePart != null)
+                {
+                    var partItem = _mapper.Map<PartItem>(req.ReplacePart);
+                    var partItemId = Guid.NewGuid();
+                    partItem.Id = partItemId;
+                    entity.ReplacePartId = partItemId;
+                    await _unitOfWork.PartItems.CreateAsync(partItem);
+                    
+                }
 
                 await _unitOfWork.RMADetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();

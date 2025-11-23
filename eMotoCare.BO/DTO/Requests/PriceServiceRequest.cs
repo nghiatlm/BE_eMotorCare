@@ -8,9 +8,6 @@ namespace eMotoCare.BO.DTO.Requests
         [Required]
         public Guid PartTypeId { get; set; }
 
-        [Required, StringLength(50)]
-        public string Code { get; set; } = default!;
-
         [Required]
         public Remedies Remedies { get; set; }
 

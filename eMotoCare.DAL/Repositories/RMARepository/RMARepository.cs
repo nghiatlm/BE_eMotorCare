@@ -9,52 +9,50 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 {
     public class RMARepository : GenericRepository<RMA>, IRMARepository
     {
-        public RMARepository(ApplicationDbContext context) : base(context)
-        {
-        }
+        public RMARepository(ApplicationDbContext context)
+            : base(context) { }
 
         public async Task<(IReadOnlyList<RMA> Items, long Total)> GetPagedAsync(
-             string? code,
-             DateTime? fromDate,
-             DateTime? toDate,
-             string? returnAddress,
-             RMAStatus? status,
-             Guid? createdById,
-             Guid? serviceCenterId,
-             int page,
-             int pageSize
+            string? code,
+            DateTime? fromDate,
+            DateTime? toDate,
+            string? returnAddress,
+            RMAStatus? status,
+            Guid? createdById,
+            Guid? serviceCenterId,
+            int page,
+            int pageSize
         )
         {
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.RMAs
-                .Include(x => x.Staff)
+            var q = _context
+                .RMAs.Include(x => x.Staff)
                 .Include(x => x.RMADetails)
-                    .ThenInclude(x => x.EVCheckDetail)
-                        .ThenInclude(x => x.PartItem)
-                            .ThenInclude(x => x.Part)
+                .ThenInclude(x => x.EVCheckDetail)
+                .ThenInclude(x => x.PartItem)
+                .ThenInclude(x => x.Part)
                 .Include(x => x.RMADetails)
-                    .ThenInclude(x => x.EVCheckDetail)
-                        .ThenInclude(x => x.EVCheck)
-                            .ThenInclude(x => x.Appointment)
-                                .ThenInclude(x => x.Customer)
-                                    .ThenInclude(x => x.Account)
+                .ThenInclude(x => x.EVCheckDetail)
+                .ThenInclude(x => x.EVCheck)
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(x => x.Customer)
+                .ThenInclude(x => x.Account)
                 .Include(x => x.RMADetails)
-                    .ThenInclude(x => x.EVCheckDetail)
-                        .ThenInclude(x => x.EVCheck)
-                            .ThenInclude(x => x.Appointment)
-                                .ThenInclude(x => x.VehicleStage)
-                                    .ThenInclude(x => x.Vehicle)
-                                        .ThenInclude(x => x.Model)
+                .ThenInclude(x => x.EVCheckDetail)
+                .ThenInclude(x => x.EVCheck)
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(x => x.VehicleStage)
+                .ThenInclude(x => x.Vehicle)
+                .ThenInclude(x => x.Model)
                 .Include(x => x.RMADetails)
-                    .ThenInclude(x => x.EVCheckDetail)
-                        .ThenInclude(x => x.EVCheck)
-                            .ThenInclude(x => x.Appointment)
-                                .ThenInclude(x => x.Vehicle)
+                .ThenInclude(x => x.EVCheckDetail)
+                .ThenInclude(x => x.EVCheck)
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(x => x.Vehicle)
                 .AsNoTracking()
                 .AsQueryable();
-
 
             if (!string.IsNullOrWhiteSpace(code))
                 q = q.Where(x => x.Code.Contains(code));
@@ -68,13 +66,10 @@ namespace eMotoCare.DAL.Repositories.RMARepository
             if (createdById.HasValue)
                 q = q.Where(x => x.CreateById == createdById.Value);
 
-
             if (fromDate.HasValue && toDate.HasValue)
             {
                 var endDateInclusive = toDate.Value.Date.AddDays(1);
-                q = q.Where(x =>
-                    x.RMADate >= fromDate.Value.Date && x.RMADate < endDateInclusive
-                );
+                q = q.Where(x => x.RMADate >= fromDate.Value.Date && x.RMADate < endDateInclusive);
             }
             else if (fromDate.HasValue)
             {
@@ -89,12 +84,13 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 
             if (serviceCenterId.HasValue)
             {
-                q = q.Where(x => x.RMADetails.Any(rd =>
-                    rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId == serviceCenterId.Value
-                ));
+                q = q.Where(x =>
+                    x.RMADetails.Any(rd =>
+                        rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId
+                        == serviceCenterId.Value
+                    )
+                );
             }
-
-
 
             var total = await q.LongCountAsync();
 
@@ -107,46 +103,58 @@ namespace eMotoCare.DAL.Repositories.RMARepository
         }
 
         public Task<RMA?> GetByIdAsync(Guid id) =>
-        _context.RMAs
-            .Include(x => x.Staff)
-            .Include(x => x.RMADetails)
+            _context
+                .RMAs.Include(x => x.Staff)
+                .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
-                    .ThenInclude(x => x.PartItem)
-                        .ThenInclude(x => x.Part)
-            .Include(x => x.RMADetails)
+                .ThenInclude(x => x.PartItem)
+                .ThenInclude(x => x.Part)
+                .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
-                    .ThenInclude(x => x.EVCheck)
-                        .ThenInclude(x => x.Appointment)
-                            .ThenInclude(x => x.Customer)
-            .Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheck)
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(x => x.Customer)
+                .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
-                    .ThenInclude(x => x.EVCheck)
-                        .ThenInclude(x => x.Appointment)
-                            .ThenInclude(x => x.VehicleStage)
-                                .ThenInclude(x => x.Vehicle)
-            .Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheck)
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(x => x.VehicleStage)
+                .ThenInclude(x => x.Vehicle)
+                .ThenInclude(x => x.Model)
+                .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
-                    .ThenInclude(x => x.EVCheck)
-                        .ThenInclude(x => x.Appointment)
-                            .ThenInclude(x => x.Vehicle)
-            .FirstOrDefaultAsync(x => x.Id == id);
+                .ThenInclude(x => x.EVCheck)
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(x => x.Vehicle)
+                .ThenInclude(x => x.Model)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.RMAs.AnyAsync(x => x.Code == code);
 
         public async Task<List<RMA?>> GetByCustomerIdAsync(Guid customerId)
         {
-            return await _context.Appointments
-                        .Where(a => a.CustomerId == customerId)
-                        .Select(a => a.EVCheck)                     // 1-1
-                        .Where(ev => ev != null)
-                        .SelectMany(ev => ev.EVCheckDetails)        // 1-N
-                        .Select(ecd => ecd.RMADetail)               // 1-1
-                        .Where(rmad => rmad != null)
-                        .Select(rmad => rmad.RMA)                   // N-1
-                        .Where(rma => rma != null)
-                        .Distinct()
-                        .ToListAsync();
+            return await _context
+                .Appointments.Where(a => a.CustomerId == customerId)
+                .Select(a => a.EVCheck) // 1-1
+                .Where(ev => ev != null)
+                .SelectMany(ev => ev.EVCheckDetails) // 1-N
+                .Select(ecd => ecd.RMADetail) // 1-1
+                .Where(rmad => rmad != null)
+                .Select(rmad => rmad.RMA) // N-1
+                .Where(rma => rma != null)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<RMA?> GetByCodeAsync(string code)
+        {
+            return await _context
+                .RMAs.Include(x => x.RMADetails)
+                .ThenInclude(x => x.EVCheckDetail)
+                .ThenInclude(x => x.PartItem)
+                .ThenInclude(x => x.Part)
+                .FirstOrDefaultAsync(x => x.Code == code);
         }
 
         public async Task<int?> TotalRMA(Guid? serviceCenterId)
@@ -155,13 +163,15 @@ namespace eMotoCare.DAL.Repositories.RMARepository
 
             if (serviceCenterId.HasValue)
             {
-                query = query.Where(rma => rma.RMADetails.Any(rd =>
-                    rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId == serviceCenterId.Value
-                ));
+                query = query.Where(rma =>
+                    rma.RMADetails.Any(rd =>
+                        rd.EVCheckDetail.EVCheck.Appointment.ServiceCenterId
+                        == serviceCenterId.Value
+                    )
+                );
             }
 
             return await query.CountAsync();
         }
-
     }
 }

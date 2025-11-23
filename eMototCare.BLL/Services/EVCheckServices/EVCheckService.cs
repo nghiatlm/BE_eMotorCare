@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.RegularExpressions;
 using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
@@ -113,12 +114,50 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             Id = Guid.NewGuid(),
                             EVCheckId = entity.Id,
                             MaintenanceStageDetailId = detail.Id,
-                            Remedies = Remedies.NONE,
+                            Remedies = Remedies.LUBRICATE,
                             PartItemId = matchedVehiclePartItem.PartItemId,
                             Status = EVCheckDetailStatus.IN_PROGRESS,
                         };
 
                         await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                    }
+                }
+
+                if (appointment.Note.Contains("RMA-"))
+                {
+                    var rmaCode = Regex.Match(appointment.Note, @"RMA-\d+-\d+");
+                    var rma = await _unitOfWork.RMAs.GetByCodeAsync(rmaCode.Value);
+                    foreach (var detail in rma.RMADetails)
+                    {
+                        if (detail.ReplacePartId != null)
+                        //Trường hợp 1 đổi 1
+                        {
+                            var evCheckDetail = new EVCheckDetail
+                            {
+                                Id = Guid.NewGuid(),
+                                EVCheckId = entity.Id,
+                                Remedies = Remedies.LUBRICATE,
+                                PartItemId = detail.EVCheckDetail.PartItemId,
+                                Status = EVCheckDetailStatus.IN_PROGRESS,
+                                Result = "Thay thế phụ tùng mới từ hãng",
+                                ReplacePartId = detail.ReplacePartId.Value,
+                            };
+                            await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                        }
+                        else if (detail.ReplacePartId == null)
+                        //Trường hợp hãng sửa chữa phụ tùng
+                        {
+                            var evCheckDetail = new EVCheckDetail
+                            {
+                                Id = Guid.NewGuid(),
+                                EVCheckId = entity.Id,
+                                Remedies = Remedies.LUBRICATE,
+                                PartItemId = detail.EVCheckDetail.PartItemId,
+                                Status = EVCheckDetailStatus.IN_PROGRESS,
+                                Result = "Lắp đặt phụ tùng đã được sửa chữa từ hãng",
+                            };
+                            await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                        }
                     }
                 }
 
@@ -401,7 +440,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     exportNote.TotalValue += partItem.Price;
                     exportNote.TotalQuantity += 1;
                 }
-
             }
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;

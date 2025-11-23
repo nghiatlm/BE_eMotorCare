@@ -13,6 +13,7 @@ namespace BE_eMotoCare.API.Configuration
             services.AddScoped<INotifierExportNoteService, NotifierExportNoteService>();
             services.AddScoped<INotifierCampaignService, NotificationCampaignService>();
             services.AddScoped<INotifierAppointmentService, NotificationAppointmentService>();
+            services.AddScoped<INotifierRMASerive, NotifierRMASerive>();
             services.AddServiceDI().AddRepoDI().AddSwaggerDependencies().MapperInjection();
             return services;
         }

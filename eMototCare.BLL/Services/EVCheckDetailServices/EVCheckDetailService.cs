@@ -208,6 +208,27 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                         };
                         await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
                     }
+                    if (req.Status == EVCheckDetailStatus.COMPLETED && entity.ReplacePartId != null && entity.Result == "Thay thế phụ tùng mới từ hãng")
+                    {
+                        var vehiclePartItem = new VehiclePartItem
+                        {
+                            Id = Guid.NewGuid(),
+                            InstallDate = DateTime.UtcNow,
+                            VehicleId = entity.EVCheck.Appointment.VehicleId.Value,
+                            PartItemId = entity.ReplacePartId.Value,
+                            ReplaceForId = entity.PartItemId,
+                        };
+                        entity.ReplacePart.Quantity = 0;
+                        entity.ReplacePart.Status = PartItemStatus.IN_ACTIVE;
+                        entity.ReplacePart.ServiceCenterInventoryId = null;
+                        if (entity.ReplacePart.WarrantyPeriod != null)
+                        {
+                            var month = entity.ReplacePart.WarrantyPeriod.Value;
+                            entity.ReplacePart.WarantyStartDate = DateTime.UtcNow;
+                            entity.ReplacePart.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
+                        }
+                        await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
+                    }
                 }
 
                 await _unitOfWork.EVCheckDetails.UpdateAsync(entity);

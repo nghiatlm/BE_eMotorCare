@@ -79,13 +79,55 @@ namespace eMototCare.BLL.Services.PriceServiceServices
         {
             try
             {
-                if (await _unitOfWork.PriceServices.ExistsCodeAsync(req.Code))
-                    throw new AppException("Mã Code đã tồn tại", HttpStatusCode.Conflict);
+                var partType = await _unitOfWork.PartTypes.GetByIdAsync(req.PartTypeId);
+                if (partType == null)
+                {
+                    throw new AppException(
+                        "Loại phụ tùng không tồn tại",
+                        HttpStatusCode.BadRequest
+                    );
+                }
+                var existed = _unitOfWork
+                    .PriceServices.FindAll()
+                    .Any(x => x.PartTypeId == req.PartTypeId && x.Remedies == req.Remedies);
+
+                if (existed)
+                {
+                    throw new AppException(
+                        "Loại phụ tùng này đã có bảng giá cho dịch vụ này rồi",
+                        HttpStatusCode.Conflict
+                    );
+                }
+
+                const string prefix = "PriceSV-";
+                var lastCode = _unitOfWork
+                    .PriceServices.FindAll()
+                    .Where(x => x.Code.StartsWith(prefix))
+                    .OrderByDescending(x => x.Code)
+                    .Select(x => x.Code)
+                    .FirstOrDefault();
+
+                int nextNumber = 1;
+
+                if (!string.IsNullOrEmpty(lastCode) && lastCode.Length > prefix.Length)
+                {
+                    var numberPart = lastCode.Substring(prefix.Length);
+                    if (int.TryParse(numberPart, out var parsed))
+                    {
+                        nextNumber = parsed + 1;
+                    }
+                }
+
+                string newCode;
+                do
+                {
+                    newCode = $"{prefix}{nextNumber:D5}";
+                    nextNumber++;
+                } while (await _unitOfWork.PriceServices.ExistsCodeAsync(newCode));
 
                 var entity = _mapper.Map<PriceService>(req);
+                entity.Code = newCode;
                 entity.Id = Guid.NewGuid();
-                var count = _unitOfWork.Customers.FindAll().Count;
-                entity.Code = $"PriceSV-{count + 1:D5}";
                 await _unitOfWork.PriceServices.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -117,9 +159,6 @@ namespace eMototCare.BLL.Services.PriceServiceServices
                         "Không tìm thấy bảng giá dịch vụ",
                         HttpStatusCode.NotFound
                     );
-
-                if (await _unitOfWork.PriceServices.ExistsCodeAsync(req.Code, ignoreId: id))
-                    throw new AppException("Mã Code đã tồn tại", HttpStatusCode.Conflict);
 
                 _mapper.Map(req, entity);
                 await _unitOfWork.PriceServices.UpdateAsync(entity);

@@ -194,6 +194,8 @@ namespace eMototCare.BLL.Services.PartItemServices
                 if (req.ServiceCenterInventoryId != null)
                     entity.ServiceCenterInventoryId = req.ServiceCenterInventoryId;
 
+                if (req.IsManufacturerWarranty != null)
+                    entity.IsManufacturerWarranty = req.IsManufacturerWarranty.Value;
 
 
                 await _unitOfWork.PartItems.UpdateAsync(entity);

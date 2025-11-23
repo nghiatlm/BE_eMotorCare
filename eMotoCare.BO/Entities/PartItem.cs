@@ -69,5 +69,12 @@ namespace eMotoCare.BO.Entities
         public virtual ServiceCenterInventory? ServiceCenterInventory { get; set; }
         public virtual ICollection<VehiclePartItem>? VehiclePartItems { get; set; }
         public virtual ICollection<EVCheckDetail>? EVCheckDetails { get; set; }
+
+        [InverseProperty(nameof(RMADetail.ReplacePart))]
+        public virtual RMADetail? ReplacePart { get; set; }
+
+        [Required]
+        [Column("is_manufacturer_warranty")]
+        public bool IsManufacturerWarranty { get; set; }
     }
 }
