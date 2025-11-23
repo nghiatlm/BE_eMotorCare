@@ -185,5 +185,19 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .ThenByDescending(a => a.AppointmentDate)
                 .ToListAsync();
         }
+
+        public async Task<(int totalAppointment, double totalRevenue)> TotalAppoinmentAndRevenue(Guid? serviceCenterId)
+        {
+            var query = _context.Appointments.AsQueryable();
+            if (serviceCenterId.HasValue)
+            {
+                query = query.Where(a => a.ServiceCenterId == serviceCenterId.Value);
+            }
+            int totalAppointment = await query.CountAsync();
+            var completedQuery = query.Where(a => a.Status == AppointmentStatus.COMPLETED);
+            var totalRevenueDecimal = await completedQuery.SumAsync(a => a.EVCheck != null ? a.EVCheck.TotalAmout : 0m);
+            double totalRevenue = (double)totalRevenueDecimal;
+            return (totalAppointment, totalRevenue);
+        }
     }
 }
