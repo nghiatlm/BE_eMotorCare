@@ -11,9 +11,9 @@ namespace eMototCare.BLL.Mappers
     {
         public CampaignMapper()
         {
-            CreateMap<Campaign, CampaignResponse>();
-            CreateMap<CampaignRequest, Campaign>();
-            CreateMap<CampaignUpdateRequest, Campaign>();
+            // CreateMap<Campaign, CampaignResponse>();
+            // CreateMap<CampaignRequest, Campaign>();
+            // CreateMap<CampaignUpdateRequest, Campaign>();
         }
     }
 }

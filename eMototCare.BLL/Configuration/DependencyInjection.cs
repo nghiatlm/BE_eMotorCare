@@ -7,8 +7,6 @@ using eMototCare.BLL.Services.AppointmentServices;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.BackgroundServices;
 using eMototCare.BLL.Services.BatteryCheckServices;
-using eMototCare.BLL.Services.CampaignDetailServices;
-using eMototCare.BLL.Services.CampaignServices;
 using eMototCare.BLL.Services.CustomerServices;
 using eMototCare.BLL.Services.DashboardServices;
 using eMototCare.BLL.Services.EmailServices;
@@ -25,6 +23,7 @@ using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
 using eMototCare.BLL.Services.PayosServices;
 using eMototCare.BLL.Services.PriceServiceServices;
+using eMototCare.BLL.Services.ProgramService;
 using eMototCare.BLL.Services.RMADetailServices;
 using eMototCare.BLL.Services.RMAServices;
 using eMototCare.BLL.Services.ServiceCenterInventoryServices;
@@ -72,10 +71,9 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IRMAService, RMAService>();
             services.AddScoped<IServiceCenterInventoryService, ServiceCenterInventoryService>();
             services.AddScoped<IRMADetailService, RMADetailService>();
-            services.AddScoped<ICampaignService, CampaignService>();
-            services.AddScoped<ICampaignDetailService, CampaignDetailService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IBatteryCheckService, BatteryCheckService>();
+            services.AddScoped<IProgramService, ProgramService>();
 
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();

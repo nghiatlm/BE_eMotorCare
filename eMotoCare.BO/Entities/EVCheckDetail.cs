@@ -19,10 +19,10 @@ namespace eMotoCare.BO.Entities
         public virtual MaintenanceStageDetail? MaintenanceStageDetail { get; set; }
 
         [Column("campaign_detail_id")]
-        public Guid? CampaignDetailId { get; set; }
+        public Guid? ProgramDetailId { get; set; }
 
-        [ForeignKey(nameof(CampaignDetailId))]
-        public virtual CampaignDetail? CampaignDetail { get; set; }
+        [ForeignKey(nameof(ProgramDetailId))]
+        public virtual ProgramDetail? CampaignDetail { get; set; }
 
         [Required]
         [Column("part_item_id")]

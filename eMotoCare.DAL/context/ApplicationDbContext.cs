@@ -14,8 +14,9 @@ namespace eMotoCare.DAL.context
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<BatteryCheck> BatteryChecks { get; set; }
-        public DbSet<Campaign> Campaigns { get; set; }
-        public DbSet<CampaignDetail> CampaignDetails { get; set; }
+        public DbSet<Program> programs { get; set; }
+        public DbSet<ProgramDetail> ProgramDetails { get; set; }
+        public DbSet<ProgramModel> ProgramModels { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<EVCheck> EVChecks { get; set; }
         public DbSet<EVCheckDetail> EVCheckDetails { get; set; }
@@ -93,7 +94,8 @@ namespace eMotoCare.DAL.context
                         v.Split(',', StringSplitOptions.RemoveEmptyEntries)
                             .Select(x => Enum.Parse<TEnum>(x))
                             .ToArray()
-                ) { }
+                )
+            { }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -125,6 +127,9 @@ namespace eMotoCare.DAL.context
             modelBuilder.Entity<VehiclePartItem>()
                 .HasIndex(u => u.ReplaceForId)
                 .IsUnique(false);
+
+            modelBuilder.Entity<ProgramModel>()
+                .HasKey(pm => new { pm.ProgramId, pm.VehicleModelId });
 
             modelBuilder.Entity<Customer>()
                 .HasIndex(u => u.CitizenId)

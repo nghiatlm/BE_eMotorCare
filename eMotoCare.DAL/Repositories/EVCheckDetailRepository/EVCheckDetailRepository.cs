@@ -48,10 +48,10 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
                 q = q.Where(x => x.MaintenanceStageDetailId == maintenanceStageDetailId.Value);
             }
 
-            if (campaignDetailId.HasValue) 
-            {
-                q = q.Where(x => x.CampaignDetailId == campaignDetailId.Value);
-            }
+            // if (campaignDetailId.HasValue) 
+            // {
+            //     q = q.Where(x => x.CampaignDetailId == campaignDetailId.Value);
+            // }
 
             if (partItemId.HasValue)
             {

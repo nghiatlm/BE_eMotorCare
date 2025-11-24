@@ -2,8 +2,6 @@ using eMotoCare.BO.Entities;
 using eMotoCare.DAL.Repositories.AccountRepository;
 using eMotoCare.DAL.Repositories.AppointmentRepository;
 using eMotoCare.DAL.Repositories.BatteryCheckRepository;
-using eMotoCare.DAL.Repositories.CampaignDetailRepository;
-using eMotoCare.DAL.Repositories.CampaignRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
@@ -19,6 +17,9 @@ using eMotoCare.DAL.Repositories.PartRepository;
 using eMotoCare.DAL.Repositories.PartTypeRepository;
 using eMotoCare.DAL.Repositories.PaymentRepository;
 using eMotoCare.DAL.Repositories.PriceServiceRepository;
+using eMotoCare.DAL.Repositories.ProgramDetailRepository;
+using eMotoCare.DAL.Repositories.ProgramModelRepository;
+using eMotoCare.DAL.Repositories.ProgramRepository;
 using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
 using eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository;
@@ -36,8 +37,9 @@ namespace eMotoCare.DAL
         IAccountRepository Accounts { get; }
         IAppointmentRepository Appointments { get; }
         IBatteryCheckRepository BatteryChecks { get; }
-        ICampaignDetailRepository CampaignDetails { get; }
-        ICampaignRepository Campaigns { get; }
+        IProgramDetailRepository ProgramDetails { get; }
+        IProgramRepository Programs { get; }
+        IProgramModelRepository ProgramModels { get; }
         ICustomerRepository Customers { get; }
         IEVCheckDetailRepository EVCheckDetails { get; }
         IEVCheckRepository EVChecks { get; }

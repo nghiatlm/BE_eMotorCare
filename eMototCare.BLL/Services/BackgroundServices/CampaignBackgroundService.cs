@@ -30,7 +30,7 @@ namespace eMototCare.BLL.Services.BackgroundServices
             {
                 try
                 {
-                    await ProcessCampaignsAsync(stoppingToken);
+                    // await ProcessCampaignsAsync(stoppingToken);
                 }
                 catch (Exception ex)
                 {
@@ -44,102 +44,102 @@ namespace eMototCare.BLL.Services.BackgroundServices
             _logger.LogInformation("CampaignBackgroundService stopped");
         }
 
-        private async Task ProcessCampaignsAsync(CancellationToken stoppingToken)
-        {
-            var tz = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        // private async Task ProcessCampaignsAsync(CancellationToken stoppingToken)
+        // {
+        //     var tz = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
 
-            var nowUtc = DateTime.UtcNow;
-            var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, tz);
+        //     var nowUtc = DateTime.UtcNow;
+        //     var nowLocal = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, tz);
 
-            var todayLocal = nowLocal.Date;
-            var reminderLocalDate = todayLocal.AddDays(7); // nhắc trước 7 ngày
+        //     var todayLocal = nowLocal.Date;
+        //     var reminderLocalDate = todayLocal.AddDays(7); // nhắc trước 7 ngày
 
-            // local -> utc range cho ngày nhắc
-            var reminderStartLocal = reminderLocalDate; // 00:00
-            var reminderEndLocal = reminderLocalDate.AddDays(1); // 00:00 hôm sau
+        //     // local -> utc range cho ngày nhắc
+        //     var reminderStartLocal = reminderLocalDate; // 00:00
+        //     var reminderEndLocal = reminderLocalDate.AddDays(1); // 00:00 hôm sau
 
-            var reminderStartUtc = TimeZoneInfo.ConvertTimeToUtc(reminderStartLocal, tz);
-            var reminderEndUtc = TimeZoneInfo.ConvertTimeToUtc(reminderEndLocal, tz);
+        //     var reminderStartUtc = TimeZoneInfo.ConvertTimeToUtc(reminderStartLocal, tz);
+        //     var reminderEndUtc = TimeZoneInfo.ConvertTimeToUtc(reminderEndLocal, tz);
 
-            // local -> utc range cho hôm nay để xử lý expired
-            var todayStartLocal = todayLocal;
-            var todayStartUtc = TimeZoneInfo.ConvertTimeToUtc(todayStartLocal, tz);
+        //     // local -> utc range cho hôm nay để xử lý expired
+        //     var todayStartLocal = todayLocal;
+        //     var todayStartUtc = TimeZoneInfo.ConvertTimeToUtc(todayStartLocal, tz);
 
-            using var scope = _serviceProvider.CreateScope();
-            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-            var notifier = scope.ServiceProvider.GetRequiredService<INotifierCampaignService>();
+        //     using var scope = _serviceProvider.CreateScope();
+        //     var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        //     var notifier = scope.ServiceProvider.GetRequiredService<INotifierCampaignService>();
 
-            var campaignRepo = unitOfWork.Campaigns;
+        //     // var campaignRepo = unitOfWork.Campaigns;
 
-            // 1. Campaign sắp bắt đầu (nhắc trước 7 ngày)
-            var comingSoonCampaigns = (await campaignRepo.FindAllAsync())
-                .Where(c =>
-                    c.Status == CampaignStatus.ACTIVE
-                    && c.StartDate >= reminderStartUtc
-                    && c.StartDate < reminderEndUtc
-                )
-                .AsQueryable()
-                .ToList();
+        //     // 1. Campaign sắp bắt đầu (nhắc trước 7 ngày)
+        //     // var comingSoonCampaigns = (await campaignRepo.FindAllAsync())
+        //     //     .Where(c =>
+        //     //         c.Status == CampaignStatus.ACTIVE
+        //     //         && c.StartDate >= reminderStartUtc
+        //     //         && c.StartDate < reminderEndUtc
+        //     //     )
+        //     //     .AsQueryable()
+        //     //     .ToList();
 
-            foreach (var campaign in comingSoonCampaigns)
-            {
-                _logger.LogInformation(
-                    "Campaign {Code} starting soon on {StartDate}, sending reminder",
-                    campaign.Code,
-                    campaign.StartDate
-                );
+        //     foreach (var campaign in comingSoonCampaigns)
+        //     {
+        //         _logger.LogInformation(
+        //             "Campaign {Code} starting soon on {StartDate}, sending reminder",
+        //             campaign.Code,
+        //             campaign.StartDate
+        //         );
 
-                await notifier.NotifyComingSoonAsync(
-                    "Campaign",
-                    new
-                    {
-                        campaign.Id,
-                        campaign.Code,
-                        campaign.Name,
-                        campaign.Description,
-                        campaign.Type,
-                        campaign.StartDate,
-                        campaign.EndDate,
-                        campaign.Status,
-                    }
-                );
-            }
+        //         await notifier.NotifyComingSoonAsync(
+        //             "Campaign",
+        //             new
+        //             {
+        //                 campaign.Id,
+        //                 campaign.Code,
+        //                 campaign.Name,
+        //                 campaign.Description,
+        //                 campaign.Type,
+        //                 campaign.StartDate,
+        //                 campaign.EndDate,
+        //                 campaign.Status,
+        //             }
+        //         );
+        //     }
 
-            // 2. Campaign đã hết hạn -> đổi status COMPLETED
-            var expiredCampaigns = (await campaignRepo.FindAllAsync())
-                .Where(c => c.Status == CampaignStatus.ACTIVE && c.EndDate < todayStartUtc)
-                .ToList();
+        //     // 2. Campaign đã hết hạn -> đổi status COMPLETED
+        //     var expiredCampaigns = (await campaignRepo.FindAllAsync())
+        //         .Where(c => c.Status == CampaignStatus.ACTIVE && c.EndDate < todayStartUtc)
+        //         .ToList();
 
-            if (expiredCampaigns.Any())
-            {
-                foreach (var campaign in expiredCampaigns)
-                {
-                    _logger.LogInformation(
-                        "Campaign {Code} expired at {EndDate}, set status COMPLETED",
-                        campaign.Code,
-                        campaign.EndDate
-                    );
+        //     if (expiredCampaigns.Any())
+        //     {
+        //         foreach (var campaign in expiredCampaigns)
+        //         {
+        //             _logger.LogInformation(
+        //                 "Campaign {Code} expired at {EndDate}, set status COMPLETED",
+        //                 campaign.Code,
+        //                 campaign.EndDate
+        //             );
 
-                    campaign.Status = CampaignStatus.COMPLETED;
+        //             campaign.Status = CampaignStatus.COMPLETED;
 
-                    await notifier.NotifyExpiredAsync(
-                        "Campaign",
-                        new
-                        {
-                            campaign.Id,
-                            campaign.Code,
-                            campaign.Name,
-                            campaign.Description,
-                            campaign.Type,
-                            campaign.StartDate,
-                            campaign.EndDate,
-                            campaign.Status,
-                        }
-                    );
-                }
+        //             await notifier.NotifyExpiredAsync(
+        //                 "Campaign",
+        //                 new
+        //                 {
+        //                     campaign.Id,
+        //                     campaign.Code,
+        //                     campaign.Name,
+        //                     campaign.Description,
+        //                     campaign.Type,
+        //                     campaign.StartDate,
+        //                     campaign.EndDate,
+        //                     campaign.Status,
+        //                 }
+        //             );
+        //         }
 
-                await unitOfWork.SaveAsync();
-            }
-        }
+        //         await unitOfWork.SaveAsync();
+        //     }
+        // }
     }
 }

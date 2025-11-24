@@ -48,10 +48,10 @@ namespace eMotoCare.BO.Entities
         public virtual Vehicle? Vehicle { get; set; }
 
         [Column("campaign_id")]
-        public Guid? CampaignId { get; set; }
+        public Guid? ProgramId { get; set; }
 
-        [ForeignKey(nameof(CampaignId))]
-        public virtual Campaign? Campaign { get; set; }
+        [ForeignKey(nameof(ProgramId))]
+        public virtual Program? Campaign { get; set; }
 
         [Required]
         [StringLength(50)]
