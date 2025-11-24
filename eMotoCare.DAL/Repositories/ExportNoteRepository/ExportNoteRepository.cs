@@ -34,8 +34,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             var q = _context.ExportNotes
                 .Include(x => x.ExportBy)
                 .Include(x => x.ServiceCenter)
-                .Include(x => x.PartItems)
-                    .ThenInclude(pi => pi.Part)
+                .Include(x => x.ExportNoteDetails)
                 .AsNoTracking()
                 .AsQueryable();
             if (!string.IsNullOrWhiteSpace(code))
@@ -79,8 +78,8 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             if (exportNoteStatus.HasValue)
                 q = q.Where(x => x.ExportNoteStatus == exportNoteStatus.Value);
 
-            if (partItemId.HasValue)
-                q = q.Where(x => x.PartItems.Any(p => p.Id == partItemId.Value));
+            // if (partItemId.HasValue)
+            //     q = q.Where(x => x.PartItems.Any(p => p.Id == partItemId.Value));
 
             var total = await q.LongCountAsync();
 
@@ -96,8 +95,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
         _context.ExportNotes
             .Include(x => x.ExportBy)
             .Include(x => x.ServiceCenter)
-            .Include(x => x.PartItems)
-                .ThenInclude(pi => pi.Part)
+            .Include(x => x.ExportNoteDetails)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>

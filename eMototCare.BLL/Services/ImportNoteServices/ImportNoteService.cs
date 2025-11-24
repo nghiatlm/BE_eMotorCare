@@ -5,12 +5,10 @@ using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
-using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -100,7 +98,7 @@ namespace eMototCare.BLL.Services.ImportNoteServices
 
                         var serviceCenterInventory = await _unitOfWork.ServiceCenterInventories.GetByServiceCenterId(req.ServiceCenterId);
 
-                        partItem.ImportNoteId = importNoteId;
+                        // partItem.ImportNoteId = importNoteId;
                         partItem.ServiceCenterInventoryId = serviceCenterInventory.Id;
 
                         await _unitOfWork.PartItems.UpdateAsync(partItem);

@@ -5,7 +5,9 @@ using eMotoCare.DAL.Repositories.BatteryCheckRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
+using eMotoCare.DAL.Repositories.ExportNoteDetails;
 using eMotoCare.DAL.Repositories.ExportNoteRepository;
+using eMotoCare.DAL.Repositories.ImportNoteDetails;
 using eMotoCare.DAL.Repositories.ImportNoteRepository;
 using eMotoCare.DAL.Repositories.MaintenancePlanRepository;
 using eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository;
@@ -70,6 +72,9 @@ namespace eMotoCare.DAL.Configuration
                 IServiceCenterInventoryRepository,
                 ServiceCenterInventoryRepository
             >();
+
+            services.AddScoped<IImportNoteDetailRepository, ImportNoteDetailRepository>();
+            services.AddScoped<IExportNoteDetailRepository, ExportNoteDetailRepository>();
             services.AddScoped<IServiceCenterRepository, ServiceCenterRepository>();
             services.AddScoped<IStaffRepository, StaffRepository>();
             services.AddScoped<IVehiclePartItemRepository, VehiclePartItemRepository>();

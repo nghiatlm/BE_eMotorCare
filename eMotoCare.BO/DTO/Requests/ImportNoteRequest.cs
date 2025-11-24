@@ -1,6 +1,4 @@
 ﻿
-
-using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,13 +17,10 @@ namespace eMotoCare.BO.DTO.Requests
         [EnumDataType(typeof(ImportType))]
         public ImportType Type { get; set; }
         [Required]
-        public decimal? TotalAmout { get; set; }
-        [Required]
         public Guid? ImportById { get; set; }
         [Required]
         public Guid ServiceCenterId { get; set; }
-
-        public List<Guid?> PartItemId { get; set; }
+        public PartRequest PartRequest { get; set; }
 
     }
 }

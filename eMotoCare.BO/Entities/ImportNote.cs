@@ -53,7 +53,6 @@ namespace eMotoCare.BO.Entities
         [Column("import_note_status", TypeName = "varchar(200)")]
         [EnumDataType(typeof(ImportNoteStatus))]
         public ImportNoteStatus ImportNoteStatus { get; set; }
-
-        public virtual ICollection<PartItem>? PartItems { get; set; }
+        public virtual ICollection<ImportNoteDetail>? ImportNoteDetails { get; set; }
     }
 }
