@@ -17,7 +17,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
         public async Task<ServiceCenter?> GetByIdAsync(Guid id)
         {
             return await _context
-                .ServiceCenters.AsNoTracking()
+                .ServiceCenters.Include(x => x.ServiceCenterInventory)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 

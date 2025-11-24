@@ -29,10 +29,10 @@ namespace eMotoCare.BO.Entities
         [Column("quantity")]
         public int Quantity { get; set; }
 
-        [Required]
+        // [Required]
         [StringLength(100)]
         [Column("serial_number")]
-        public string SerialNumber { get; set; } = default!;
+        public string? SerialNumber { get; set; } = default!;
 
         [Required]
         [Column("price", TypeName = "decimal(18,2)")]

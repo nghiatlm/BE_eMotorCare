@@ -7,8 +7,8 @@ namespace eMotoCare.BO.DTO.Requests
     {
         [Required]
         public Guid PartTypeId { get; set; }
-        [Required]
-        public string Name { get; set; } = string.Empty;
+        public Guid? PartId { get; set; }
+        public string? Name { get; set; } = string.Empty;
         public string? Image { get; set; }
 
         public List<PartItemRequest>? PartItemRequest { get; set; }
