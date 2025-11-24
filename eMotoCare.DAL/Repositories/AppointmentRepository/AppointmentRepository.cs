@@ -164,7 +164,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
         public async Task<IReadOnlyList<Appointment>> GetByTechnicianIdAsync(Guid technicianId)
         {
             return await _context
-                .Appointments.Include(a => a.Customer)
+                .Appointments.AsNoTracking()
+                .Include(a => a.Customer)
                 .Include(a => a.ServiceCenter)
                 .Include(a => a.VehicleStage)
                 .ThenInclude(a => a.MaintenanceStage)
@@ -173,7 +174,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(a => a.Vehicle)
                 .ThenInclude(a => a.Model)
                 .Where(a => a.EVCheck != null && a.EVCheck.TaskExecutorId == technicianId)
-                .AsNoTracking()
+                .OrderByDescending(a => a.AppointmentDate)
+                .ThenByDescending(a => a.CreatedAt)
                 .ToListAsync();
         }
 
