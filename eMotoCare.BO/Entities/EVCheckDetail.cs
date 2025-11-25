@@ -42,8 +42,8 @@ namespace eMotoCare.BO.Entities
         public Guid? ReplacePartId { get; set; }
 
         [ForeignKey(nameof(ReplacePartId))]
-        [InverseProperty(nameof(PartItem.ReplcePart))]
-        public virtual PartItem? ReplacePart { get; set; }
+        [InverseProperty(nameof(Part.ReplacePart))]
+        public virtual Part? ReplacePart { get; set; }
 
         [InverseProperty(nameof(RMADetail.EVCheckDetail))]
         public virtual RMADetail? RMADetail { get; set; }

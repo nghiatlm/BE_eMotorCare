@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.Entities;
+﻿using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
@@ -69,5 +70,28 @@ namespace eMotoCare.DAL.Repositories.PartRepository
         public async Task<List<Part>> FindPartTypeAsync(Guid partTypeId) => await _context.Parts
             .Where(x => x.PartTypeId == partTypeId && x.Status == Status.ACTIVE)
             .ToListAsync();
+
+        public async Task<List<EVCheckReplacementResponse>> GetReplacementPartsAsync(Guid modelId, Guid serviceCenterId)
+        {
+            var result = await _context.ModelParts
+                            .Where(mp => mp.ModelId == modelId)
+
+                            
+                            .Select(mp => mp.Part)
+
+                            
+                            .Select(p => new EVCheckReplacementResponse
+                            {
+                                PartId = p.Id,
+                                PartName = p.Name,
+                                Code = p.Code,
+                                StockQuantity = p.PartItems
+                                .Count(pi => pi.ServiceCenterInventory.ServiceCenterId == serviceCenterId)
+                            })
+                            .ToListAsync();
+
+            return result;
+
+        }
     }
 }

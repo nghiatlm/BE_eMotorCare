@@ -107,7 +107,16 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _evCheckService.QuoteApprove(id);
             await _notifier.NotifyUpdateAsync("EVCheck", new { Id = id });
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xác nhận sửa chữa và tạo phiếu xuất thành công."));
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Xác nhận sửa chữa"));
         }
+
+        [HttpGet("replacements")]
+        public async Task<IActionResult> GetReplacements([FromQuery] Guid appointmentId)
+        {
+            var result = await _evCheckService.GetReplacementsByAppointmentAsync(appointmentId);
+            return Ok(ApiResponse<List<EVCheckReplacementResponse>>.SuccessResponse(result, "Lấy danh sách bộ phận thay thế thành công"));
+        }
+
+
     }
 }
