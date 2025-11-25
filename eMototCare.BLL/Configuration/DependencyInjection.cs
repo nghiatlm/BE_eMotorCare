@@ -18,6 +18,7 @@ using eMototCare.BLL.Services.ImportNoteServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using eMototCare.BLL.Services.MaintenanceStageDetailServices;
 using eMototCare.BLL.Services.MaintenanceStageServices;
+using eMototCare.BLL.Services.ModelServices;
 using eMototCare.BLL.Services.PartItemServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
@@ -74,6 +75,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IBatteryCheckService, BatteryCheckService>();
             services.AddScoped<IProgramService, ProgramService>();
+            services.AddScoped<IModelService, ModelService>();
 
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();
