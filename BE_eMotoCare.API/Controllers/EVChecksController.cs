@@ -111,6 +111,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("replacements")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetReplacements([FromQuery] Guid appointmentId)
         {
             var result = await _evCheckService.GetReplacementsByAppointmentAsync(appointmentId);
