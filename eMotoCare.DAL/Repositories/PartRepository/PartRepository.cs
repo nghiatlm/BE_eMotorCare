@@ -38,7 +38,7 @@ namespace eMotoCare.DAL.Repositories.PartRepository
 
             if (!string.IsNullOrWhiteSpace(code))
                 q = q.Where(x => x.Code.Contains(code));
-            
+
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
 
@@ -62,5 +62,8 @@ namespace eMotoCare.DAL.Repositories.PartRepository
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.Parts.AnyAsync(x => x.Code == code);
+
+        public async Task<bool> ExistsNameAsync(string name) =>
+          await _context.Parts.AnyAsync(x => x.Name == name);
     }
 }

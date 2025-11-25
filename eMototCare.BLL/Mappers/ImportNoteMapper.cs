@@ -12,8 +12,7 @@ namespace eMototCare.BLL.Mappers
         public ImportNoteMapper()
         {
             CreateMap<ImportNote, ImportNoteResponse>();
-            CreateMap<ImportNoteRequest, ImportNote>()
-            .ForSourceMember(src => src.PartItemId, opt => opt.DoNotValidate());
+            CreateMap<ImportNoteRequest, ImportNote>();
             CreateMap<ImportNoteUpdateRequest, ImportNote>();
         }
     }

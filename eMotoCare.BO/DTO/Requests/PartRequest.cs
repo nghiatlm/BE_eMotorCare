@@ -1,8 +1,5 @@
 ﻿
-
-using eMotoCare.BO.Enum;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eMotoCare.BO.DTO.Requests
 {
@@ -10,12 +7,10 @@ namespace eMotoCare.BO.DTO.Requests
     {
         [Required]
         public Guid PartTypeId { get; set; }
-        [Required]
-        public string Name { get; set; }
-        [Required]
-        public int Quantity { get; set; }
-        [Column("image")]
+        public Guid? PartId { get; set; }
+        public string? Name { get; set; } = string.Empty;
         public string? Image { get; set; }
-        
+
+        public List<PartItemRequest>? PartItemRequest { get; set; }
     }
 }

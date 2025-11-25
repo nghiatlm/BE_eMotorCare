@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124143913_updateDatabasV5")]
+    partial class updateDatabasV5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -578,9 +581,18 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("import_date");
 
+                    b.Property<string>("ImportFrom")
+                        .IsRequired()
+                        .HasColumnType("longtext")
+                        .HasColumnName("import_from");
+
                     b.Property<Guid>("ServiceCenterId")
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("supplier");
 
                     b.Property<decimal?>("TotalAmout")
                         .HasColumnType("decimal(65,30)")

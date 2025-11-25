@@ -24,7 +24,7 @@ namespace eMotoCare.BO.Entities
         [Column("title", TypeName = "nvarchar(200)")]
         public string Title { get; set; } = string.Empty;
 
-        [Column("description", TypeName = "nvarchar(max)")]
+        [Column("description", TypeName = "longtext")]
         public string? Description { get; set; }
 
         [Required]

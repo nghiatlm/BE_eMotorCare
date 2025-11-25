@@ -22,13 +22,6 @@ namespace eMotoCare.BO.Entities
         public DateTime ImportDate { get; set; }
 
         [Required]
-        [Column("import_from")]
-        public string ImportFrom { get; set; } = string.Empty;
-
-        [Column("supplier", TypeName = "nvarchar(100)")]
-        public string? Supplier { get; set; }
-
-        [Required]
         [Column("type", TypeName = "varchar(200)")]
         [EnumDataType(typeof(ImportType))]
         public ImportType Type { get; set; }
@@ -50,10 +43,9 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
 
-        [Column("import_note_status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(ImportNoteStatus))]
-        public ImportNoteStatus ImportNoteStatus { get; set; }
-
-        public virtual ICollection<PartItem>? PartItems { get; set; }
+        // [Column("import_note_status", TypeName = "varchar(200)")]
+        // [EnumDataType(typeof(ImportNoteStatus))]
+        // public ImportNoteStatus ImportNoteStatus { get; set; }
+        public virtual ICollection<ImportNoteDetail>? ImportNoteDetails { get; set; }
     }
 }

@@ -55,12 +55,6 @@ namespace eMotoCare.DAL.Repositories.ImportNoteRepository
                 q = q.Where(x => x.ImportDate < endDateInclusive);
             }
 
-            if (!string.IsNullOrWhiteSpace(importFrom))
-                q = q.Where(x => x.ImportFrom.Contains(importFrom));
-
-            if (!string.IsNullOrWhiteSpace(supplier))
-                q = q.Where(x => x.Supplier.Contains(supplier));
-
             if (importType.HasValue)
                 q = q.Where(x => x.Type == importType.Value);
 
@@ -73,8 +67,8 @@ namespace eMotoCare.DAL.Repositories.ImportNoteRepository
             if (serviceCenterId.HasValue)
                 q = q.Where(x => x.ServiceCenterId == serviceCenterId.Value);
 
-            if (importNoteStatus.HasValue)
-                q = q.Where(x => x.ImportNoteStatus == importNoteStatus.Value);
+            // if (importNoteStatus.HasValue)
+            //     q = q.Where(x => x.ImportNoteStatus == importNoteStatus.Value);
 
 
 
@@ -88,8 +82,12 @@ namespace eMotoCare.DAL.Repositories.ImportNoteRepository
             return (items, total);
         }
 
-        public Task<ImportNote?> GetByIdAsync(Guid id) =>
-        _context.ImportNotes.FirstOrDefaultAsync(x => x.Id == id);
+        public async Task<ImportNote?> GetByIdAsync(Guid id) =>
+        await _context.ImportNotes
+                        .Include(i => i.ImportNoteDetails)
+                        .Include(i => i.ImportBy)
+                        .Include(i => i.ServiceCenter)
+                        .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.ImportNotes.AnyAsync(x => x.Code == code);
