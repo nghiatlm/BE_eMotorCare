@@ -28,7 +28,7 @@ namespace eMototCare.BLL.Services.PartServices
         }
 
         public async Task<PageResult<PartTypeResponse>> GetPagedAsync(
-            
+
             string? name,
             string? description,
             int page,
@@ -165,6 +165,24 @@ namespace eMototCare.BLL.Services.PartServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "GetById Part Type failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<List<eMotoCare.BO.DTO.Responses.Labels.PartType>> GetAll()
+        {
+            try
+            {
+                var item = await _unitOfWork.PartTypes.FindAllAsync();
+                return _mapper.Map<List<eMotoCare.BO.DTO.Responses.Labels.PartType>>(item);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Get All Part Type failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

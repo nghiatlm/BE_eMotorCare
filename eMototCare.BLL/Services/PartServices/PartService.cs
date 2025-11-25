@@ -4,6 +4,7 @@ using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.DTO.Responses.Labels;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
@@ -44,12 +45,12 @@ namespace eMototCare.BLL.Services.PartServices
             try
             {
                 var (items, total) = await _unitOfWork.Parts.GetPagedAsync(
-                    partTypeId, 
-                    code, 
-                    name, 
-                    status, 
-                    quantity, 
-                    page, 
+                    partTypeId,
+                    code,
+                    name,
+                    status,
+                    quantity,
+                    page,
                     pageSize
                 );
                 var rows = _mapper.Map<List<PartResponse>>(items);
@@ -72,7 +73,7 @@ namespace eMototCare.BLL.Services.PartServices
 
             try
             {
-                
+
 
 
 
@@ -184,6 +185,24 @@ namespace eMototCare.BLL.Services.PartServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "GetById Part failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<List<PartLabel>> GetByPartType(Guid partTypeId)
+        {
+            try
+            {
+                var parts = await _unitOfWork.Parts.FindPartTypeAsync(partTypeId);
+                return _mapper.Map<List<PartLabel>>(parts);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetByPartType Part failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

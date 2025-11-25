@@ -8,6 +8,7 @@ using eMototCare.BLL.Services.PartServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.Responses.Labels;
 
 namespace BE_eMotoCare.API.Controllers
 {
@@ -85,6 +86,20 @@ namespace BE_eMotoCare.API.Controllers
             await _notifier.NotifyUpdateAsync("Part", new { Id = id });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Part thành công")
+            );
+        }
+
+        [HttpGet("by-part-type/{partTypeId}")]
+        public async Task<IActionResult> GetByPartType(Guid partTypeId)
+        {
+            var items = await _partService.GetByPartType(partTypeId);
+            return items != null ? Ok(
+                ApiResponse<List<PartLabel>>.SuccessResponse(
+                    items,
+                    "Lấy danh sách Part theo loại thành công"
+                )
+            ) : NotFound(
+                ApiResponse<string>.BadRequest("Không tìm thấy Part theo loại")
             );
         }
     }

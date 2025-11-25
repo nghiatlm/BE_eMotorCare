@@ -2,6 +2,7 @@
 
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.DTO.Responses.Labels;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
@@ -15,5 +16,6 @@ namespace eMototCare.BLL.Services.PartServices
         Task<PartResponse?> GetByIdAsync(Guid id);
         Task<PageResult<PartResponse>> GetPagedAsync(Guid? partTypeId, string? code, string? name, Status? status, int? quantity, int page, int pageSize);
         Task UpdateAsync(Guid id, PartUpdateRequest req);
+        Task<List<PartLabel>> GetByPartType(Guid partTypeId);
     }
 }
