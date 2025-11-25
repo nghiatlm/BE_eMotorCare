@@ -65,5 +65,9 @@ namespace eMotoCare.DAL.Repositories.PartRepository
 
         public async Task<bool> ExistsNameAsync(string name) =>
           await _context.Parts.AnyAsync(x => x.Name == name);
+
+        public async Task<List<Part>> FindPartTypeAsync(Guid partTypeId) => await _context.Parts
+            .Where(x => x.PartTypeId == partTypeId && x.Status == Status.ACTIVE)
+            .ToListAsync();
     }
 }

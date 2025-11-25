@@ -3,6 +3,7 @@
 using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.DTO.Responses.Labels;
 using eMotoCare.BO.Entities;
 
 namespace eMototCare.BLL.Mappers
@@ -13,6 +14,7 @@ namespace eMototCare.BLL.Mappers
         {
             CreateMap<Part, PartMaintenanceStageDetailResponse>();
             CreateMap<Part, PartResponse>();
+            CreateMap<Part, PartLabel>();
             CreateMap<PartRequest, Part>();
             CreateMap<PartUpdateRequest, Part>();
         }

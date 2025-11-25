@@ -14,6 +14,7 @@ namespace eMototCare.BLL.Mappers
             CreateMap<PartTypeRequest, PartType>();
             CreateMap<PartTypeUpdateRequest, PartType>();
             CreateMap<PartType, PartTypeResponse>();
+            CreateMap<PartType, eMotoCare.BO.DTO.Responses.Labels.PartType>();
         }
     }
 }
