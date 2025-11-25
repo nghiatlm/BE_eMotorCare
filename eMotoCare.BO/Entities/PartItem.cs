@@ -18,17 +18,6 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(PartId))]
         public virtual Part? Part { get; set; }
-        [Column("export_note_id")]
-        public Guid? ExportNoteId { get; set; }
-
-        [ForeignKey(nameof(ExportNoteId))]
-        public virtual ExportNote? ExportNote { get; set; }
-
-        [Column("import_note_id")]
-        public Guid? ImportNoteId { get; set; }
-
-        [ForeignKey(nameof(ImportNoteId))]
-        public virtual ImportNote? ImportNote { get; set; }
 
         [InverseProperty(nameof(EVCheckDetail.ReplacePart))]
         public virtual EVCheckDetail? ReplcePart { get; set; }
@@ -40,10 +29,10 @@ namespace eMotoCare.BO.Entities
         [Column("quantity")]
         public int Quantity { get; set; }
 
-        [Required]
+        // [Required]
         [StringLength(100)]
         [Column("serial_number")]
-        public string SerialNumber { get; set; } = default!;
+        public string? SerialNumber { get; set; } = default!;
 
         [Required]
         [Column("price", TypeName = "decimal(18,2)")]
@@ -75,5 +64,8 @@ namespace eMotoCare.BO.Entities
 
         [Column("is_manufacturer_warranty")]
         public bool? IsManufacturerWarranty { get; set; }
+
+        public virtual ICollection<ImportNoteDetail>? ImportNoteDetails { get; set; }
+        public virtual ICollection<ExportNoteDetail>? ExportNoteDetails { get; set; }
     }
 }

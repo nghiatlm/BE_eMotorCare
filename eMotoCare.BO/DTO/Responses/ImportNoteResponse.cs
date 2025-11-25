@@ -1,10 +1,11 @@
 ﻿
 
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Responses
 {
-    public class ImportNoteResponse 
+    public class ImportNoteResponse
     {
         public Guid Id { get; set; }
         public string Code { get; set; }
@@ -15,6 +16,6 @@ namespace eMotoCare.BO.DTO.Responses
         public decimal? TotalAmout { get; set; }
         public StaffResponse? ImportBy { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
-        public ICollection<PartItemResponse>? PartItems { get; set; }
+        public virtual ICollection<ImportNoteDetail>? ImportNoteDetails { get; set; }
     }
 }

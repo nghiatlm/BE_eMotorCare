@@ -24,7 +24,7 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(RecallPartId))]
         public virtual Part? RecallPart { get; set; }
-        [Column("service_type", TypeName = "nvarchar(100)")]
+        [Column("service_type", TypeName = "varchar(100)")]
         public string? ServiceType { get; set; }
 
         [Column("discount_percent")]
@@ -33,7 +33,7 @@ namespace eMotoCare.BO.Entities
         [Column("bonus_amount")]
         public int? BonusAmount { get; set; }
 
-        [Column("recall_action", TypeName = "nvarchar(max)")]
+        [Column("recall_action", TypeName = "longtext")]
         public string? RecallAction { get; set; }
 
         [Column("created_at")]

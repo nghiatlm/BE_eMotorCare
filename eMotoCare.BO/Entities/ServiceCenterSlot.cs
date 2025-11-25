@@ -28,7 +28,7 @@ namespace eMotoCare.BO.Entities
         public DayOfWeeks DayOfWeek { get; set; }
 
         [Required]
-        [Column("slot_time")]
+        [Column("slot_time", TypeName = "varchar(20)")]
         [EnumDataType(typeof(SlotTime))]
         public SlotTime SlotTime { get; set; }
 

@@ -1,9 +1,6 @@
 ﻿
-
-using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eMotoCare.BO.DTO.Requests
 {

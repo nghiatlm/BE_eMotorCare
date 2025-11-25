@@ -426,7 +426,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 foreach (var detail in replaceDetails)
                 {
                     var partItem = detail.ReplacePart;
-                    partItem.ExportNoteId = exportNoteId;
+                    // partItem.ExportNoteId = exportNoteId;
                     partItem.ServiceCenterInventoryId = null;
                     if (partItem.WarrantyPeriod != null)
                     {

@@ -101,7 +101,7 @@ namespace eMototCare.BLL.Services.ExportServices
                             throw new Exception($"PartItem {partItemId} không thuộc ServiceCenter {req.ServiceCenterId}.");
 
                         // Update trạng thái hoặc exportNoteId tùy nghiệp vụ
-                        partItem.ExportNoteId = exportNoteId;
+                        // partItem.ExportNoteId = exportNoteId;
                         partItem.ServiceCenterInventoryId = null;
                         partItem.Quantity = 0;
                         partItem.Status = PartItemStatus.IN_ACTIVE;

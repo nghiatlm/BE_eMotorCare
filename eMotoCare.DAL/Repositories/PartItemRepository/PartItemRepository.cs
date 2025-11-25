@@ -29,7 +29,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
                 .Include(x => x.Part)
                 .AsNoTracking()
                 .AsQueryable();
-            
+
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
             if (!string.IsNullOrWhiteSpace(serialNumber))
@@ -56,19 +56,18 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
             .Include(x => x.ServiceCenterInventory)
                 .ThenInclude(x => x.ServiceCenter)
             .Include(x => x.Part)
-            .Include(x => x.ExportNote)
-                .ThenInclude(x => x.ServiceCenter)
-            .Include(x => x.ImportNote)
-                .ThenInclude(x => x.ServiceCenter)
+            .Include(x => x.ExportNoteDetails)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsSerialNumberAsync(string serialNumber) =>
             _context.PartItems.AnyAsync(x => x.SerialNumber == serialNumber);
 
+
+        // fix lại, đg sửa tạm
         public Task<List<PartItem>> GetByExportNoteIdAsync(Guid exportNoteId) =>
             _context.PartItems
             .Include(x => x.Part)
-            .Where(x => x.ExportNoteId == exportNoteId)
+            .Where(x => x.ServiceCenterInventoryId == exportNoteId)
             .ToListAsync();
 
         public async Task<List<PartItem>> GetByServiceCenterIdAsync(Guid serviceCenterId)
