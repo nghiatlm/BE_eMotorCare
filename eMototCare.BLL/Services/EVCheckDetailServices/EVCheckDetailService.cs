@@ -157,7 +157,7 @@ namespace eMototCare.BLL.Services.EVCheckDetailServices
                     entity.EVCheckId = req.EVCheckId.Value;
 
                 if (req.ReplacePartId != null)
-                    entity.ReplacePartId = req.ReplacePartId.Value;
+                    entity.ProposedReplacePartId = req.ReplacePartId.Value;
 
                 if (req.Result != null)
                     entity.Result = req.Result;

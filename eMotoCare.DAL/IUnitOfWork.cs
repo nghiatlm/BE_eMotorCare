@@ -48,7 +48,7 @@ namespace eMotoCare.DAL
         IMaintenancePlanRepository MaintenancePlans { get; }
         IMaintenanceStageDetailRepository MaintenanceStageDetails { get; }
         IMaintenanceStageRepository MaintenanceStages { get; }
-        IModelPartRepository ModelPartTypes { get; }
+        IModelPartRepository ModelParts { get; }
         IModelRepository Models { get; }
         IPartItemRepository PartItems { get; }
         IPartRepository Parts { get; }

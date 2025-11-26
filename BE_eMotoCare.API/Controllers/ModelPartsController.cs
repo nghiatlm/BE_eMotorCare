@@ -12,13 +12,13 @@ namespace BE_eMotoCare.API.Controllers
 {
     [Route("api/v1/model-part-types")]
     [ApiController]
-    public class ModelPartTypesController : ControllerBase
+    public class ModelPartsController : ControllerBase
     {
-        private readonly IModelPartTypeService _service;
+        private readonly IModelPartService _modelPartService;
 
-        public ModelPartTypesController(IModelPartTypeService service)
+        public ModelPartsController(IModelPartService modelPartService)
         {
-            _service = service;
+            _modelPartService = modelPartService;
         }
 
         [HttpGet]
@@ -28,25 +28,25 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Status? status,
             [FromQuery] Guid? id,
             [FromQuery] Guid? modelId,
-            [FromQuery] Guid? partTypeId,
+            [FromQuery] Guid? partId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var result = await _service.GetPagedAsync(
+            var result = await _modelPartService.GetPagedAsync(
                 search,
                 status,
                 id,
                 modelId,
-                partTypeId,
+                partId,
                 page,
                 pageSize
             );
 
             return Ok(
-                ApiResponse<PageResult<ModelPartTypeResponse>>.SuccessResponse(
+                ApiResponse<PageResult<ModelPartResponse>>.SuccessResponse(
                     result,
-                    "Lấy danh sách ModelPartType thành công"
+                    "Lấy danh sách ModelPart thành công"
                 )
             );
         }
@@ -55,9 +55,9 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var data = await _service.GetByIdAsync(id);
+            var data = await _modelPartService.GetByIdAsync(id);
             return Ok(
-                ApiResponse<ModelPartTypeResponse>.SuccessResponse(
+                ApiResponse<ModelPartResponse>.SuccessResponse(
                     data,
                     "Lấy chi tiết ModelPartType thành công"
                 )
@@ -66,20 +66,17 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPost]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Create([FromBody] ModelPartTypeRequest request)
+        public async Task<IActionResult> Create([FromBody] ModelPartRequest request)
         {
-            var id = await _service.CreateAsync(request);
+            var id = await _modelPartService.CreateAsync(request);
             return Ok(ApiResponse<Guid>.SuccessResponse(id, "Tạo ModelPartType thành công"));
         }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(
-            Guid id,
-            [FromBody] ModelPartTypeUpdateRequest request
-        )
+        public async Task<IActionResult> Update(Guid id, [FromBody] ModelPartUpdateRequest request)
         {
-            await _service.UpdateAsync(id, request);
+            await _modelPartService.UpdateAsync(id, request);
             return Ok(
                 ApiResponse<string>.SuccessResponse("OK", "Cập nhật ModelPartType thành công")
             );
@@ -89,7 +86,7 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _service.DeleteAsync(id);
+            await _modelPartService.DeleteAsync(id);
             return Ok(
                 ApiResponse<string>.SuccessResponse("OK", "Vô hiệu hoá ModelPartType thành công")
             );

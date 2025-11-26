@@ -5,21 +5,21 @@ using eMotoCare.BO.Pages;
 
 namespace eMototCare.BLL.Services.ModelPartTypeServices
 {
-    public interface IModelPartTypeService
+    public interface IModelPartService
     {
-        Task<PageResult<ModelPartTypeResponse>> GetPagedAsync(
+        Task<PageResult<ModelPartResponse>> GetPagedAsync(
             string? search,
             Status? status,
             Guid? id,
             Guid? modelId,
-            Guid? partTypeId,
+            Guid? partId,
             int page,
             int pageSize
         );
 
-        Task<ModelPartTypeResponse> GetByIdAsync(Guid id);
-        Task<Guid> CreateAsync(ModelPartTypeRequest req);
-        Task UpdateAsync(Guid id, ModelPartTypeUpdateRequest req);
+        Task<ModelPartResponse> GetByIdAsync(Guid id);
+        Task<Guid> CreateAsync(ModelPartRequest req);
+        Task UpdateAsync(Guid id, ModelPartUpdateRequest req);
         Task DeleteAsync(Guid id);
     }
 }

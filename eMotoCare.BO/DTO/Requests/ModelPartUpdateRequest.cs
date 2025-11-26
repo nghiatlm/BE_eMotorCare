@@ -2,10 +2,10 @@
 
 namespace eMotoCare.BO.DTO.Requests
 {
-    public class ModelPartTypeUpdateRequest
+    public class ModelPartUpdateRequest
     {
         public Guid? ModelId { get; set; }
-        public Guid? PartTypeId { get; set; }
+        public Guid? PartId { get; set; }
         public Status? Status { get; set; }
     }
 }

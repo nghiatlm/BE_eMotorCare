@@ -576,7 +576,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     if (d.Status == EVCheckDetailStatus.CANCELED)
                         continue;
-                    if (d.ReplacePartId.HasValue)
+                    if (d.ProposedReplacePartId.HasValue)
                         continue;
 
                     Guid? requiredPartId = null;

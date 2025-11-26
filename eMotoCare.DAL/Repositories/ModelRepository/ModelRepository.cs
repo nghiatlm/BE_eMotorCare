@@ -33,7 +33,7 @@ namespace eMotoCare.DAL.Repositories.ModelRepository
                 .Models.AsNoTracking()
                 .Include(m => m.MaintenancePlan)
                 .Include(m => m.Vehicles)
-                .Include(m => m.ModelPartTypes)
+                .Include(m => m.ModelPart)
                 .AsQueryable();
             if (modelId.HasValue && modelId.Value != Guid.Empty)
                 q = q.Where(m => m.Id == modelId.Value);
