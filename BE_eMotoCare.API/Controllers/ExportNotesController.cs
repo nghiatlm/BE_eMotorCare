@@ -25,7 +25,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? code,
             [FromQuery] DateTime? fromDate,
@@ -65,7 +65,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _exportService.GetByIdAsync(id);
@@ -77,7 +77,7 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         [HttpGet("{exportNoteId}/part-items")]
         public async Task<IActionResult> GetPartItems(Guid exportNoteId)
         {

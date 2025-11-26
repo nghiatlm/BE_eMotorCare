@@ -1,5 +1,4 @@
-﻿
-
+﻿using System.Net;
 using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
@@ -10,7 +9,6 @@ using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
-using System.Net;
 
 namespace eMototCare.BLL.Services.ExportServices
 {
@@ -21,7 +19,12 @@ namespace eMototCare.BLL.Services.ExportServices
         private readonly IMapper _mapper;
         private readonly Utils _utils;
 
-        public ExportService(IUnitOfWork unitOfWork, ILogger<ExportService> logger, IMapper mapper, Utils utils)
+        public ExportService(
+            IUnitOfWork unitOfWork,
+            ILogger<ExportService> logger,
+            IMapper mapper,
+            Utils utils
+        )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
@@ -30,37 +33,37 @@ namespace eMototCare.BLL.Services.ExportServices
         }
 
         public async Task<PageResult<ExportNoteResponse>> GetPagedAsync(
-             string? code,
-             DateTime? fromDate,
-             DateTime? toDate,
-             ExportType? exportType,
-             string? exportTo,
-             int? totalQuantity,
-             decimal? totalValue,
-             Guid? exportById,
-             Guid? serviceCenterId,
-             ExportNoteStatus? exportNoteStatus,
-             Guid? partItemId,
-             int page,
-             int pageSize
+            string? code,
+            DateTime? fromDate,
+            DateTime? toDate,
+            ExportType? exportType,
+            string? exportTo,
+            int? totalQuantity,
+            decimal? totalValue,
+            Guid? exportById,
+            Guid? serviceCenterId,
+            ExportNoteStatus? exportNoteStatus,
+            Guid? partItemId,
+            int page,
+            int pageSize
         )
         {
             try
             {
                 var (items, total) = await _unitOfWork.ExportNotes.GetPagedAsync(
-                code,
-                fromDate,
-                toDate,
-                exportType,
-                exportTo,
-                totalQuantity,
-                totalValue,
-                exportById,
-                serviceCenterId,
-                exportNoteStatus,
-                partItemId,
-                page,
-                pageSize
+                    code,
+                    fromDate,
+                    toDate,
+                    exportType,
+                    exportTo,
+                    totalQuantity,
+                    totalValue,
+                    exportById,
+                    serviceCenterId,
+                    exportNoteStatus,
+                    partItemId,
+                    page,
+                    pageSize
                 );
                 var rows = _mapper.Map<List<ExportNoteResponse>>(items);
                 return new PageResult<ExportNoteResponse>(rows, pageSize, page, (int)total);
@@ -79,7 +82,6 @@ namespace eMototCare.BLL.Services.ExportServices
 
         public async Task<Guid> CreateAsync(ExportNoteRequest req)
         {
-
             try
             {
                 var exportNoteId = Guid.NewGuid();
@@ -98,7 +100,9 @@ namespace eMototCare.BLL.Services.ExportServices
                             throw new Exception($"PartItem {partItemId} không tồn tại.");
 
                         if (partItem.ServiceCenterInventory.ServiceCenterId != req.ServiceCenterId)
-                            throw new Exception($"PartItem {partItemId} không thuộc ServiceCenter {req.ServiceCenterId}.");
+                            throw new Exception(
+                                $"PartItem {partItemId} không thuộc ServiceCenter {req.ServiceCenterId}."
+                            );
 
                         // Update trạng thái hoặc exportNoteId tùy nghiệp vụ
                         // partItem.ExportNoteId = exportNoteId;
@@ -114,7 +118,6 @@ namespace eMototCare.BLL.Services.ExportServices
 
                 _logger.LogInformation("Created Export Note");
                 return entity.Id;
-
             }
             catch (AppException)
             {
@@ -133,10 +136,7 @@ namespace eMototCare.BLL.Services.ExportServices
             {
                 var entity =
                     await _unitOfWork.ExportNotes.GetByIdAsync(id)
-                    ?? throw new AppException(
-                        "Không tìm thấy ExportNote",
-                        HttpStatusCode.NotFound
-                    );
+                    ?? throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
 
                 entity.ExportNoteStatus = ExportNoteStatus.CANCELLED;
                 await _unitOfWork.ExportNotes.UpdateAsync(entity);
@@ -161,12 +161,7 @@ namespace eMototCare.BLL.Services.ExportServices
             {
                 var entity =
                     await _unitOfWork.ExportNotes.GetByIdAsync(id)
-                    ?? throw new AppException(
-                        "Không tìm thấy ExportNote",
-                        HttpStatusCode.NotFound
-                    );
-
-                
+                    ?? throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
 
                 if (req.Code != null)
                 {
@@ -214,19 +209,26 @@ namespace eMototCare.BLL.Services.ExportServices
                 }
                 if (req.ExportNoteStatus != null)
                 {
-                    if (req.ExportNoteStatus == ExportNoteStatus.COMPLETED && entity.Type == ExportType.REPLACEMENT)
+                    if (
+                        req.ExportNoteStatus == ExportNoteStatus.COMPLETED
+                        && entity.Type == ExportType.REPLACEMENT
+                    )
                     {
-                        var appointmentCode = entity.Note.Replace("Xuất phụ tùng cho appointment: ", "").Trim();
-                        var appointment = await _unitOfWork.Appointments.GetByCodeAsync(appointmentCode);
-                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(appointment.EVCheck.Id);
+                        var appointmentCode = entity
+                            .Note.Replace("Xuất phụ tùng cho appointment: ", "")
+                            .Trim();
+                        var appointment = await _unitOfWork.Appointments.GetByCodeAsync(
+                            appointmentCode
+                        );
+                        var evCheck = await _unitOfWork.EVChecks.GetByIdAsync(
+                            appointment.EVCheck.Id
+                        );
                         evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
 
                         var replaceDetails = evCheck
-                                            .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
-                                            .ToList();
-
+                            .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
+                            .ToList();
                     }
-
 
                     entity.ExportNoteStatus = req.ExportNoteStatus.Value;
                 }
@@ -245,8 +247,6 @@ namespace eMototCare.BLL.Services.ExportServices
                 _logger.LogError(ex, "Update ExportNote failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
-
-
         }
 
         public async Task<ExportNoteResponse?> GetByIdAsync(Guid id)
@@ -270,7 +270,9 @@ namespace eMototCare.BLL.Services.ExportServices
             }
         }
 
-        public async Task<List<ExportPartItemResponse>> GetPartItemsByExportNoteIdAsync(Guid exportNoteId)
+        public async Task<List<ExportPartItemResponse>> GetPartItemsByExportNoteIdAsync(
+            Guid exportNoteId
+        )
         {
             try
             {
@@ -290,6 +292,5 @@ namespace eMototCare.BLL.Services.ExportServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
-
     }
 }

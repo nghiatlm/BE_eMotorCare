@@ -56,7 +56,7 @@ namespace eMotoCare.DAL
         private IMaintenancePlanRepository? _maintenancePlanRepository;
         private IMaintenanceStageDetailRepository? _maintenanceStageDetailRepository;
         private IMaintenanceStageRepository? _maintenanceStageRepository;
-        private IModelPartRepository? _modelPartTypeRepository;
+        private IModelPartRepository? _modelPartRepository;
         private IModelRepository? _modelRepository;
         private IPartItemRepository? _partItemRepository;
         private IPartRepository? _partRepository;
@@ -107,8 +107,8 @@ namespace eMotoCare.DAL
         public IMaintenanceStageRepository MaintenanceStages =>
             _maintenanceStageRepository ??= new MaintenanceStageRepository(_unitOfWorkContext);
 
-        public IModelPartRepository ModelPartTypes =>
-            _modelPartTypeRepository ??= new ModelPartRepository(_unitOfWorkContext);
+        public IModelPartRepository ModelParts =>
+            _modelPartRepository ??= new ModelPartRepository(_unitOfWorkContext);
 
         public IModelRepository Models =>
             _modelRepository ??= new ModelRepository(_unitOfWorkContext);
@@ -154,11 +154,14 @@ namespace eMotoCare.DAL
         public IServiceCenterSlotRepository ServiceCenterSlot =>
             _serviceCenterSlotRepository ??= new ServiceCenterSlotRepository(_unitOfWorkContext);
 
-        public IProgramDetailRepository ProgramDetails => _programDetailRepository ??= new ProgramDetailRepository(_unitOfWorkContext);
+        public IProgramDetailRepository ProgramDetails =>
+            _programDetailRepository ??= new ProgramDetailRepository(_unitOfWorkContext);
 
-        public IProgramRepository Programs => _programRepository ??= new ProgramRepository(_unitOfWorkContext);
+        public IProgramRepository Programs =>
+            _programRepository ??= new ProgramRepository(_unitOfWorkContext);
 
-        public IProgramModelRepository ProgramModels => _programModelRepository ??= new ProgramModelRepository(_unitOfWorkContext);
+        public IProgramModelRepository ProgramModels =>
+            _programModelRepository ??= new ProgramModelRepository(_unitOfWorkContext);
 
         public void RemoveRange(List<EVCheckDetail> olds)
         {

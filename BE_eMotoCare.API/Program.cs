@@ -4,6 +4,7 @@ using BE_eMotoCare.API.Middlewares;
 using BE_eMotoCare.API.Realtime.Hubs;
 using BE_eMotoCare.API.Realtime.Services;
 using eMotoCare.BO.Common;
+using eMotoCare.BO.Common.AISettings;
 using eMotoCare.DAL.context;
 using eMototCare.BLL.Services.BackgroundServices;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
-
+builder.Services.Configure<AiSettings>(builder.Configuration.GetSection("AiSettings"));
 var mailSection = builder.Configuration.GetSection("MailSettings");
 var fromEmail = mailSection["FromEmail"];
 var fromName = mailSection["FromName"];

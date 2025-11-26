@@ -399,7 +399,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
             var replaceDetails = evCheck
                 .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
                 .ToList();
-            
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
             await _unitOfWork.EVChecks.UpdateAsync(evCheck);
@@ -407,7 +406,9 @@ namespace eMototCare.BLL.Services.EVCheckServices
             return true;
         }
 
-        public async Task<List<EVCheckReplacementResponse>?> GetReplacementsByAppointmentAsync(Guid appointmentId)
+        public async Task<List<EVCheckReplacementResponse>?> GetReplacementsByAppointmentAsync(
+            Guid appointmentId
+        )
         {
             var appointment = await _unitOfWork.Appointments.GetByIdAsync(appointmentId);
 
@@ -417,14 +418,19 @@ namespace eMototCare.BLL.Services.EVCheckServices
             if (appointment.VehicleId != null)
             {
                 modelId = appointment.Vehicle.ModelId;
-            } else if (appointment.VehicleStage != null)
+            }
+            else if (appointment.VehicleStage != null)
             {
                 modelId = appointment.VehicleStage.Vehicle.ModelId;
-            } else
-            {
-                throw new AppException("Vehicle or VehicleStage not found.", HttpStatusCode.NotFound);
             }
-                var serviceCenterId = appointment.ServiceCenterId;
+            else
+            {
+                throw new AppException(
+                    "Vehicle or VehicleStage not found.",
+                    HttpStatusCode.NotFound
+                );
+            }
+            var serviceCenterId = appointment.ServiceCenterId;
 
             var parts = await _unitOfWork.Parts.GetReplacementPartsAsync(modelId, serviceCenterId);
 
