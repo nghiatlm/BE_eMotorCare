@@ -26,7 +26,7 @@ namespace eMotoCare.DAL.context
         public DbSet<MaintenanceStage> MaintenanceStages { get; set; }
         public DbSet<MaintenanceStageDetail> MaintenanceStageDetails { get; set; }
         public DbSet<Model> Models { get; set; }
-        public DbSet<ModelPartType> ModelPartTypes { get; set; }
+        public DbSet<ModelPart> ModelParts { get; set; }
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartItem> PartItems { get; set; }
         public DbSet<PartType> PartTypes { get; set; }

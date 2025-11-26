@@ -41,7 +41,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
                 .Include(x => x.EVCheck)
                     .ThenInclude(x => x.Appointment)
                 .Include(x => x.ReplacePart)
-                    .ThenInclude(r => r.Part)
                 .AsQueryable();
             if (maintenanceStageDetailId.HasValue)
             {
@@ -129,7 +128,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
                     .ThenInclude(x => x.Appointment)
                         .ThenInclude(a => a.VehicleStage)
                 .Include(x => x.ReplacePart)
-                    .ThenInclude(r => r.Part)
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<List<EVCheckDetail>> GetByEvCheckId(Guid id) =>

@@ -26,6 +26,5 @@ namespace eMotoCare.BO.Entities
         public Status Status { get; set; }
         public virtual ICollection<Part>? Parts { get; set; }
         public virtual ICollection<PriceService>? PriceServices { get; set; }
-        public virtual ICollection<ModelPartType>? ModelPartTypes { get; set; }
     }
 }
