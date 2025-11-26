@@ -36,6 +36,6 @@ namespace eMotoCare.BO.Entities
 
         public virtual ICollection<Vehicle>? Vehicles { get; set; }
 
-        public virtual ICollection<ModelPartType>? ModelPartTypes { get; set; }
+        public virtual ICollection<ModelPart>? ModelPart { get; set; }
     }
 }

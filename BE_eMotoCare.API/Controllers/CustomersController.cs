@@ -99,5 +99,15 @@ namespace BE_eMotoCare.API.Controllers
 
             return Ok(ApiResponse<CustomerResponse>.SuccessResponse(customer, "Lấy khách hàng thành công"));
         }
+
+        [HttpPost("sync-data")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
+        public async Task<IActionResult> SyncCustomerData([FromBody] CustomerSyncRequest request)
+        {
+            var result = await _customerService.SyncCustomerAsync(request.AccountId, request.CitizenId);
+            if (!result)
+                return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu khách hàng thất bại."));
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Đồng bộ dữ liệu khách hàng thành công."));
+        }
     }
 }

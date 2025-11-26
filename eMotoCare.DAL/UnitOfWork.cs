@@ -56,7 +56,7 @@ namespace eMotoCare.DAL
         private IMaintenancePlanRepository? _maintenancePlanRepository;
         private IMaintenanceStageDetailRepository? _maintenanceStageDetailRepository;
         private IMaintenanceStageRepository? _maintenanceStageRepository;
-        private IModelPartTypeRepository? _modelPartTypeRepository;
+        private IModelPartRepository? _modelPartTypeRepository;
         private IModelRepository? _modelRepository;
         private IPartItemRepository? _partItemRepository;
         private IPartRepository? _partRepository;
@@ -107,8 +107,8 @@ namespace eMotoCare.DAL
         public IMaintenanceStageRepository MaintenanceStages =>
             _maintenanceStageRepository ??= new MaintenanceStageRepository(_unitOfWorkContext);
 
-        public IModelPartTypeRepository ModelPartTypes =>
-            _modelPartTypeRepository ??= new ModelPartTypeRepository(_unitOfWorkContext);
+        public IModelPartRepository ModelPartTypes =>
+            _modelPartTypeRepository ??= new ModelPartRepository(_unitOfWorkContext);
 
         public IModelRepository Models =>
             _modelRepository ??= new ModelRepository(_unitOfWorkContext);

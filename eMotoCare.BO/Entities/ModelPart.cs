@@ -5,11 +5,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace eMotoCare.BO.Entities
 {
-    [Table("model_part_type")]
-    public class ModelPartType
+    [Table("model_part")]
+    public class ModelPart
     {
         [Key]
-        [Column("model_part_type_id")]
+        [Column("model_part_id")]
         public Guid Id { get; set; }
 
         [Required]
@@ -20,11 +20,11 @@ namespace eMotoCare.BO.Entities
         public virtual Model? Model { get; set; }
 
         [Required]
-        [Column("part_type_id")]
-        public Guid PartTypeId { get; set; }
+        [Column("part_id")]
+        public Guid PartId { get; set; }
 
-        [ForeignKey(nameof(PartTypeId))]
-        public virtual PartType? PartType { get; set; }
+        [ForeignKey(nameof(PartId))]
+        public virtual Part? Part { get; set; }
 
         [Column("status", TypeName = "varchar(200)")]
         [EnumDataType(typeof(Status))]

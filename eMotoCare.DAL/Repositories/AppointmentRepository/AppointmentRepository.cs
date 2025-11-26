@@ -19,6 +19,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Include(x => x.Customer)
                 .ThenInclude(x => x.Account)
                 .Include(x => x.VehicleStage)
+                .ThenInclude(x => x.Vehicle)
+                .ThenInclude(x => x.Model)
                 .Include(x => x.EVCheck)
                 .Include(x => x.VehicleStage)
                 .ThenInclude(x => x.MaintenanceStage)

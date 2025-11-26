@@ -140,7 +140,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 PartItemId = detail.EVCheckDetail.PartItemId,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Thay thế phụ tùng mới từ hãng",
-                                ReplacePartId = detail.ReplacePartId.Value,
                             };
                             await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
                         }
@@ -400,52 +399,36 @@ namespace eMototCare.BLL.Services.EVCheckServices
             var replaceDetails = evCheck
                 .EVCheckDetails.Where(d => d.ReplacePartId != null)
                 .ToList();
-            if (replaceDetails.Any())
-            {
-                var customerName =
-                    evCheck.Appointment.Customer.LastName
-                    + " "
-                    + evCheck.Appointment.Customer.FirstName;
-                var phone = evCheck.Appointment.Customer.Account.Phone;
-                var exportNoteId = Guid.NewGuid();
-                var exportNote = new ExportNote
-                {
-                    Id = exportNoteId,
-                    Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
-                    ExportDate = DateTime.UtcNow,
-                    Type = ExportType.REPLACEMENT,
-                    ServiceCenterId = evCheck.Appointment.ServiceCenterId,
-                    Note = "Xuất phụ tùng cho appointment: " + evCheck.Appointment.Code,
-                    ExportNoteStatus = ExportNoteStatus.PENDING,
-                    TotalValue = 0, // tổng giá trị phiếu xuất
-                    TotalQuantity = 0, // tổng số lượng xuất
-                    ExportTo = customerName + " - " + phone,
-                };
-                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
-
-                foreach (var detail in replaceDetails)
-                {
-                    var partItem = detail.ReplacePart;
-                    // partItem.ExportNoteId = exportNoteId;
-                    partItem.ServiceCenterInventoryId = null;
-                    if (partItem.WarrantyPeriod != null)
-                    {
-                        int month = partItem.WarrantyPeriod ?? 0;
-                        partItem.WarantyStartDate = DateTime.UtcNow;
-                        partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(month);
-                    }
-                    partItem.Part.Quantity -= 1;
-                    partItem.Quantity = 0;
-                    partItem.Status = PartItemStatus.IN_ACTIVE;
-                    exportNote.TotalValue += partItem.Price;
-                    exportNote.TotalQuantity += 1;
-                }
-            }
+            
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
             await _unitOfWork.EVChecks.UpdateAsync(evCheck);
             await _unitOfWork.SaveAsync();
             return true;
+        }
+
+        public async Task<List<EVCheckReplacementResponse>?> GetReplacementsByAppointmentAsync(Guid appointmentId)
+        {
+            var appointment = await _unitOfWork.Appointments.GetByIdAsync(appointmentId);
+
+            if (appointment == null)
+                throw new AppException("Appointment not found.", HttpStatusCode.NotFound);
+            var modelId = Guid.Empty;
+            if (appointment.VehicleId != null)
+            {
+                modelId = appointment.Vehicle.ModelId;
+            } else if (appointment.VehicleStage != null)
+            {
+                modelId = appointment.VehicleStage.Vehicle.ModelId;
+            } else
+            {
+                throw new AppException("Vehicle or VehicleStage not found.", HttpStatusCode.NotFound);
+            }
+                var serviceCenterId = appointment.ServiceCenterId;
+
+            var parts = await _unitOfWork.Parts.GetReplacementPartsAsync(modelId, serviceCenterId);
+
+            return parts;
         }
     }
 }
