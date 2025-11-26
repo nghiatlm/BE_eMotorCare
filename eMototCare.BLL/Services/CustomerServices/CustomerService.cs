@@ -2,10 +2,11 @@
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
-using Microsoft.EntityFrameworkCore;
+using eMototCare.BLL.Services.FirebaseServices;
 using Microsoft.Extensions.Logging;
 using System.Net;
 
@@ -16,16 +17,19 @@ namespace eMototCare.BLL.Services.CustomerServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<CustomerService> _logger;
+        private readonly IFirebaseService _firebase;
 
         public CustomerService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<CustomerService> logger
+            ILogger<CustomerService> logger,
+            IFirebaseService firebase
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _firebase = firebase;
         }
 
         public async Task<PageResult<CustomerResponse>> GetPagedAsync(
@@ -242,5 +246,46 @@ namespace eMototCare.BLL.Services.CustomerServices
             if (customer == null) throw new AppException("Không tìm thấy khách hàng có RMA ID này", HttpStatusCode.NotFound);
             return _mapper.Map<CustomerResponse>(customer);
         }
+
+        public async Task<bool> SyncCustomerAsync(Guid accountId, string citizenId)
+        {
+            try
+            {
+                if (!_firebase.IsFirestoreConfigured())
+                {
+                    _logger.LogWarning("Firestore not configured - cannot sync customer data for citizenId={CitizenId}", citizenId);
+                    return false;
+                }
+
+                var data = await _firebase.GetCustomerByCitizenIdAsync(citizenId);
+                if (data == null) throw new AppException("Không tìm thấy khách hàng trong hệ thống", HttpStatusCode.NotFound);
+                var customer = new Customer
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = accountId,
+                    CitizenId = data.ContainsKey("citizenId") ? data["citizenId"].ToString() ?? "" : "",
+                    FirstName = data.ContainsKey("firstName") ? data["firstName"].ToString() ?? "" : "",
+                    LastName = data.ContainsKey("lastName") ? data["lastName"].ToString() ?? "" : "",
+                    DateOfBirth = data.ContainsKey("dateOfBirth") && DateTime.TryParse(data["dateOfBirth"]?.ToString(), out var dob) ? dob : null,
+                    CustomerCode = data.ContainsKey("customerCode") ? data["customerCode"].ToString() ?? "" : "",
+                    Address = data.ContainsKey("address") ? data["address"].ToString() ?? "" : "",
+                    Gender = data.ContainsKey("gender") && Enum.TryParse<GenderEnum>(data["gender"]?.ToString(), out var gender) ? gender : null,
+                    AvatarUrl = data.ContainsKey("avatarUrl") ? data["avatarUrl"].ToString() ?? "" : "",
+                };
+                await _unitOfWork.Customers.CreateAsync(customer);
+                var result = await _unitOfWork.SaveAsync();
+                return result > 0 ? true : false;
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
     }
 }
