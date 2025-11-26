@@ -57,7 +57,7 @@ namespace eMotoCare.BO.Entities
         public virtual ServiceCenter? ServiceCenter { get; set; }
         public virtual ICollection<ExportNoteDetail>? ExportNoteDetails { get; set; }
         [Column("total_exports")]
-        public int TotalExports { get; set; }
+        public int? TotalExports { get; set; }
 
     }
 }

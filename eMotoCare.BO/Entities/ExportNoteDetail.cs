@@ -48,6 +48,6 @@ namespace eMotoCare.BO.Entities
         [Column("note", TypeName = "nvarchar(300)")]
         public string? Note { get; set; }
         [Column("export_index")]
-        public int ExportIndex { get; set; }
+        public int? ExportIndex { get; set; }
     }
 }
