@@ -31,7 +31,6 @@ namespace eMototCare.BLL.Services.ModelPartServices
 
         public async Task<PageResult<ModelPartResponse>> GetPagedAsync(
             string? search,
-            Status? status,
             Guid? id,
             Guid? modelId,
             Guid? partId,
@@ -45,7 +44,6 @@ namespace eMototCare.BLL.Services.ModelPartServices
                     search,
                     modelId,
                     partId,
-                    status,
                     id,
                     page,
                     pageSize
@@ -96,7 +94,6 @@ namespace eMototCare.BLL.Services.ModelPartServices
 
             var entity = _mapper.Map<ModelPart>(req);
             entity.Id = Guid.NewGuid();
-            entity.Status = Status.ACTIVE;
 
             await _unitOfWork.ModelParts.CreateAsync(entity);
             await _unitOfWork.SaveAsync();
@@ -151,8 +148,7 @@ namespace eMototCare.BLL.Services.ModelPartServices
             entity.ModelId = newModelId;
             entity.PartId = newPartId;
 
-            if (req.Status.HasValue)
-                entity.Status = req.Status.Value;
+
 
             await _unitOfWork.ModelParts.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
@@ -166,15 +162,11 @@ namespace eMototCare.BLL.Services.ModelPartServices
                 await _unitOfWork.ModelParts.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy ModelPart", HttpStatusCode.NotFound);
 
-            if (entity.Status == Status.IN_ACTIVE)
-                throw new AppException(
-                    "ModelPart này đã bị vô hiệu hoá trước đó.",
-                    HttpStatusCode.Conflict
-                );
 
-            entity.Status = Status.IN_ACTIVE;
 
-            await _unitOfWork.ModelParts.UpdateAsync(entity);
+            
+
+            await _unitOfWork.ModelParts.DeleteAsync(entity);
             await _unitOfWork.SaveAsync();
 
             _logger.LogInformation("Soft-deleted (IN_ACTIVE) ModelPart {Id}", id);

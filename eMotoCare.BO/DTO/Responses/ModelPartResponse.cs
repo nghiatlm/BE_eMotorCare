@@ -11,6 +11,5 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid PartId { get; set; }
         public string? PartName { get; set; }
 
-        public Status Status { get; set; }
     }
 }

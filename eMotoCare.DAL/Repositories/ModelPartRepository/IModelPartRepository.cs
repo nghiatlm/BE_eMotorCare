@@ -12,7 +12,6 @@ namespace eMotoCare.DAL.Repositories.ModelPartTypeRepository
             string? search,
             Guid? modelId,
             Guid? partId,
-            Status? status,
             Guid? id,
             int page,
             int pageSize
