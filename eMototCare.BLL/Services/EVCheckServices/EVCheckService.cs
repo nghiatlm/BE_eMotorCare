@@ -430,7 +430,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         Id = Guid.NewGuid(),
                         ExportNoteDetailId = exportNoteId,
                         PartItem = null,
-                        ProposedReplacePartId = null,
+                        ProposedReplacePartId = detail.ProposedReplacePartId,
                         Quantity = 1,
                     };
                     if (isInStock.Any())
