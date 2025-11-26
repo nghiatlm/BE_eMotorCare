@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -8,6 +9,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace eMototCare.BLL.Services.AppointmentServices
@@ -17,16 +19,19 @@ namespace eMototCare.BLL.Services.AppointmentServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<AppointmentService> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AppointmentService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<AppointmentService> logger
+            ILogger<AppointmentService> logger,
+            IHttpContextAccessor httpContextAccessor
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<PageResult<AppointmentResponse>> GetPagedAsync(
@@ -274,6 +279,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     await _unitOfWork.Appointments.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
                 var oldStatus = entity.Status;
+                var httpUser = _httpContextAccessor.HttpContext?.User;
+                var roleClaim = httpUser?.Claims.FirstOrDefault(c =>
+                    c.Type == ClaimTypes.Role || c.Type == "role" || c.Type == "roles"
+                );
+                var currentRole = roleClaim?.Value;
                 if (req.SlotTime.HasValue && entity.SlotTime != req.SlotTime.Value)
                 {
                     var dateOnly = DateOnly.FromDateTime(entity.AppointmentDate.Date);
@@ -313,7 +323,13 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 if (req.Note != null)
                     entity.Note = req.Note;
-
+                if (req.Status == AppointmentStatus.APPROVED && currentRole == "ROLE_CUSTOMER")
+                {
+                    throw new AppException(
+                        "Khách hàng không được phép duyệt lịch hẹn.",
+                        HttpStatusCode.Forbidden
+                    );
+                }
                 if (oldStatus != req.Status)
                 {
                     switch (req.Status)
@@ -560,7 +576,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 {
                     if (d.Status == EVCheckDetailStatus.CANCELED)
                         continue;
-                    if (d.ReplacePartId.HasValue)
+                    if (d.ProposedReplacePartId.HasValue)
                         continue;
 
                     Guid? requiredPartId = null;

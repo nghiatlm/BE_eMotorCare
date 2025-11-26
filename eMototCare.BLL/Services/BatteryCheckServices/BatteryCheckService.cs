@@ -185,19 +185,21 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 avgSoh
             );
 
-            string aiConclusion;
+            string? aiJson = null;
 
             try
             {
                 var provider = _aiSettings.Provider?.ToLowerInvariant();
+                string rawText;
 
+                // 2) Gọi AI provider (OpenAI hoặc Gemini) → LẤY RAW TEXT
                 if (provider == "gemini")
                 {
-                    aiConclusion = await CallGeminiAsync(prompt, ct);
+                    rawText = await CallGeminiAsync(prompt, ct);
                 }
                 else if (provider == "openai")
                 {
-                    aiConclusion = await CallOpenAiAsync(prompt, ct);
+                    rawText = await CallOpenAiAsync(prompt, ct);
                 }
                 else
                 {
@@ -205,28 +207,38 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                         "Provider AI không hợp lệ: {Provider}",
                         _aiSettings.Provider
                     );
-                    aiConclusion = BuildFallbackConclusion(
-                        minVoltage,
-                        maxVoltage,
-                        minTemp,
-                        maxTemp,
-                        minSoh,
-                        avgSoh
-                    );
+                    rawText = string.Empty;
                 }
+                aiJson = ExtractJson(rawText);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "AI phân tích battery thất bại, dùng rule fallback.");
-                aiConclusion = BuildFallbackConclusion(
+            }
+            if (string.IsNullOrWhiteSpace(aiJson))
+            {
+                aiJson = BuildFallbackSolutionJson(
                     minVoltage,
                     maxVoltage,
+                    avgVoltage,
+                    minCurrent,
+                    maxCurrent,
+                    avgCurrent,
                     minTemp,
                     maxTemp,
+                    avgTemp,
+                    minSoc,
+                    maxSoc,
+                    avgSoc,
                     minSoh,
+                    maxSoh,
                     avgSoh
                 );
             }
+
+            entity.Solution = aiJson;
+            await _unitOfWork.BatteryChecks.UpdateAsync(entity);
+            await _unitOfWork.SaveAsync();
 
             return new BatteryCheckAnalysisResponse
             {
@@ -254,36 +266,64 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 MaxSOH = maxSoh,
                 AvgSOH = avgSoh,
 
-                Conclusion = aiConclusion,
+                Conclusion = aiJson,
             };
         }
 
         //dự phòng khi AI lỗi
-        private string BuildFallbackConclusion(
+        private string BuildFallbackSolutionJson(
             float minVoltage,
             float maxVoltage,
+            float avgVoltage,
+            float minCurrent,
+            float maxCurrent,
+            float avgCurrent,
             float minTemp,
             float maxTemp,
+            float avgTemp,
+            float minSoc,
+            float maxSoc,
+            float avgSoc,
             float minSoh,
+            float maxSoh,
             float avgSoh
         )
         {
-            var list = new List<string>();
+            var energyCapability =
+                avgSoc >= 80
+                    ? "Mức SOC trung bình cao, pin vẫn cung cấp năng lượng tốt cho nhu cầu di chuyển hàng ngày."
+                    : "Mức SOC trung bình thấp, pin có dấu hiệu suy giảm khả năng cung cấp năng lượng.";
 
-            if (maxTemp > 60)
-                list.Add("Nhiệt độ cao vượt ngưỡng an toàn, cần kiểm tra hệ thống tản nhiệt.");
-            else
-                list.Add("Nhiệt độ pin hoạt động bình thường.");
+            var chargeDischargeEfficiency =
+                maxCurrent > 0 && maxVoltage > 0
+                    ? "Dòng và áp tương đối ổn định, không ghi nhận biến thiên bất thường lớn, hiệu suất nạp/xả ở mức chấp nhận được."
+                    : "Dữ liệu dòng/áp chưa đủ rõ để đánh giá chính xác hiệu suất nạp/xả.";
 
-            if (avgSoh < 80)
-                list.Add("SOH trung bình thấp (<80%), pin có dấu hiệu suy giảm.");
-            else
-                list.Add("SOH ở mức ổn định.");
+            var degradationStatus =
+                avgSoh >= 80
+                    ? $"SOH trung bình khoảng {avgSoh:F1}%, pin chỉ lão hoá nhẹ."
+                    : $"SOH trung bình khoảng {avgSoh:F1}%, pin đã suy giảm đáng kể, nên theo dõi sát và cân nhắc phương án thay thế.";
 
-            if (minVoltage < 2.8f)
-                list.Add("Có thời điểm điện áp thấp, nguy cơ giảm tuổi thọ cell.");
+            var remainingUsefulLife =
+                avgSoh >= 80
+                    ? "Tuổi thọ còn lại ước tính vẫn còn tương đối tốt, có thể sử dụng thêm một thời gian nữa trước khi cần thay pin."
+                    : "Tuổi thọ còn lại không còn nhiều, nên lập kế hoạch thay pin trong thời gian tới để tránh sự cố ngoài ý muốn.";
 
-            return string.Join(" ", list);
+            var safety =
+                maxTemp > 60
+                    ? $"Nhiệt độ cực đại đạt khoảng {maxTemp:F1}°C, vượt ngưỡng khuyến nghị, cần kiểm tra hệ thống tản nhiệt và cách sử dụng."
+                    : $"Nhiệt độ hoạt động nằm trong vùng an toàn (tối đa {maxTemp:F1}°C), chưa ghi nhận nguy cơ mất an toàn rõ rệt.";
+
+            var obj = new
+            {
+                energyCapability,
+                chargeDischargeEfficiency,
+                degradationStatus,
+                remainingUsefulLife,
+                safety,
+            };
+
+            return JsonSerializer.Serialize(obj);
         }
 
         //prompt
@@ -337,12 +377,33 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                      - Max: {maxSoh:F2}
                      - Avg: {avgSoh:F2}
 
-                     Yêu cầu:
-                       1) Đánh giá tình trạng pin tổng thể (tốt / suy giảm / kém).
-                       2) Liệt kê các rủi ro chính dựa trên dữ liệu.
-                       3) Đưa ra khuyến nghị cho kỹ thuật viên và khách hàng.
+                     Hãy phân tích **theo đúng 5 tiêu chí dưới đây**, viết rõ 5 đoạn, mỗi đoạn 1–3 câu:
 
-                     Hãy trả lời ngắn gọn (3–6 câu), tiếng Việt, dễ hiểu, tập trung vào ý chính.";
+                      1) Khả năng cung cấp năng lượng hiện tại  
+                         - Dựa vào Capacity/Ah, Energy/Wh, SOC %, so sánh với giá trị danh định (đánh giá pin còn khỏe hay suy).  
+
+                      2) Hiệu suất nạp/xả  
+                         - Dựa vào dòng/áp/power, đánh giá hiệu suất nạp/xả, có thất thoát năng lượng không.  
+
+                      3) Tình trạng xuống cấp (SOH, nội trở, số chu kỳ…)  
+                         - Đánh giá mức độ hao mòn của pin dựa vào SOH & hành vi điện áp/dòng.  
+
+                      4) Dự báo tuổi thọ còn lại (RUL – Remaining Useful Life)  
+                         - Ước lượng pin còn dùng được bao lâu dựa theo xu hướng SOH.  
+
+                      5) Khả năng an toàn  
+                         - Đánh giá nguy cơ quá nhiệt, sụt áp bất thường hoặc cell lỗi.
+
+                      Trả lời theo mẫu JSON sau, KHÔNG thêm trường khác:
+                         {{
+                           ""energyCapability"": ""..."",
+                           ""chargeDischargeEfficiency"": ""..."",
+                           ""degradationStatus"": ""..."",
+                           ""remainingUsefulLife"": ""..."",
+                           ""safety"": ""...""
+                         }}
+
+                     Hãy trả lời tiếng Việt, dễ hiểu, tập trung vào ý chính.";
         }
 
         //gọi API OpenAi
@@ -433,6 +494,23 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 .GetProperty("parts")[0]
                 .GetProperty("text")
                 .GetString()!;
+        }
+
+        private static string? ExtractJson(string raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw))
+                return null;
+            raw = raw.Trim();
+            if (raw.StartsWith("{") && raw.EndsWith("}"))
+                return raw;
+            var start = raw.IndexOf('{');
+            var end = raw.LastIndexOf('}');
+            if (start >= 0 && end > start)
+            {
+                return raw.Substring(start, end - start + 1);
+            }
+
+            return null;
         }
     }
 }

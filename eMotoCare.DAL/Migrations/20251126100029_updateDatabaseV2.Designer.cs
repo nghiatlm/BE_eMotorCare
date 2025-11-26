@@ -12,8 +12,8 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251124144636_updateDatabaseV6")]
-    partial class updateDatabaseV6
+    [Migration("20251126100029_updateDatabaseV2")]
+    partial class updateDatabaseV2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -397,6 +397,10 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("campaign_detail_id");
 
+                    b.Property<Guid?>("ProposedReplacePartId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("proposed_replace_part_id");
+
                     b.Property<decimal?>("Quantity")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("quantity");
@@ -404,10 +408,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<string>("Remedies")
                         .HasColumnType("varchar(200)")
                         .HasColumnName("remedies");
-
-                    b.Property<Guid?>("ReplacePartId")
-                        .HasColumnType("char(36)")
-                        .HasColumnName("replace_part_id");
 
                     b.Property<string>("Result")
                         .HasColumnType("longtext")
@@ -436,7 +436,7 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ProgramDetailId");
 
-                    b.HasIndex("ReplacePartId");
+                    b.HasIndex("ProposedReplacePartId");
 
                     b.ToTable("ev_check_detail");
                 });
@@ -531,6 +531,10 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("part_item_id");
 
+                    b.Property<Guid?>("ProposedReplacePartId")
+                        .HasColumnType("char(36)")
+                        .HasColumnName("proposed_replace_part_id");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int")
                         .HasColumnName("quantity");
@@ -552,6 +556,8 @@ namespace eMotoCare.DAL.Migrations
                     b.HasIndex("ImportNoteId");
 
                     b.HasIndex("PartItemId");
+
+                    b.HasIndex("ProposedReplacePartId");
 
                     b.ToTable("export_note_detail");
                 });
@@ -850,20 +856,20 @@ namespace eMotoCare.DAL.Migrations
                     b.ToTable("model");
                 });
 
-            modelBuilder.Entity("eMotoCare.BO.Entities.ModelPartType", b =>
+            modelBuilder.Entity("eMotoCare.BO.Entities.ModelPart", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)")
-                        .HasColumnName("model_part_type_id");
+                        .HasColumnName("model_part_id");
 
                     b.Property<Guid>("ModelId")
                         .HasColumnType("char(36)")
                         .HasColumnName("model_id");
 
-                    b.Property<Guid>("PartTypeId")
+                    b.Property<Guid>("PartId")
                         .HasColumnType("char(36)")
-                        .HasColumnName("part_type_id");
+                        .HasColumnName("part_id");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -874,9 +880,9 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasIndex("ModelId");
 
-                    b.HasIndex("PartTypeId");
+                    b.HasIndex("PartId");
 
-                    b.ToTable("model_part_type");
+                    b.ToTable("model_part");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Part", b =>
@@ -958,7 +964,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnName("quantity");
 
                     b.Property<string>("SerialNumber")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
                         .HasColumnName("serial_number");
@@ -1845,9 +1850,9 @@ namespace eMotoCare.DAL.Migrations
                         .WithMany()
                         .HasForeignKey("ProgramDetailId");
 
-                    b.HasOne("eMotoCare.BO.Entities.PartItem", "ReplacePart")
-                        .WithOne("ReplcePart")
-                        .HasForeignKey("eMotoCare.BO.Entities.EVCheckDetail", "ReplacePartId");
+                    b.HasOne("eMotoCare.BO.Entities.Part", "ProposedReplacePart")
+                        .WithOne("ProposedReplacePart")
+                        .HasForeignKey("eMotoCare.BO.Entities.EVCheckDetail", "ProposedReplacePartId");
 
                     b.Navigation("CampaignDetail");
 
@@ -1857,7 +1862,7 @@ namespace eMotoCare.DAL.Migrations
 
                     b.Navigation("PartItem");
 
-                    b.Navigation("ReplacePart");
+                    b.Navigation("ProposedReplacePart");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ExportNote", b =>
@@ -1891,9 +1896,15 @@ namespace eMotoCare.DAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("eMotoCare.BO.Entities.Part", "ProposedReplacePart")
+                        .WithMany()
+                        .HasForeignKey("ProposedReplacePartId");
+
                     b.Navigation("ExportNote");
 
                     b.Navigation("PartItem");
+
+                    b.Navigation("ProposedReplacePart");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.ImportNote", b =>
@@ -1975,23 +1986,23 @@ namespace eMotoCare.DAL.Migrations
                     b.Navigation("MaintenancePlan");
                 });
 
-            modelBuilder.Entity("eMotoCare.BO.Entities.ModelPartType", b =>
+            modelBuilder.Entity("eMotoCare.BO.Entities.ModelPart", b =>
                 {
                     b.HasOne("eMotoCare.BO.Entities.Model", "Model")
-                        .WithMany("ModelPartTypes")
+                        .WithMany("ModelPart")
                         .HasForeignKey("ModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("eMotoCare.BO.Entities.PartType", "PartType")
-                        .WithMany("ModelPartTypes")
-                        .HasForeignKey("PartTypeId")
+                    b.HasOne("eMotoCare.BO.Entities.Part", "Part")
+                        .WithMany("ModelParts")
+                        .HasForeignKey("PartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Model");
 
-                    b.Navigation("PartType");
+                    b.Navigation("Part");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Part", b =>
@@ -2282,7 +2293,7 @@ namespace eMotoCare.DAL.Migrations
 
             modelBuilder.Entity("eMotoCare.BO.Entities.Model", b =>
                 {
-                    b.Navigation("ModelPartTypes");
+                    b.Navigation("ModelPart");
 
                     b.Navigation("Vehicles");
                 });
@@ -2291,9 +2302,13 @@ namespace eMotoCare.DAL.Migrations
                 {
                     b.Navigation("MaintenanceStageDetails");
 
+                    b.Navigation("ModelParts");
+
                     b.Navigation("PartItems");
 
                     b.Navigation("ProgramDetails");
+
+                    b.Navigation("ProposedReplacePart");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.PartItem", b =>
@@ -2308,15 +2323,11 @@ namespace eMotoCare.DAL.Migrations
 
                     b.Navigation("ReplacePart");
 
-                    b.Navigation("ReplcePart");
-
                     b.Navigation("VehiclePartItems");
                 });
 
             modelBuilder.Entity("eMotoCare.BO.Entities.PartType", b =>
                 {
-                    b.Navigation("ModelPartTypes");
-
                     b.Navigation("Parts");
 
                     b.Navigation("PriceServices");

@@ -19,9 +19,6 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(PartId))]
         public virtual Part? Part { get; set; }
 
-        [InverseProperty(nameof(EVCheckDetail.ReplacePart))]
-        public virtual EVCheckDetail? ReplcePart { get; set; }
-
         [InverseProperty(nameof(VehiclePartItem.ReplaceFor))]
         public virtual VehiclePartItem? ReplaceFor { get; set; }
 

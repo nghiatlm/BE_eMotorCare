@@ -6,6 +6,7 @@ using eMotoCare.DAL.Repositories.BatteryCheckRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
+using eMotoCare.DAL.Repositories.ExportNoteDetails;
 using eMotoCare.DAL.Repositories.ExportNoteRepository;
 using eMotoCare.DAL.Repositories.ImportNoteRepository;
 using eMotoCare.DAL.Repositories.MaintenancePlanRepository;
@@ -56,7 +57,7 @@ namespace eMotoCare.DAL
         private IMaintenancePlanRepository? _maintenancePlanRepository;
         private IMaintenanceStageDetailRepository? _maintenanceStageDetailRepository;
         private IMaintenanceStageRepository? _maintenanceStageRepository;
-        private IModelPartTypeRepository? _modelPartTypeRepository;
+        private IModelPartRepository? _modelPartRepository;
         private IModelRepository? _modelRepository;
         private IPartItemRepository? _partItemRepository;
         private IPartRepository? _partRepository;
@@ -72,6 +73,11 @@ namespace eMotoCare.DAL
         private IVehicleRepository? _vehicleRepository;
         private IVehicleStageRepository? _vehicleStageRepository;
         private IServiceCenterSlotRepository _serviceCenterSlotRepository;
+        private IExportNoteDetailRepository? _exportNoteDetailRepository;
+
+        public IExportNoteDetailRepository ExportNoteDetails =>
+            _exportNoteDetailRepository ??= new ExportNoteDetailRepository(_unitOfWorkContext);
+
         public IAccountRepository Accounts =>
             _accountRepository ??= new AccountRepository(_unitOfWorkContext);
 
@@ -107,8 +113,8 @@ namespace eMotoCare.DAL
         public IMaintenanceStageRepository MaintenanceStages =>
             _maintenanceStageRepository ??= new MaintenanceStageRepository(_unitOfWorkContext);
 
-        public IModelPartTypeRepository ModelPartTypes =>
-            _modelPartTypeRepository ??= new ModelPartTypeRepository(_unitOfWorkContext);
+        public IModelPartRepository ModelParts =>
+            _modelPartRepository ??= new ModelPartRepository(_unitOfWorkContext);
 
         public IModelRepository Models =>
             _modelRepository ??= new ModelRepository(_unitOfWorkContext);
@@ -154,11 +160,14 @@ namespace eMotoCare.DAL
         public IServiceCenterSlotRepository ServiceCenterSlot =>
             _serviceCenterSlotRepository ??= new ServiceCenterSlotRepository(_unitOfWorkContext);
 
-        public IProgramDetailRepository ProgramDetails => _programDetailRepository ??= new ProgramDetailRepository(_unitOfWorkContext);
+        public IProgramDetailRepository ProgramDetails =>
+            _programDetailRepository ??= new ProgramDetailRepository(_unitOfWorkContext);
 
-        public IProgramRepository Programs => _programRepository ??= new ProgramRepository(_unitOfWorkContext);
+        public IProgramRepository Programs =>
+            _programRepository ??= new ProgramRepository(_unitOfWorkContext);
 
-        public IProgramModelRepository ProgramModels => _programModelRepository ??= new ProgramModelRepository(_unitOfWorkContext);
+        public IProgramModelRepository ProgramModels =>
+            _programModelRepository ??= new ProgramModelRepository(_unitOfWorkContext);
 
         public void RemoveRange(List<EVCheckDetail> olds)
         {

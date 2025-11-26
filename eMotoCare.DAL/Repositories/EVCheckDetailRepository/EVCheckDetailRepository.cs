@@ -7,48 +7,48 @@ using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
 {
-    public class EVCheckDetailRepository : GenericRepository<EVCheckDetail>, IEVCheckDetailRepository
+    public class EVCheckDetailRepository
+        : GenericRepository<EVCheckDetail>,
+            IEVCheckDetailRepository
     {
-        public EVCheckDetailRepository(ApplicationDbContext context) : base(context)
-        {
-        }
+        public EVCheckDetailRepository(ApplicationDbContext context)
+            : base(context) { }
 
         public async Task<(IReadOnlyList<EVCheckDetail> Items, long Total)> GetPagedAsync(
-             Guid? maintenanceStageDetailId,
-             Guid? campaignDetailId,
-             Guid? partItemId,
-             Guid? eVCheckId,
-             Guid? replacePartId,
-             string? result,
-             string? unit,
-             decimal? quantity,
-             decimal? pricePart,
-             decimal? priceService,
-             decimal? totalAmount,
-             EVCheckDetailStatus? status,
-             int page,
-             int pageSize
+            Guid? maintenanceStageDetailId,
+            Guid? campaignDetailId,
+            Guid? partItemId,
+            Guid? eVCheckId,
+            Guid? replacePartId,
+            string? result,
+            string? unit,
+            decimal? quantity,
+            decimal? pricePart,
+            decimal? priceService,
+            decimal? totalAmount,
+            EVCheckDetailStatus? status,
+            int page,
+            int pageSize
         )
         {
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.EVCheckDetails
-                .Include(x => x.MaintenanceStageDetail)
+            var q = _context
+                .EVCheckDetails.Include(x => x.MaintenanceStageDetail)
                 .Include(x => x.CampaignDetail)
                 .Include(x => x.PartItem)
-                    .ThenInclude(p => p.Part)
+                .ThenInclude(p => p.Part)
                 .Include(x => x.EVCheck)
-                    .ThenInclude(x => x.Appointment)
-                .Include(x => x.ReplacePart)
-                    .ThenInclude(r => r.Part)
+                .ThenInclude(x => x.Appointment)
+                .Include(x => x.ProposedReplacePart)
                 .AsQueryable();
             if (maintenanceStageDetailId.HasValue)
             {
                 q = q.Where(x => x.MaintenanceStageDetailId == maintenanceStageDetailId.Value);
             }
 
-            // if (campaignDetailId.HasValue) 
+            // if (campaignDetailId.HasValue)
             // {
             //     q = q.Where(x => x.CampaignDetailId == campaignDetailId.Value);
             // }
@@ -65,19 +65,17 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
 
             if (replacePartId.HasValue)
             {
-                q = q.Where(x => x.ReplacePartId == replacePartId.Value);
+                q = q.Where(x => x.ProposedReplacePartId == replacePartId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(result))
             {
-                q = q.Where(x =>
-                    x.Result.Contains(result));
+                q = q.Where(x => x.Result.Contains(result));
             }
 
             if (!string.IsNullOrWhiteSpace(unit))
             {
-                q = q.Where(x =>
-                    x.Unit.Contains(unit));
+                q = q.Where(x => x.Unit.Contains(unit));
             }
 
             if (quantity.HasValue)
@@ -105,10 +103,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
                 q = q.Where(x => x.Status == status.Value);
             }
 
-
-
-
-
             var total = await q.LongCountAsync();
 
             var items = await q.OrderByDescending(x => x.EVCheck.CreatedAt)
@@ -120,21 +114,18 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
         }
 
         public Task<EVCheckDetail?> GetByIdAsync(Guid id) =>
-            _context.EVCheckDetails
-            .Include(x => x.MaintenanceStageDetail)
+            _context
+                .EVCheckDetails.Include(x => x.MaintenanceStageDetail)
                 .Include(x => x.CampaignDetail)
                 .Include(x => x.PartItem)
-                    .ThenInclude(p => p.Part)
+                .ThenInclude(p => p.Part)
                 .Include(x => x.EVCheck)
-                    .ThenInclude(x => x.Appointment)
-                        .ThenInclude(a => a.VehicleStage)
-                .Include(x => x.ReplacePart)
-                    .ThenInclude(r => r.Part)
-            .FirstOrDefaultAsync(x => x.Id == id);
+                .ThenInclude(x => x.Appointment)
+                .ThenInclude(a => a.VehicleStage)
+                .Include(x => x.ProposedReplacePart)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<List<EVCheckDetail>> GetByEvCheckId(Guid id) =>
-            _context.EVCheckDetails
-            .Where(x => x.EVCheckId == id)
-            .ToListAsync();
+            _context.EVCheckDetails.Where(x => x.EVCheckId == id).ToListAsync();
     }
 }

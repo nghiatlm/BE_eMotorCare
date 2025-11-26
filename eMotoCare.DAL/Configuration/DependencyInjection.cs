@@ -59,7 +59,7 @@ namespace eMotoCare.DAL.Configuration
             services.AddScoped<IProgramModelRepository, ProgramModelRepository>();
             services.AddScoped<IProgramDetailRepository, ProgramDetailRepository>();
             services.AddScoped<IMaintenanceStageRepository, MaintenanceStageRepository>();
-            services.AddScoped<IModelPartTypeRepository, ModelPartTypeRepository>();
+            services.AddScoped<IModelPartRepository, ModelPartRepository>();
             services.AddScoped<IModelRepository, ModelRepository>();
             services.AddScoped<IPartItemRepository, PartItemRepository>();
             services.AddScoped<IPartRepository, PartRepository>();

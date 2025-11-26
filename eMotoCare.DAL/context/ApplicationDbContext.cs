@@ -26,7 +26,7 @@ namespace eMotoCare.DAL.context
         public DbSet<MaintenanceStage> MaintenanceStages { get; set; }
         public DbSet<MaintenanceStageDetail> MaintenanceStageDetails { get; set; }
         public DbSet<Model> Models { get; set; }
-        public DbSet<ModelPartType> ModelPartTypes { get; set; }
+        public DbSet<ModelPart> ModelParts { get; set; }
         public DbSet<Part> Parts { get; set; }
         public DbSet<PartItem> PartItems { get; set; }
         public DbSet<PartType> PartTypes { get; set; }
@@ -96,8 +96,7 @@ namespace eMotoCare.DAL.context
                         v.Split(',', StringSplitOptions.RemoveEmptyEntries)
                             .Select(x => Enum.Parse<TEnum>(x))
                             .ToArray()
-                )
-            { }
+                ) { }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -118,24 +117,23 @@ namespace eMotoCare.DAL.context
                 .HasConversion<string>()
                 .HasColumnType("varchar(16)");
 
-            modelBuilder.Entity<EVCheckDetail>()
+            modelBuilder
+                .Entity<EVCheckDetail>()
                 .HasIndex(u => u.MaintenanceStageDetailId)
                 .IsUnique(false);
 
-            modelBuilder.Entity<EVCheckDetail>()
-                .HasIndex(u => u.ReplacePartId)
+            modelBuilder
+                .Entity<EVCheckDetail>()
+                .HasIndex(u => u.ProposedReplacePartId)
                 .IsUnique(false);
 
-            modelBuilder.Entity<VehiclePartItem>()
-                .HasIndex(u => u.ReplaceForId)
-                .IsUnique(false);
+            modelBuilder.Entity<VehiclePartItem>().HasIndex(u => u.ReplaceForId).IsUnique(false);
 
-            modelBuilder.Entity<ProgramModel>()
+            modelBuilder
+                .Entity<ProgramModel>()
                 .HasKey(pm => new { pm.ProgramId, pm.VehicleModelId });
 
-            modelBuilder.Entity<Customer>()
-                .HasIndex(u => u.CitizenId)
-                .IsUnique(true);
+            modelBuilder.Entity<Customer>().HasIndex(u => u.CitizenId).IsUnique(true);
 
             base.OnModelCreating(modelBuilder);
         }

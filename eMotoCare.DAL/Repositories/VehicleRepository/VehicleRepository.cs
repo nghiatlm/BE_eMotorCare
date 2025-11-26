@@ -18,7 +18,7 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Include(x => x.Model)
                 .ThenInclude(m => m.MaintenancePlan)
                 .Include(x => x.Model)
-                .ThenInclude(m => m.ModelPartTypes)
+                .ThenInclude(m => m.ModelPart)
                 .Include(x => x.Customer)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -81,7 +81,7 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Models.AsNoTracking()
                 .Include(m => m.MaintenancePlan)
                 .Include(m => m.Vehicles)
-                .Include(m => m.ModelPartTypes)
+                .Include(m => m.ModelPart)
                 .FirstOrDefaultAsync(m => m.Id == modelId);
         }
     }
