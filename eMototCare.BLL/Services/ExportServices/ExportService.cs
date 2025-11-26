@@ -222,7 +222,7 @@ namespace eMototCare.BLL.Services.ExportServices
                         evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
 
                         var replaceDetails = evCheck
-                                            .EVCheckDetails.Where(d => d.ReplacePartId != null)
+                                            .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
                                             .ToList();
 
                     }

@@ -123,7 +123,7 @@ namespace eMotoCare.DAL.context
                 .IsUnique(false);
 
             modelBuilder.Entity<EVCheckDetail>()
-                .HasIndex(u => u.ReplacePartId)
+                .HasIndex(u => u.ProposedReplacePartId)
                 .IsUnique(false);
 
             modelBuilder.Entity<VehiclePartItem>()

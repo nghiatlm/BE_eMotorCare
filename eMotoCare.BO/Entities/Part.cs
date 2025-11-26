@@ -43,8 +43,8 @@ namespace eMotoCare.BO.Entities
         [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
 
-        [InverseProperty(nameof(EVCheckDetail.ReplacePart))]
-        public virtual EVCheckDetail? ReplacePart { get; set; }
+        [InverseProperty(nameof(EVCheckDetail.ProposedReplacePart))]
+        public virtual EVCheckDetail? ProposedReplacePart { get; set; }
 
 
         public virtual ICollection<PartItem>? PartItems { get; set; }

@@ -397,7 +397,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
             }
             evCheck.Status = EVCheckStatus.QUOTE_APPROVED;
             var replaceDetails = evCheck
-                .EVCheckDetails.Where(d => d.ReplacePartId != null)
+                .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
                 .ToList();
             
 
