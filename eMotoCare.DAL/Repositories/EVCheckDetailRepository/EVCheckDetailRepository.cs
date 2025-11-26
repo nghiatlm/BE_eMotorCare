@@ -41,7 +41,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
                 .ThenInclude(p => p.Part)
                 .Include(x => x.EVCheck)
                 .ThenInclude(x => x.Appointment)
-                .Include(x => x.ReplacePart)
+                .Include(x => x.ProposedReplacePart)
                 .AsQueryable();
             if (maintenanceStageDetailId.HasValue)
             {
