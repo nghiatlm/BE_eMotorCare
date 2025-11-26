@@ -424,6 +424,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
 
                 foreach (var detail in replaceDetails)
                 {
+                    var isInStock = await _unitOfWork.PartItems.GetAvailablePartItemsByPartIdAsync(detail.ProposedReplacePartId.Value, detail.EVCheck.Appointment.ServiceCenterId);
                     var exportNoteDetail = new ExportNoteDetail
                     {
                         Id = Guid.NewGuid(),
@@ -432,6 +433,13 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         ProposedReplacePartId = null,
                         Quantity = 1,
                     };
+                    if (isInStock.Any())
+                    {
+                        exportNoteDetail.Status = ExportNoteDetailStatus.INSTOCK;
+                    } else
+                    {
+                        exportNoteDetail.Status = ExportNoteDetailStatus.OUT_OF_STOCK;
+                    }
                     exportNote.TotalQuantity += 1;
                     await _unitOfWork.ExportNoteDetails.CreateAsync(exportNoteDetail);
                 }

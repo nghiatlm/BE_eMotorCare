@@ -78,5 +78,14 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
                 .Where(p => p.ServiceCenterInventory.ServiceCenterId == serviceCenterId)
                 .ToListAsync();
         }
+
+        public async Task<List<PartItem>> GetAvailablePartItemsByPartIdAsync(Guid partId, Guid serviceCenterId)
+        {
+            return await _context.PartItems
+                .Include(p => p.ServiceCenterInventory)
+                .Include(p => p.Part)
+                .Where(p => p.PartId == partId && p.ServiceCenterInventory.ServiceCenterId == serviceCenterId && p.Quantity == 1 && p.Status == PartItemStatus.ACTIVE)
+                .ToListAsync();
+        }
     }
 }

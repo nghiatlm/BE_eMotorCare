@@ -1,7 +1,8 @@
 
+using eMotoCare.BO.Common;
+using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using eMotoCare.BO.Common;
 
 namespace eMotoCare.BO.Entities
 {
@@ -47,7 +48,13 @@ namespace eMotoCare.BO.Entities
 
         [Column("note", TypeName = "nvarchar(300)")]
         public string? Note { get; set; }
+
         [Column("export_index")]
         public int? ExportIndex { get; set; }
+
+        [Required]
+        [Column("status", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(ExportNoteDetailStatus))]
+        public ExportNoteDetailStatus Status { get; set; }
     }
 }
