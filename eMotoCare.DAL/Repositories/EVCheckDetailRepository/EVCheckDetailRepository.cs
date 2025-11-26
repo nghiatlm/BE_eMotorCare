@@ -122,7 +122,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
                 .Include(x => x.EVCheck)
                 .ThenInclude(x => x.Appointment)
                 .ThenInclude(a => a.VehicleStage)
-                .Include(x => x.ReplacePart)
+                .Include(x => x.ProposedReplacePart)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<List<EVCheckDetail>> GetByEvCheckId(Guid id) =>
