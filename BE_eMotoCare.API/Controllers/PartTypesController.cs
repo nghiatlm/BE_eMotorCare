@@ -71,5 +71,14 @@ namespace BE_eMotoCare.API.Controllers
             await _partTypeService.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật Part Type thành công"));
         }
+
+        [HttpGet("labels")]
+        public async Task<IActionResult> GetAllPartTypes()
+        {
+            var items = await _partTypeService.GetAll();
+            return items != null ?
+                Ok(ApiResponse<List<eMotoCare.BO.DTO.Responses.Labels.PartType>>.SuccessResponse(items, "Lấy tất cả Part Types thành công")) :
+                NotFound(ApiResponse<string>.BadRequest("Không tìm thấy Part Types"));
+        }
     }
 }

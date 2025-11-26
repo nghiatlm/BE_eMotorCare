@@ -87,7 +87,6 @@ namespace eMototCare.BLL.Services.ImportNoteServices
                 if (serviceCenter == null) throw new AppException("Không tìm thấy Service Center", HttpStatusCode.NotFound);
                 var parttype = await _unitOfWork.PartTypes.GetByIdAsync(req.PartRequest.PartTypeId);
                 if (parttype == null) throw new AppException("Không tìm thấy Part Type", HttpStatusCode.NotFound);
-
                 var entity = _mapper.Map<ImportNote>(req);
                 entity.ImportDate = DateTime.UtcNow;
                 entity.Code = $"IMPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
@@ -103,10 +102,8 @@ namespace eMototCare.BLL.Services.ImportNoteServices
                     partId = part.Id;
                 }
                 if (req.PartRequest.PartItemRequest == null) throw new AppException("Part Item Request is required", HttpStatusCode.BadRequest);
-                // ensure the service center has inventory
                 var inventory = await _unitOfWork.ServiceCenterInventories.GetByServiceCenterId(serviceCenter.Id);
                 if (inventory == null) throw new AppException("Không tìm thấy kho hàng cho Service Center", HttpStatusCode.NotFound);
-
                 List<PartItem> partItems = new List<PartItem>();
                 foreach (var item in req.PartRequest.PartItemRequest)
                 {
@@ -128,16 +125,13 @@ namespace eMototCare.BLL.Services.ImportNoteServices
                     };
                     partItems.Add(partItem);
                 }
-                // assign ids to part items and add them to context
                 foreach (var pi in partItems)
                 {
                     pi.Id = Guid.NewGuid();
                     _unitOfWork.PartItems.Create(pi);
                 }
-
                 entity.TotalAmout = partItems.Sum(pi => pi.Price);
                 _unitOfWork.ImportNotes.Create(entity);
-
                 entity.ImportNoteDetails = partItems.Select(pi => new ImportNoteDetail
                 {
                     PartItemId = pi.Id,
@@ -147,9 +141,7 @@ namespace eMototCare.BLL.Services.ImportNoteServices
                     TotalPrice = pi.Price * pi.Quantity,
                     Note = string.Empty
                 }).ToList();
-
                 await _unitOfWork.SaveAsync();
-
                 _logger.LogInformation("Created ImportNote");
                 return entity.Id;
             }
