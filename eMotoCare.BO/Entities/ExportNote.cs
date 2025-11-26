@@ -56,6 +56,8 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
         public virtual ICollection<ExportNoteDetail>? ExportNoteDetails { get; set; }
+        [Column("total_exports")]
+        public int TotalExports { get; set; }
 
     }
 }

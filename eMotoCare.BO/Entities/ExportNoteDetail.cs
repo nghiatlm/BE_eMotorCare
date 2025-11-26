@@ -15,14 +15,14 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("export_note_id")]
-        public Guid ImportNoteId { get; set; }
+        public Guid ExportNoteDetailId { get; set; }
 
-        [ForeignKey(nameof(ImportNoteId))]
+        [ForeignKey(nameof(ExportNoteDetailId))]
         public virtual ExportNote? ExportNote { get; set; }
 
-        [Required]
+        
         [Column("part_item_id")]
-        public Guid PartItemId { get; set; }
+        public Guid? PartItemId { get; set; }
 
         [ForeignKey(nameof(PartItemId))]
         public virtual PartItem? PartItem { get; set; }
@@ -41,5 +41,7 @@ namespace eMotoCare.BO.Entities
 
         [Column("note", TypeName = "nvarchar(300)")]
         public string? Note { get; set; }
+        [Column("export_index")]
+        public int ExportIndex { get; set; }
     }
 }
