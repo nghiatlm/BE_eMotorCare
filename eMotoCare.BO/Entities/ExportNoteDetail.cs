@@ -27,6 +27,12 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(PartItemId))]
         public virtual PartItem? PartItem { get; set; }
 
+        [Column("proposed_replace_part_id")]
+        public Guid? ProposedReplacePartId { get; set; }
+
+        [ForeignKey(nameof(ProposedReplacePartId))]
+        public virtual Part? ProposedReplacePart { get; set; }
+
         [Required]
         [Column("quantity")]
         public int Quantity { get; set; }
