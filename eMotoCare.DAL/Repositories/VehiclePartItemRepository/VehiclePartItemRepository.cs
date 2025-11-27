@@ -40,6 +40,7 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
                 .Include(x => x.Vehicle)
                 .Include(x => x.PartItem)
                 .ThenInclude(x => x.Part)
+                .ThenInclude(x => x.PartType)
                 .Include(x => x.ReplaceFor)
                 .AsQueryable();
 
