@@ -76,10 +76,10 @@ namespace eMotoCare.DAL.Repositories.PartRepository
             var result = await _context.ModelParts
                             .Where(mp => mp.ModelId == modelId)
 
-                            
+
                             .Select(mp => mp.Part)
 
-                            
+
                             .Select(p => new EVCheckReplacementResponse
                             {
                                 PartId = p.Id,
@@ -92,6 +92,14 @@ namespace eMotoCare.DAL.Repositories.PartRepository
 
             return result;
 
+        }
+
+        public async Task<List<Part>> FindPartsByModelandType(Guid modelId, Guid partTypeId)
+        {
+            return await _context.Parts
+                .Where(p => p.PartTypeId == partTypeId)
+                .Where(p => p.ModelParts.Any(mp => mp.ModelId == modelId))
+                .ToListAsync();
         }
     }
 }

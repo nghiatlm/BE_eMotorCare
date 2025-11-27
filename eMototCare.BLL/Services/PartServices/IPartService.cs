@@ -17,5 +17,6 @@ namespace eMototCare.BLL.Services.PartServices
         Task<PageResult<PartResponse>> GetPagedAsync(Guid? partTypeId, string? code, string? name, Status? status, int? quantity, int page, int pageSize);
         Task UpdateAsync(Guid id, PartUpdateRequest req);
         Task<List<PartLabel>> GetByPartType(Guid partTypeId);
+        Task<List<PartLabel>> GetPartsByModelandType(Guid modelId, Guid partTypeId);
     }
 }
