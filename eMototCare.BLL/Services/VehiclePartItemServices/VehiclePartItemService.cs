@@ -55,7 +55,32 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
 
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (vehicleId.HasValue && vehicleId.Value == Guid.Empty)
+                    throw new AppException("VehicleId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (partItemId.HasValue && partItemId.Value == Guid.Empty)
+                    throw new AppException("PartItemId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (replaceForId.HasValue && replaceForId.Value == Guid.Empty)
+                    throw new AppException("ReplaceForId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (
+                    fromInstallDate.HasValue
+                    && toInstallDate.HasValue
+                    && fromInstallDate > toInstallDate
+                )
+                {
+                    throw new AppException(
+                        "fromInstallDate không được lớn hơn toInstallDate",
+                        HttpStatusCode.BadRequest
+                    );
+                }
                 var rows = _mapper.Map<List<VehiclePartItemResponse>>(items);
                 return new PageResult<VehiclePartItemResponse>(rows, pageSize, page, (int)total);
             }
@@ -68,6 +93,8 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
 
         public async Task<VehiclePartItemResponse?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
             var v =
                 await _unitOfWork.VehiclePartItems.GetByIdAsync(id)
                 ?? throw new AppException(
@@ -82,9 +109,41 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
         {
             try
             {
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                if (req.VehicleId == Guid.Empty)
+                    throw new AppException("VehicleId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.PartItemId == Guid.Empty)
+                    throw new AppException("PartItemId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ReplaceForId.HasValue && req.ReplaceForId.Value == Guid.Empty)
+                    throw new AppException("ReplaceForId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.InstallDate == default)
+                    throw new AppException("InstallDate không hợp lệ", HttpStatusCode.BadRequest);
                 var entity = _mapper.Map<VehiclePartItem>(req);
                 entity.Id = Guid.NewGuid();
+                var vehicle =
+                    await _unitOfWork.Vehicles.GetByIdAsync(req.VehicleId)
+                    ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.BadRequest);
 
+                var partItem =
+                    await _unitOfWork.PartItems.GetByIdAsync(req.PartItemId)
+                    ?? throw new AppException("Không tìm thấy PartItem", HttpStatusCode.BadRequest);
+
+                if (req.ReplaceForId.HasValue)
+                {
+                    var oldItem = await _unitOfWork.VehiclePartItems.GetByIdAsync(
+                        req.ReplaceForId.Value
+                    );
+                    if (oldItem == null)
+                        throw new AppException(
+                            "Không tìm thấy linh kiện cần thay thế (ReplaceForId).",
+                            HttpStatusCode.BadRequest
+                        );
+                }
                 await _unitOfWork.VehiclePartItems.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -110,13 +169,48 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                if (req.VehicleId == Guid.Empty)
+                    throw new AppException("VehicleId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.PartItemId == Guid.Empty)
+                    throw new AppException("PartItemId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ReplaceForId.HasValue && req.ReplaceForId.Value == Guid.Empty)
+                    throw new AppException("ReplaceForId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.InstallDate == default)
+                    throw new AppException("InstallDate không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.VehiclePartItems.GetByIdAsync(id)
                     ?? throw new AppException(
                         "Không tìm thấy linh kiện gắn trên xe",
                         HttpStatusCode.NotFound
                     );
+                var vehicle =
+                    await _unitOfWork.Vehicles.GetByIdAsync(req.VehicleId)
+                    ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.BadRequest);
 
+                var partItem =
+                    await _unitOfWork.PartItems.GetByIdAsync(req.PartItemId)
+                    ?? throw new AppException("Không tìm thấy PartItem", HttpStatusCode.BadRequest);
+
+                if (req.ReplaceForId.HasValue)
+                {
+                    var oldItem = await _unitOfWork.VehiclePartItems.GetByIdAsync(
+                        req.ReplaceForId.Value
+                    );
+                    if (oldItem == null)
+                        throw new AppException(
+                            "Không tìm thấy linh kiện cần thay thế (ReplaceForId).",
+                            HttpStatusCode.BadRequest
+                        );
+                }
                 _mapper.Map(req, entity);
                 await _unitOfWork.VehiclePartItems.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -138,6 +232,8 @@ namespace eMototCare.BLL.Services.VehiclePartItemServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.VehiclePartItems.GetByIdAsync(id)
                     ?? throw new AppException(

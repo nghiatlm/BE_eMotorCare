@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -10,7 +11,6 @@ using eMototCare.BLL.Services.AccountService;
 using eMototCare.BLL.Services.EmailServices;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using System.Net;
 
 namespace eMototCare.BLL.Services.AccountServices
 {
@@ -60,7 +60,20 @@ namespace eMototCare.BLL.Services.AccountServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
 
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (role.HasValue && !Enum.IsDefined(typeof(RoleName), role.Value))
+                    throw new AppException("Role không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (status.HasValue && !Enum.IsDefined(typeof(AccountStatus), status.Value))
+                    throw new AppException(
+                        "Trạng thái tài khoản không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
                 var accountIds = items.Select(x => x.Id).ToList();
                 var staffs = await _unitOfWork.Staffs.GetByAccountIdsAsync(accountIds);
                 var staffByAcc = staffs.ToDictionary(s => s.AccountId, s => s);
@@ -108,6 +121,8 @@ namespace eMototCare.BLL.Services.AccountServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var acc =
                     await _unitOfWork.Accounts.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy tài khoản", HttpStatusCode.NotFound);
@@ -128,12 +143,21 @@ namespace eMototCare.BLL.Services.AccountServices
         {
             try
             {
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
                 var phone = (req.Phone ?? string.Empty).Trim();
                 var email = req.Email?.Trim().ToLowerInvariant();
 
                 if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
                     throw new AppException(
                         "Cần ít nhất Phone hoặc Email",
+                        HttpStatusCode.BadRequest
+                    );
+                if (!Enum.IsDefined(typeof(RoleName), req.RoleName))
+                    throw new AppException("Role không hợp lệ", HttpStatusCode.BadRequest);
+                if (!Enum.IsDefined(typeof(AccountStatus), req.Status))
+                    throw new AppException(
+                        "Trạng thái tài khoản không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
 
@@ -154,18 +178,20 @@ namespace eMototCare.BLL.Services.AccountServices
                         "Mật khẩu không được để trống",
                         HttpStatusCode.BadRequest
                     );
-                if (req.RoleName == RoleName.ROLE_STAFF
+                if (
+                    req.RoleName == RoleName.ROLE_STAFF
                     || req.RoleName == RoleName.ROLE_MANAGER
                     || req.RoleName == RoleName.ROLE_TECHNICIAN
-                    || req.RoleName == RoleName.ROLE_STOREKEEPER)
+                    || req.RoleName == RoleName.ROLE_STOREKEEPER
+                )
                 {
                     var otp = new Random().Next(100000, 999999).ToString();
                     _cache.Set($"OTP_{email}", otp, TimeSpan.FromMinutes(5));
                     await _mailService.SendLoginEmailAsync(
-                            email,
-                            "Xác minh đăng nhập nhân viên",
-                            otp
-                        );
+                        email,
+                        "Xác minh đăng nhập nhân viên",
+                        otp
+                    );
                 }
                 var entity = _mapper.Map<Account>(req);
                 entity.Id = Guid.NewGuid();
@@ -212,13 +238,29 @@ namespace eMototCare.BLL.Services.AccountServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.Accounts.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy tài khoản", HttpStatusCode.NotFound);
 
                 var newPhone = (req.Phone ?? string.Empty).Trim();
                 var newEmail = req.Email?.Trim().ToLowerInvariant();
-
+                if (string.IsNullOrWhiteSpace(newPhone) && string.IsNullOrWhiteSpace(newEmail))
+                    throw new AppException(
+                        "Không được xoá cả Phone và Email",
+                        HttpStatusCode.BadRequest
+                    );
+                if (!Enum.IsDefined(typeof(RoleName), req.RoleName))
+                    throw new AppException("Role không hợp lệ", HttpStatusCode.BadRequest);
+                if (!Enum.IsDefined(typeof(AccountStatus), req.Status))
+                    throw new AppException(
+                        "Trạng thái tài khoản không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
                 if (
                     !string.IsNullOrWhiteSpace(newPhone)
                     && !string.Equals(entity.Phone, newPhone, StringComparison.OrdinalIgnoreCase)
@@ -299,6 +341,8 @@ namespace eMototCare.BLL.Services.AccountServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.Accounts.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy tài khoản", HttpStatusCode.NotFound);

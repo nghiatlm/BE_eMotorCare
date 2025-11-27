@@ -7,16 +7,13 @@ namespace eMotoCare.BO.DTO.Requests
     {
         public string? Phone { get; set; }
 
-        [EmailAddress]
         public string? Email { get; set; }
 
         public string? Password { get; set; }
 
-        [Required]
         public RoleName RoleName { get; set; }
         public StaffRequest? Staff { get; set; }
 
-        [Required]
         public AccountStatus Status { get; set; }
     }
 }

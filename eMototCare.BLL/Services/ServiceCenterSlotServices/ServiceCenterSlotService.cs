@@ -33,6 +33,8 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
 
         public async Task<List<ServiceCenterSlotResponse>> GetAllAsync(Guid serviceCenterId)
         {
+            if (serviceCenterId == Guid.Empty)
+                throw new AppException("ServiceCenterId không hợp lệ", HttpStatusCode.BadRequest);
             var center =
                 await _unitOfWork.ServiceCenterSlot.GetByServiceCenterAsync(serviceCenterId)
                 ?? throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
@@ -46,7 +48,23 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
             var center =
                 await _unitOfWork.ServiceCenters.GetByIdAsync(serviceCenterId)
                 ?? throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
+            if (serviceCenterId == Guid.Empty)
+                throw new AppException("ServiceCenterId không hợp lệ", HttpStatusCode.BadRequest);
 
+            if (req == null)
+                throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+            if (!Enum.IsDefined(typeof(DayOfWeeks), req.DayOfWeek))
+                throw new AppException("DayOfWeek không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (!Enum.IsDefined(typeof(SlotTime), req.SlotTime))
+                throw new AppException("SlotTime không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (req.Capacity < 1)
+                throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
+
+            if (req.Date == default)
+                throw new AppException("Date không hợp lệ", HttpStatusCode.BadRequest);
             if (req.Capacity < 1)
                 throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
             req.Date = AlignDateToDayOfWeek(req.Date, req.DayOfWeek);
@@ -106,7 +124,26 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
             var slot =
                 await _serviceCenterSlotRepository.FindByIdAsync(slotId)
                 ?? throw new AppException("Không tìm thấy Slot", HttpStatusCode.NotFound);
+            if (serviceCenterId == Guid.Empty)
+                throw new AppException("ServiceCenterId không hợp lệ", HttpStatusCode.BadRequest);
 
+            if (slotId == Guid.Empty)
+                throw new AppException("SlotId không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (req == null)
+                throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+            if (!Enum.IsDefined(typeof(DayOfWeeks), req.DayOfWeek))
+                throw new AppException("DayOfWeek không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (!Enum.IsDefined(typeof(SlotTime), req.SlotTime))
+                throw new AppException("SlotTime không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (req.Capacity < 1)
+                throw new AppException("Capacity phải >= 1", HttpStatusCode.BadRequest);
+
+            if (req.Date == default)
+                throw new AppException("Date không hợp lệ", HttpStatusCode.BadRequest);
             if (slot.ServiceCenterId != serviceCenterId)
                 throw new AppException("Slot không thuộc trung tâm này", HttpStatusCode.BadRequest);
 
@@ -167,6 +204,12 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
 
         public async Task DeleteAsync(Guid serviceCenterId, Guid slotId)
         {
+            if (serviceCenterId == Guid.Empty)
+                throw new AppException("ServiceCenterId không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (slotId == Guid.Empty)
+                throw new AppException("SlotId không hợp lệ", HttpStatusCode.BadRequest);
+
             var slot =
                 await _serviceCenterSlotRepository.FindByIdAsync(slotId)
                 ?? throw new AppException("Không tìm thấy Slot", HttpStatusCode.NotFound);
@@ -183,6 +226,11 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
             List<(ServiceCenterSlotResponse Slot, int Remaining)>
         > GetAvailabilityAsync(Guid serviceCenterId, DateOnly date)
         {
+            if (serviceCenterId == Guid.Empty)
+                throw new AppException("ServiceCenterId không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (date == default)
+                throw new AppException("Date không hợp lệ", HttpStatusCode.BadRequest);
             var center =
                 await _unitOfWork.ServiceCenters.GetByIdAsync(serviceCenterId)
                 ?? throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);

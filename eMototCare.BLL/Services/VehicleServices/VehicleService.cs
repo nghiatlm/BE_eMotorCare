@@ -52,7 +52,32 @@ namespace eMototCare.BLL.Services.VehicleServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
 
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (status.HasValue && !Enum.IsDefined(typeof(StatusEnum), status.Value))
+                    throw new AppException("Trạng thái xe không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (modelId.HasValue && modelId.Value == Guid.Empty)
+                    throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (customerId.HasValue && customerId.Value == Guid.Empty)
+                    throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (
+                    fromPurchaseDate.HasValue
+                    && toPurchaseDate.HasValue
+                    && fromPurchaseDate > toPurchaseDate
+                )
+                {
+                    throw new AppException(
+                        "fromPurchaseDate không được lớn hơn toPurchaseDate",
+                        HttpStatusCode.BadRequest
+                    );
+                }
                 var rows = _mapper.Map<List<VehicleResponse>>(items);
                 return new PageResult<VehicleResponse>(rows, pageSize, page, (int)total);
             }
@@ -65,6 +90,8 @@ namespace eMototCare.BLL.Services.VehicleServices
 
         public async Task<VehicleResponse?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
             var v =
                 await _unitOfWork.Vehicles.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
@@ -75,6 +102,80 @@ namespace eMototCare.BLL.Services.VehicleServices
         {
             try
             {
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                var image = (req.Image ?? string.Empty).Trim();
+                var color = (req.Color ?? string.Empty).Trim();
+                var chassis = (req.ChassisNumber ?? string.Empty).Trim();
+                var engine = (req.EngineNumber ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(image))
+                    throw new AppException("Image không được để trống", HttpStatusCode.BadRequest);
+
+                if (string.IsNullOrWhiteSpace(color))
+                    throw new AppException("Màu xe không được để trống", HttpStatusCode.BadRequest);
+
+                if (string.IsNullOrWhiteSpace(chassis))
+                    throw new AppException(
+                        "Số khung (ChassisNumber) không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(engine))
+                    throw new AppException(
+                        "Số máy (EngineNumber) không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
+                    throw new AppException("Trạng thái xe không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ModelId == Guid.Empty)
+                    throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ManufactureDate == default)
+                    throw new AppException(
+                        "ManufactureDate không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.PurchaseDate == default)
+                    throw new AppException("PurchaseDate không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.WarrantyExpiry == default)
+                    throw new AppException(
+                        "WarrantyExpiry không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.ManufactureDate > req.PurchaseDate)
+                    throw new AppException(
+                        "Ngày sản xuất không được lớn hơn ngày mua",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.PurchaseDate > req.WarrantyExpiry)
+                    throw new AppException(
+                        "Ngày mua không được lớn hơn ngày hết bảo hành",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.CustomerId.HasValue && req.CustomerId.Value == Guid.Empty)
+                    throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
+                var model =
+                    await _unitOfWork.Models.GetByIdAsync(req.ModelId)
+                    ?? throw new AppException("Không tìm thấy Model", HttpStatusCode.BadRequest);
+
+                if (req.CustomerId.HasValue)
+                {
+                    var customer = await _unitOfWork.Customers.GetByIdAsync(req.CustomerId.Value);
+                    if (customer == null)
+                        throw new AppException(
+                            "Không tìm thấy khách hàng",
+                            HttpStatusCode.BadRequest
+                        );
+                }
                 var entity = _mapper.Map<Vehicle>(req);
                 entity.Id = Guid.NewGuid();
 
@@ -102,7 +203,63 @@ namespace eMototCare.BLL.Services.VehicleServices
                 var entity =
                     await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
+                var image = (req.Image ?? string.Empty).Trim();
+                var color = (req.Color ?? string.Empty).Trim();
+                var chassis = (req.ChassisNumber ?? string.Empty).Trim();
+                var engine = (req.EngineNumber ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(image))
+                    throw new AppException("Image không được để trống", HttpStatusCode.BadRequest);
 
+                if (string.IsNullOrWhiteSpace(color))
+                    throw new AppException("Màu xe không được để trống", HttpStatusCode.BadRequest);
+
+                if (string.IsNullOrWhiteSpace(chassis))
+                    throw new AppException(
+                        "Số khung (ChassisNumber) không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(engine))
+                    throw new AppException(
+                        "Số máy (EngineNumber) không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
+                    throw new AppException("Trạng thái xe không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ModelId == Guid.Empty)
+                    throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ManufactureDate == default)
+                    throw new AppException(
+                        "ManufactureDate không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.PurchaseDate == default)
+                    throw new AppException("PurchaseDate không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.WarrantyExpiry == default)
+                    throw new AppException(
+                        "WarrantyExpiry không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.ManufactureDate > req.PurchaseDate)
+                    throw new AppException(
+                        "Ngày sản xuất không được lớn hơn ngày mua",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.PurchaseDate > req.WarrantyExpiry)
+                    throw new AppException(
+                        "Ngày mua không được lớn hơn ngày hết bảo hành",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.CustomerId.HasValue && req.CustomerId.Value == Guid.Empty)
+                    throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
                 _mapper.Map(req, entity);
                 await _unitOfWork.Vehicles.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
@@ -124,6 +281,8 @@ namespace eMototCare.BLL.Services.VehicleServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
