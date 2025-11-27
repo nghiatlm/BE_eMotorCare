@@ -12,7 +12,7 @@ namespace eMotoCare.BO.DTO.Responses
         public CampaignDetailResponse? CampaignDetail { get; set; }
         public PartItemResponse? PartItem { get; set; }
         public EVCheckResponse? EVCheck { get; set; }
-        public PartResponse? ProposedReplacePartId { get; set; }
+        public PartResponse? ProposedReplacePart { get; set; }
         public string? Result { get; set; }
         public Remedies Remedies { get; set; }
         public string? Unit { get; set; }
