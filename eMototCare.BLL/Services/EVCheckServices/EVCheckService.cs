@@ -432,15 +432,17 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         PartItem = null,
                         ProposedReplacePartId = detail.ProposedReplacePartId,
                         Quantity = 1,
+                        UnitPrice = detail.ProposedReplacePart.PartItems.FirstOrDefault().Price,
                     };
                     if (isInStock.Any())
                     {
-                        exportNoteDetail.Status = ExportNoteDetailStatus.INSTOCK;
+                        exportNoteDetail.Status = ExportNoteDetailStatus.STOCK_FOUND;
                     } else
                     {
-                        exportNoteDetail.Status = ExportNoteDetailStatus.OUT_OF_STOCK;
+                        exportNoteDetail.Status = ExportNoteDetailStatus.STOCK_NOT_FOUND;
                     }
                     exportNote.TotalQuantity += 1;
+                    exportNoteDetail.TotalPrice = exportNoteDetail.UnitPrice * exportNoteDetail.Quantity;
                     await _unitOfWork.ExportNoteDetails.CreateAsync(exportNoteDetail);
                 }
             }
