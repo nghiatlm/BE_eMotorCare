@@ -37,11 +37,26 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
         {
             try
             {
+                if (fileStream == null)
+                    throw new AppException(
+                        "File upload không được null.",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!fileStream.CanRead)
+                    throw new AppException("Không thể đọc file upload.", HttpStatusCode.BadRequest);
                 if (evCheckDetailId == Guid.Empty)
                     throw new AppException(
                         "EVCheckDetailId không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
+                if (fileStream.CanSeek)
+                {
+                    if (fileStream.Length == 0)
+                        throw new AppException("File upload đang rỗng.", HttpStatusCode.BadRequest);
+
+                    fileStream.Position = 0;
+                }
 
                 var evDetail = await _unitOfWork.EVCheckDetails.GetByIdAsync(evCheckDetailId);
                 if (evDetail == null)

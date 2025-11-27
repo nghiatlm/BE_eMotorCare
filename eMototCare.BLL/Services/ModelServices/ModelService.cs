@@ -43,7 +43,26 @@ namespace eMototCare.BLL.Services.ModelServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
 
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (modelId.HasValue && modelId.Value == Guid.Empty)
+                    throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (maintenancePlanId.HasValue && maintenancePlanId.Value == Guid.Empty)
+                    throw new AppException(
+                        "MaintenancePlanId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (status.HasValue && !Enum.IsDefined(typeof(Status), status.Value))
+                    throw new AppException(
+                        "Trạng thái model không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
                 var rows = _mapper.Map<List<ModelResponse>>(items);
                 return new PageResult<ModelResponse>(rows, pageSize, page, (int)total);
             }
@@ -57,6 +76,9 @@ namespace eMototCare.BLL.Services.ModelServices
         public async Task<ModelResponse> GetByIdAsync(Guid id)
         {
             var model = await _unitOfWork.Models.GetByIdAsync(id);
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
             if (model == null)
                 throw new AppException("Không tìm thấy Model", HttpStatusCode.NotFound);
 
@@ -76,7 +98,29 @@ namespace eMototCare.BLL.Services.ModelServices
 
                 if (await _unitOfWork.Models.ExistsNameAsync(req.Name))
                     throw new AppException("Tên Model đã tồn tại.", HttpStatusCode.Conflict);
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
 
+                var name = (req.Name ?? string.Empty).Trim();
+                var manufacturer = (req.Manufacturer ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(name))
+                    throw new AppException(
+                        "Tên Model không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(manufacturer))
+                    throw new AppException(
+                        "Hãng sản xuất không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.MaintenancePlanId == Guid.Empty)
+                    throw new AppException(
+                        "MaintenancePlanId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
                 var entity = _mapper.Map<Model>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = await GenerateCodeAsync();
@@ -106,7 +150,23 @@ namespace eMototCare.BLL.Services.ModelServices
                 var entity =
                     await _unitOfWork.Models.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy Model", HttpStatusCode.NotFound);
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
 
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                if (req.MaintenancePlanId.HasValue && req.MaintenancePlanId.Value == Guid.Empty)
+                    throw new AppException(
+                        "MaintenancePlanId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.Status.HasValue && !Enum.IsDefined(typeof(Status), req.Status.Value))
+                    throw new AppException(
+                        "Trạng thái model không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
                 if (req.MaintenancePlanId.HasValue)
                 {
                     var plan =
@@ -151,7 +211,8 @@ namespace eMototCare.BLL.Services.ModelServices
                 var entity =
                     await _unitOfWork.Models.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy Model", HttpStatusCode.NotFound);
-
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 if (entity.Status == Status.IN_ACTIVE)
                 {
                     throw new AppException(

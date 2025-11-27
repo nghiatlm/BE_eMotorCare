@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -8,7 +9,6 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using eMototCare.BLL.Services.FirebaseServices;
 using Microsoft.Extensions.Logging;
-using System.Net;
 
 namespace eMototCare.BLL.Services.CustomerServices
 {
@@ -59,6 +59,8 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
@@ -80,6 +82,9 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id khách hàng không hợp lệ", HttpStatusCode.BadRequest);
+
                 var entity =
                     await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
@@ -106,6 +111,11 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                if (req.AccountId == Guid.Empty)
+                    throw new AppException("AccountId không hợp lệ", HttpStatusCode.BadRequest);
                 var citizen = req.CitizenId.Trim();
 
                 if (await _unitOfWork.Customers.ExistsForAccountAsync(req.AccountId))
@@ -113,9 +123,32 @@ namespace eMototCare.BLL.Services.CustomerServices
                         "Tài khoản đã có hồ sơ khách hàng",
                         HttpStatusCode.Conflict
                     );
+                if (string.IsNullOrWhiteSpace(citizen))
+                    throw new AppException(
+                        "CitizenId không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
 
+                if (citizen.Length > 15)
+                    throw new AppException(
+                        "CitizenId không được dài hơn 15 ký tự",
+                        HttpStatusCode.BadRequest
+                    );
                 if (await _unitOfWork.Customers.ExistsCitizenAsync(citizen))
                     throw new AppException("CCCD đã tồn tại", HttpStatusCode.Conflict);
+                if (req.DateOfBirth.HasValue && req.DateOfBirth.Value.Date > DateTime.UtcNow.Date)
+                    throw new AppException(
+                        "Ngày sinh không được lớn hơn ngày hiện tại",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.Gender.HasValue && !Enum.IsDefined(typeof(GenderEnum), req.Gender.Value))
+                    throw new AppException("Giới tính không hợp lệ", HttpStatusCode.BadRequest);
+                if (await _unitOfWork.Customers.ExistsForAccountAsync(req.AccountId))
+                    throw new AppException(
+                        "Tài khoản đã có hồ sơ khách hàng",
+                        HttpStatusCode.Conflict
+                    );
 
                 var entity = _mapper.Map<Customer>(req);
                 entity.Id = Guid.NewGuid();
@@ -147,6 +180,12 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
                 var entity =
                     await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
@@ -157,7 +196,26 @@ namespace eMototCare.BLL.Services.CustomerServices
                     && await _unitOfWork.Customers.ExistsCitizenAsync(newCitizen, entity.Id)
                 )
                     throw new AppException("CCCD đã tồn tại", HttpStatusCode.Conflict);
+                if (string.IsNullOrWhiteSpace(newCitizen))
+                    throw new AppException(
+                        "CitizenId không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
 
+                if (newCitizen.Length > 15)
+                    throw new AppException(
+                        "CitizenId không được dài hơn 15 ký tự",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.DateOfBirth.HasValue && req.DateOfBirth.Value.Date > DateTime.UtcNow.Date)
+                    throw new AppException(
+                        "Ngày sinh không được lớn hơn ngày hiện tại",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.Gender.HasValue && !Enum.IsDefined(typeof(GenderEnum), req.Gender.Value))
+                    throw new AppException("Giới tính không hợp lệ", HttpStatusCode.BadRequest);
                 _mapper.Map(req, entity);
                 entity.CitizenId = newCitizen;
 
@@ -181,6 +239,8 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.Customers.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
@@ -205,6 +265,8 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("AccountId không hợp lệ", HttpStatusCode.BadRequest);
                 var cus = await _unitOfWork.Customers.GetAccountIdAsync(id);
                 if (cus == null)
                     throw new AppException("Người dùng không tồn tại", HttpStatusCode.Forbidden);
@@ -226,11 +288,15 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             if (string.IsNullOrWhiteSpace(citizenId))
                 throw new AppException("Citizen ID không hợp lệ", HttpStatusCode.BadRequest);
-
+            if (accountId == Guid.Empty)
+                throw new AppException("AccountId không hợp lệ", HttpStatusCode.BadRequest);
             var customer = await _unitOfWork.Customers.GetByCitizenId(citizenId);
 
             if (customer == null)
-                throw new AppException("Không tìm thấy khách hàng có Citizen ID này", HttpStatusCode.NotFound);
+                throw new AppException(
+                    "Không tìm thấy khách hàng có Citizen ID này",
+                    HttpStatusCode.NotFound
+                );
 
             customer.AccountId = accountId;
 
@@ -242,8 +308,14 @@ namespace eMototCare.BLL.Services.CustomerServices
 
         public async Task<CustomerResponse?> GetCustomerByRmaIdAsync(Guid rmaId)
         {
+            if (rmaId == Guid.Empty)
+                throw new AppException("RmaId không hợp lệ", HttpStatusCode.BadRequest);
             var customer = await _unitOfWork.Customers.GetByRmaId(rmaId);
-            if (customer == null) throw new AppException("Không tìm thấy khách hàng có RMA ID này", HttpStatusCode.NotFound);
+            if (customer == null)
+                throw new AppException(
+                    "Không tìm thấy khách hàng có RMA ID này",
+                    HttpStatusCode.NotFound
+                );
             return _mapper.Map<CustomerResponse>(customer);
         }
 
@@ -251,26 +323,56 @@ namespace eMototCare.BLL.Services.CustomerServices
         {
             try
             {
+                if (accountId == Guid.Empty)
+                    throw new AppException("AccountId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (string.IsNullOrWhiteSpace(citizenId))
+                    throw new AppException("CitizenId không hợp lệ", HttpStatusCode.BadRequest);
                 if (!_firebase.IsFirestoreConfigured())
                 {
-                    _logger.LogWarning("Firestore not configured - cannot sync customer data for citizenId={CitizenId}", citizenId);
+                    _logger.LogWarning(
+                        "Firestore not configured - cannot sync customer data for citizenId={CitizenId}",
+                        citizenId
+                    );
                     return false;
                 }
 
                 var data = await _firebase.GetCustomerByCitizenIdAsync(citizenId);
-                if (data == null) throw new AppException("Không tìm thấy khách hàng trong hệ thống", HttpStatusCode.NotFound);
+                if (data == null)
+                    throw new AppException(
+                        "Không tìm thấy khách hàng trong hệ thống",
+                        HttpStatusCode.NotFound
+                    );
                 var customer = new Customer
                 {
                     Id = Guid.NewGuid(),
                     AccountId = accountId,
-                    CitizenId = data.ContainsKey("citizenId") ? data["citizenId"].ToString() ?? "" : "",
-                    FirstName = data.ContainsKey("firstName") ? data["firstName"].ToString() ?? "" : "",
-                    LastName = data.ContainsKey("lastName") ? data["lastName"].ToString() ?? "" : "",
-                    DateOfBirth = data.ContainsKey("dateOfBirth") && DateTime.TryParse(data["dateOfBirth"]?.ToString(), out var dob) ? dob : null,
-                    CustomerCode = data.ContainsKey("customerCode") ? data["customerCode"].ToString() ?? "" : "",
+                    CitizenId = data.ContainsKey("citizenId")
+                        ? data["citizenId"].ToString() ?? ""
+                        : "",
+                    FirstName = data.ContainsKey("firstName")
+                        ? data["firstName"].ToString() ?? ""
+                        : "",
+                    LastName = data.ContainsKey("lastName")
+                        ? data["lastName"].ToString() ?? ""
+                        : "",
+                    DateOfBirth =
+                        data.ContainsKey("dateOfBirth")
+                        && DateTime.TryParse(data["dateOfBirth"]?.ToString(), out var dob)
+                            ? dob
+                            : null,
+                    CustomerCode = data.ContainsKey("customerCode")
+                        ? data["customerCode"].ToString() ?? ""
+                        : "",
                     Address = data.ContainsKey("address") ? data["address"].ToString() ?? "" : "",
-                    Gender = data.ContainsKey("gender") && Enum.TryParse<GenderEnum>(data["gender"]?.ToString(), out var gender) ? gender : null,
-                    AvatarUrl = data.ContainsKey("avatarUrl") ? data["avatarUrl"].ToString() ?? "" : "",
+                    Gender =
+                        data.ContainsKey("gender")
+                        && Enum.TryParse<GenderEnum>(data["gender"]?.ToString(), out var gender)
+                            ? gender
+                            : null,
+                    AvatarUrl = data.ContainsKey("avatarUrl")
+                        ? data["avatarUrl"].ToString() ?? ""
+                        : "",
                 };
                 await _unitOfWork.Customers.CreateAsync(customer);
                 var result = await _unitOfWork.SaveAsync();
@@ -286,6 +388,5 @@ namespace eMototCare.BLL.Services.CustomerServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
-
     }
 }

@@ -44,6 +44,14 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
+
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (status.HasValue && !Enum.IsDefined(typeof(StatusEnum), status.Value))
+                    throw new AppException("Trạng thái không hợp lệ", HttpStatusCode.BadRequest);
                 return new PageResult<ServiceCenterResponse>(
                     items.ToList(),
                     pageSize,
@@ -66,6 +74,8 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var dto = await _unitOfWork.ServiceCenters.GetDtoByIdAsync(id);
                 if (dto is null)
                     throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
@@ -87,10 +97,42 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
         {
             try
             {
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
                 var code = req.Code.Trim();
                 var email = req.Email.Trim().ToLowerInvariant();
                 var phone = req.Phone.Trim();
 
+                if (string.IsNullOrWhiteSpace(code))
+                    throw new AppException(
+                        "Mã ServiceCenter không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(req.Name))
+                    throw new AppException(
+                        "Tên ServiceCenter không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(email))
+                    throw new AppException("Email không được để trống", HttpStatusCode.BadRequest);
+
+                if (string.IsNullOrWhiteSpace(phone))
+                    throw new AppException(
+                        "Số điện thoại không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(req.Address))
+                    throw new AppException(
+                        "Địa chỉ không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
+                    throw new AppException("Trạng thái không hợp lệ", HttpStatusCode.BadRequest);
                 if (await _unitOfWork.ServiceCenters.ExistsCodeAsync(code))
                     throw new AppException("Mã ServiceCenter đã tồn tại", HttpStatusCode.Conflict);
                 if (await _unitOfWork.ServiceCenters.ExistsEmailAsync(email))
@@ -130,6 +172,11 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.ServiceCenters.GetByIdAsync(id)
                     ?? throw new AppException(
@@ -140,7 +187,35 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
                 var newCode = req.Code.Trim();
                 var newEmail = req.Email.Trim().ToLowerInvariant();
                 var newPhone = req.Phone.Trim();
+                if (string.IsNullOrWhiteSpace(newCode))
+                    throw new AppException(
+                        "Mã ServiceCenter không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
 
+                if (string.IsNullOrWhiteSpace(req.Name))
+                    throw new AppException(
+                        "Tên ServiceCenter không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(newEmail))
+                    throw new AppException("Email không được để trống", HttpStatusCode.BadRequest);
+
+                if (string.IsNullOrWhiteSpace(newPhone))
+                    throw new AppException(
+                        "Số điện thoại không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (string.IsNullOrWhiteSpace(req.Address))
+                    throw new AppException(
+                        "Địa chỉ không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
+                    throw new AppException("Trạng thái không hợp lệ", HttpStatusCode.BadRequest);
                 if (
                     !string.Equals(entity.Code, newCode, StringComparison.OrdinalIgnoreCase)
                     && await _unitOfWork.ServiceCenters.ExistsCodeAsync(newCode)
@@ -184,6 +259,8 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.ServiceCenters.GetByIdAsync(id)
                     ?? throw new AppException(

@@ -62,6 +62,32 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
+
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (status.HasValue && !Enum.IsDefined(typeof(AppointmentStatus), status.Value))
+                    throw new AppException(
+                        "Trạng thái lịch hẹn không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (serviceCenterId.HasValue && serviceCenterId.Value == Guid.Empty)
+                    throw new AppException(
+                        "ServiceCenterId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (customerId.HasValue && customerId.Value == Guid.Empty)
+                    throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
+                    throw new AppException(
+                        "fromDate không được > toDate",
+                        HttpStatusCode.BadRequest
+                    );
 
                 var rows = _mapper.Map<List<AppointmentResponse>>(items);
                 foreach (var appt in rows)
@@ -81,6 +107,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
         public async Task<AppointmentResponse?> GetByIdAsync(Guid id)
         {
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
             var appt =
                 await _unitOfWork.Appointments.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
@@ -96,6 +124,44 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var dow = (DayOfWeeks)req.AppointmentDate.DayOfWeek;
 
                 var now = DateTime.UtcNow.AddHours(7).Date;
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                if (req.ServiceCenterId == Guid.Empty)
+                    throw new AppException(
+                        "ServiceCenterId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.CustomerId == Guid.Empty)
+                    throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
+                if (!Enum.IsDefined(typeof(AppointmentStatus), req.Status))
+                    throw new AppException(
+                        "Trạng thái lịch hẹn không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!Enum.IsDefined(typeof(ServiceType), req.Type))
+                    throw new AppException("Loại dịch vụ không hợp lệ", HttpStatusCode.BadRequest);
+                if (req.EstimatedCost.HasValue && req.EstimatedCost.Value < 0)
+                    throw new AppException(
+                        "EstimatedCost không được âm",
+                        HttpStatusCode.BadRequest
+                    );
+                if (req.AppointmentDate == default)
+                    throw new AppException("Ngày hẹn không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.ActualCost.HasValue && req.ActualCost.Value < 0)
+                    throw new AppException("ActualCost không được âm", HttpStatusCode.BadRequest);
+
+                if (req.VehicleId.HasValue && req.VehicleId.Value == Guid.Empty)
+                    throw new AppException("VehicleId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.VehicleStageId.HasValue && req.VehicleStageId.Value == Guid.Empty)
+                    throw new AppException(
+                        "VehicleStageId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
                 if (req.AppointmentDate.Date < now)
                 {
                     throw new AppException("Ngày đặt phải từ hôm nay trở đi.");
@@ -188,7 +254,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             HttpStatusCode.BadRequest
                         );
                 }
-                // 1) Có cấu hình slot không?
                 var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
                     s =>
                         s.ServiceCenterId == req.ServiceCenterId
@@ -202,7 +267,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         HttpStatusCode.Conflict
                     );
 
-                // 2) Đếm appointment đã đặt trong (SC, Date, SlotTime)
+                // Đếm appointment
                 var booked = await _unitOfWork.ServiceCenterSlot.CountBookingsAsync(
                     req.ServiceCenterId,
                     dateOnly,
@@ -220,7 +285,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     );
                 }
 
-                // 3) Sinh code
                 string code;
                 int guard = 0;
                 do
@@ -229,7 +293,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     guard++;
                 } while (await _unitOfWork.Appointments.ExistsCodeAsync(code) && guard < 5);
 
-                // 4) Tạo Appointment (không gán ServiceCenterSlotId)
                 var entity = _mapper.Map<Appointment>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Code = code;
@@ -320,6 +383,32 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     entity.SlotTime = req.SlotTime.Value;
                 }
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                if (!Enum.IsDefined(typeof(AppointmentStatus), req.Status))
+                    throw new AppException(
+                        "Trạng thái lịch hẹn không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.SlotTime.HasValue && !Enum.IsDefined(typeof(SlotTime), req.SlotTime.Value))
+                    throw new AppException("SlotTime không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (req.EstimatedCost.HasValue && req.EstimatedCost.Value < 0)
+                    throw new AppException(
+                        "EstimatedCost không được âm",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (req.ActualCost.HasValue && req.ActualCost.Value < 0)
+                    throw new AppException("ActualCost không được âm", HttpStatusCode.BadRequest);
+
+                if (req.ApproveById.HasValue && req.ApproveById.Value == Guid.Empty)
+                    throw new AppException("ApproveById không hợp lệ", HttpStatusCode.BadRequest);
                 if (req.EstimatedCost.HasValue)
                     entity.EstimatedCost = req.EstimatedCost.Value;
 
@@ -457,6 +546,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
         {
             try
             {
+                if (id == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
                 var entity =
                     await _unitOfWork.Appointments.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
@@ -480,10 +571,41 @@ namespace eMototCare.BLL.Services.AppointmentServices
         public Task<IReadOnlyList<string>> GetAvailableSlotsAsync(
             Guid serviceCenterId,
             DateTime date
-        ) => _unitOfWork.Appointments.GetAvailableSlotsAsync(serviceCenterId, date);
+        )
+        {
+            try
+            {
+                if (serviceCenterId == Guid.Empty)
+                    throw new AppException(
+                        "ServiceCenterId không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (date == default)
+                    throw new AppException("Ngày không hợp lệ", HttpStatusCode.BadRequest);
+                return _unitOfWork.Appointments.GetAvailableSlotsAsync(serviceCenterId, date);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetAvailableSlots failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
 
         public async Task UpdateStatusAsync(Guid id, AppointmentStatus status)
         {
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+            if (!Enum.IsDefined(typeof(AppointmentStatus), status))
+                throw new AppException(
+                    "Trạng thái lịch hẹn không hợp lệ",
+                    HttpStatusCode.BadRequest
+                );
             var entity =
                 await _unitOfWork.Appointments.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
@@ -495,6 +617,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
         public async Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId)
         {
+            if (technicianId == Guid.Empty)
+                throw new AppException("TechnicianId không hợp lệ", HttpStatusCode.BadRequest);
             var appointments = await _unitOfWork.Appointments.GetByTechnicianIdAsync(technicianId);
             return _mapper.Map<List<AppointmentResponse>>(appointments);
         }
@@ -509,7 +633,14 @@ namespace eMototCare.BLL.Services.AppointmentServices
         {
             try
             {
-                // CASE 1: Không truyền appointmentId -> lấy tất cả
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
+
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+
+                if (appointmentId.HasValue && appointmentId.Value == Guid.Empty)
+                    throw new AppException("AppointmentId không hợp lệ", HttpStatusCode.BadRequest);
                 if (!appointmentId.HasValue)
                 {
                     var result = new List<MissingPartResponse>();
@@ -719,6 +850,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
             VehicleStage? VehicleStage
         )> EnsureVehicleFromVinAsync(string chassisNumber, Guid? accountId)
         {
+            if (string.IsNullOrWhiteSpace(chassisNumber))
+                throw new AppException(
+                    "ChassisNumber không được để trống",
+                    HttpStatusCode.BadRequest
+                );
             var localVehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
             if (localVehicle != null)
             {
