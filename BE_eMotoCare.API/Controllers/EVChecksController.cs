@@ -69,7 +69,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_CUSTOMER")]
         public async Task<IActionResult> Delete(Guid id)
         {
             await _evCheckService.DeleteAsync(id);
