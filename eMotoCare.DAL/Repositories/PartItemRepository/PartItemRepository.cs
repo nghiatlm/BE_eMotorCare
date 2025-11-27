@@ -26,6 +26,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
             var q = _context.PartItems
                 .Include(x => x.Part)
+                .ThenInclude(x => x.PartType)
                 .Include(x => x.ServiceCenterInventory)
                 .AsNoTracking()
                 .AsQueryable();
@@ -53,6 +54,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
             .Include(x => x.ServiceCenterInventory)
                 .ThenInclude(x => x.ServiceCenter)
             .Include(x => x.Part)
+            .ThenInclude(x => x.PartType)
             .Include(x => x.ExportNoteDetails)
             .FirstOrDefaultAsync(x => x.Id == id);
 

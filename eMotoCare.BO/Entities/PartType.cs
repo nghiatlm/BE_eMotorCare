@@ -1,5 +1,6 @@
 using eMotoCare.BO.Common;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -24,6 +25,10 @@ namespace eMotoCare.BO.Entities
         [Column("status", TypeName = "varchar(200)")]
         [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
+
+        [Column("type", TypeName = "varchar(200)")]
+        [EnumDataType(typeof(PartTypeEnum))]
+        public PartTypeEnum Type { get; set; }
         public virtual ICollection<Part>? Parts { get; set; }
         public virtual ICollection<PriceService>? PriceServices { get; set; }
     }

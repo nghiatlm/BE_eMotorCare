@@ -75,11 +75,17 @@ namespace eMototCare.BLL.Services.PartServices
             {
 
 
-
+                var random = new Random();
+                string randomSix = random.Next(0, 1000000).ToString("D6");
 
                 var entity = _mapper.Map<Part>(req);
+                var partType = await _unitOfWork.PartTypes.GetByIdAsync(req.PartTypeId);
+                
+                if (partType is null)
+                    throw new AppException("Không tìm thấy Loại phụ tùng", HttpStatusCode.NotFound);
+                string enumString = partType.Type.ToString();
                 entity.Id = Guid.NewGuid();
-                entity.Code = await _utils.GeneratePartCodeAsync();
+                entity.Code = $"{enumString}_{randomSix}";
                 entity.Status = Status.ACTIVE;
 
                 await _unitOfWork.Parts.CreateAsync(entity);
