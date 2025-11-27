@@ -99,7 +99,7 @@ namespace eMototCare.BLL.Services.PriceServiceServices
                     );
                 }
 
-                const string prefix = "PriceSV-";
+                const string prefix = "PSV-";
                 var lastCode = _unitOfWork
                     .PriceServices.FindAll()
                     .Where(x => x.Code.StartsWith(prefix))

@@ -22,7 +22,6 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Include(x => x.Customer)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-
         public async Task<(IReadOnlyList<Vehicle> Items, long Total)> GetPagedAsync(
             string? search,
             StatusEnum? status,
@@ -48,7 +47,6 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
             {
                 var s = search.Trim().ToLower();
                 q = q.Where(x =>
-                    
                     x.ChassisNumber.ToLower().Contains(s)
                     || x.EngineNumber.ToLower().Contains(s)
                     || x.Color.ToLower().Contains(s)
@@ -84,5 +82,13 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .Include(m => m.ModelPart)
                 .FirstOrDefaultAsync(m => m.Id == modelId);
         }
+
+        public Task<Vehicle?> GetByChassisNumberAsync(string chassisNumber) =>
+            _context
+                .Vehicles.Include(v => v.Model)
+                .Include(v => v.Customer)
+                .ThenInclude(c => c.Account)
+                .Include(v => v.VehicleStages)
+                .FirstOrDefaultAsync(v => v.ChassisNumber == chassisNumber);
     }
 }
