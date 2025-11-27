@@ -141,6 +141,15 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Thay thế phụ tùng mới từ hãng",
                             };
+                            var vehiclePartItem = new VehiclePartItem
+                            {
+                                Id = Guid.NewGuid(),
+                                InstallDate = DateTime.UtcNow,
+                                VehicleId = appointment.VehicleId.Value,
+                                PartItemId = detail.ReplacePartId.Value,
+                                ReplaceForId = detail.EVCheckDetail.PartItemId,
+                            };
+                            await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
                             await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
                         }
                         else if (detail.ReplacePartId == null)
