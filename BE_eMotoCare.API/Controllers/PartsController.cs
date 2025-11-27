@@ -103,7 +103,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("by-model-and-type")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_ADMIN,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetPartsByModelandType([FromQuery] Guid model, [FromQuery] Guid partTypeId)
         {
             var items = await _partService.GetPartsByModelandType(model, partTypeId);
