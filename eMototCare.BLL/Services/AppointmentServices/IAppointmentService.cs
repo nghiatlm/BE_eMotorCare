@@ -35,5 +35,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
             int page,
             int pageSize
         );
+        Task<FirstVisitVehicleInfoResponse> EnsureVehicleFromChassisAsync(string chassisNumber);
     }
 }
