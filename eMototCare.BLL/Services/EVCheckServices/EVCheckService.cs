@@ -137,7 +137,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 Id = Guid.NewGuid(),
                                 EVCheckId = entity.Id,
                                 Remedies = Remedies.LUBRICATE,
-                                PartItemId = detail.EVCheckDetail.PartItemId,
+                                PartItemId = detail.ReplacePartId.Value,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Thay thế phụ tùng mới từ hãng",
                             };
