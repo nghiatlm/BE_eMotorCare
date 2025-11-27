@@ -428,7 +428,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     var exportNoteDetail = new ExportNoteDetail
                     {
                         Id = Guid.NewGuid(),
-                        ExportNoteDetailId = exportNoteId,
+                        ExportNoteId = exportNoteId,
                         PartItem = null,
                         ProposedReplacePartId = detail.ProposedReplacePartId,
                         Quantity = 1,
@@ -443,6 +443,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     }
                     exportNote.TotalQuantity += 1;
                     exportNoteDetail.TotalPrice = exportNoteDetail.UnitPrice * exportNoteDetail.Quantity;
+                    exportNote.TotalValue += exportNoteDetail.TotalPrice;
                     await _unitOfWork.ExportNoteDetails.CreateAsync(exportNoteDetail);
                 }
             }
