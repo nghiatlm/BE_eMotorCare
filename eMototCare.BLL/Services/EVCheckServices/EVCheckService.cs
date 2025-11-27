@@ -185,6 +185,10 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ?? throw new AppException("Không tìm thấy EVCheck", HttpStatusCode.NotFound);
 
                 entity.Status = EVCheckStatus.CANCELLED;
+                entity.EVCheckDetails.ToList().ForEach(d =>
+                {
+                    d.Status = EVCheckDetailStatus.COMPLETED;
+                });
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
