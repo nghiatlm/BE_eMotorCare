@@ -44,6 +44,7 @@ namespace eMototCare.BLL.Services.ExportServices
             Guid? serviceCenterId,
             ExportNoteStatus? exportNoteStatus,
             Guid? partItemId,
+            bool outOfStock,
             int page,
             int pageSize
         )
@@ -62,6 +63,7 @@ namespace eMototCare.BLL.Services.ExportServices
                     serviceCenterId,
                     exportNoteStatus,
                     partItemId,
+                    outOfStock,
                     page,
                     pageSize
                 );
