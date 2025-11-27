@@ -415,7 +415,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     Type = ExportType.REPLACEMENT,
                     ServiceCenterId = evCheck.Appointment.ServiceCenterId,
                     Note = "Xuất phụ tùng cho appointment: " + evCheck.Appointment.Code,
-                    ExportNoteStatus = ExportNoteStatus.PENDING,
+                    ExportNoteStatus = ExportNoteStatus.PROCESSING,
                     TotalValue = 0,
                     TotalQuantity = 0,
                     ExportTo = customerName + " - " + phone,

@@ -9,5 +9,6 @@ namespace eMotoCare.BO.Enums
         EXPORTING,   
         COMPLETED,    
         CANCELLED,   
+        PROCESSING
     }
 }
