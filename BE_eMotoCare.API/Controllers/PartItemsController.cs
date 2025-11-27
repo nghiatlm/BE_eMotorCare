@@ -27,12 +27,12 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? partId,
             [FromQuery] string? serialNumber,
             [FromQuery] PartItemStatus? status,
-            [FromQuery] Guid? serviceCenterInventoryId,
+            [FromQuery] Guid? serviceCenterId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _partItemService.GetPagedAsync(partId, serialNumber, status, serviceCenterInventoryId, page, pageSize);
+            var data = await _partItemService.GetPagedAsync(partId, serialNumber, status, serviceCenterId, page, pageSize);
             return Ok(
                 ApiResponse<PageResult<PartItemResponse>>.SuccessResponse(
                     data,

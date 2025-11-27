@@ -1,5 +1,4 @@
 ﻿using eMotoCare.BO.Entities;
-using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
@@ -17,7 +16,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
              Guid? partId,
              string? serialNumber,
              PartItemStatus? status,
-             Guid? serviceCenterInventoryId,
+             Guid? serviceCenterId,
              int page,
              int pageSize
         )
@@ -27,6 +26,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
 
             var q = _context.PartItems
                 .Include(x => x.Part)
+                .Include(x => x.ServiceCenterInventory)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -36,11 +36,8 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
                 q = q.Where(x => x.SerialNumber.Contains(serialNumber));
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
-            if (serviceCenterInventoryId.HasValue)
-                q = q.Where(x => x.ServiceCenterInventoryId == serviceCenterInventoryId);
-
-
-
+            if (serviceCenterId.HasValue)
+                q = q.Where(x => x.ServiceCenterInventory != null && x.ServiceCenterInventory.ServiceCenterId == serviceCenterId.Value);
             var total = await q.LongCountAsync();
 
             var items = await q.OrderByDescending(x => x.Id)

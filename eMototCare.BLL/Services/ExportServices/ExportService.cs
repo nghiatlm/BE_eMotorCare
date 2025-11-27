@@ -44,6 +44,7 @@ namespace eMototCare.BLL.Services.ExportServices
             Guid? serviceCenterId,
             ExportNoteStatus? exportNoteStatus,
             Guid? partItemId,
+            bool outOfStock,
             int page,
             int pageSize
         )
@@ -62,6 +63,7 @@ namespace eMototCare.BLL.Services.ExportServices
                     serviceCenterId,
                     exportNoteStatus,
                     partItemId,
+                    outOfStock,
                     page,
                     pageSize
                 );
@@ -249,7 +251,7 @@ namespace eMototCare.BLL.Services.ExportServices
             }
         }
 
-        public async Task<ExportNoteResponse?> GetByIdAsync(Guid id)
+        public async Task<ExportNoteDetailResponse?> GetByIdAsync(Guid id)
         {
             try
             {
@@ -257,7 +259,7 @@ namespace eMototCare.BLL.Services.ExportServices
                 if (entity is null)
                     throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
 
-                return _mapper.Map<ExportNoteResponse>(entity);
+                return _mapper.Map<ExportNoteDetailResponse>(entity);
             }
             catch (AppException)
             {

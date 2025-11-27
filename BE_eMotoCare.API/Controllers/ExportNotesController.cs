@@ -38,6 +38,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? serviceCenterId,
             [FromQuery] ExportNoteStatus? exportNoteStatus,
             [FromQuery] Guid? partItemId,
+            [FromQuery] bool outOfStock = false,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
@@ -54,6 +55,7 @@ namespace BE_eMotoCare.API.Controllers
                 serviceCenterId,
                 exportNoteStatus,
                 partItemId,
+                outOfStock,
                 page,
                 pageSize);
             return Ok(
@@ -70,7 +72,7 @@ namespace BE_eMotoCare.API.Controllers
         {
             var item = await _exportService.GetByIdAsync(id);
             return Ok(
-                ApiResponse<ExportNoteResponse>.SuccessResponse(
+                ApiResponse<ExportNoteDetailResponse>.SuccessResponse(
                     item,
                     "Lấy Export Note thành công"
                 )
