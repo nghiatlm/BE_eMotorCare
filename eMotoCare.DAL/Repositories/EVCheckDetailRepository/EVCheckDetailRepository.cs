@@ -19,7 +19,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
             Guid? campaignDetailId,
             Guid? partItemId,
             Guid? eVCheckId,
-            Guid? replacePartId,
             string? result,
             string? unit,
             decimal? quantity,
@@ -61,11 +60,6 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
             if (eVCheckId.HasValue)
             {
                 q = q.Where(x => x.EVCheckId == eVCheckId.Value);
-            }
-
-            if (replacePartId.HasValue)
-            {
-                q = q.Where(x => x.ProposedReplacePartId == replacePartId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(result))
