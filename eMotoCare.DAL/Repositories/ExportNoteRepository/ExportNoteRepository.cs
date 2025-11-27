@@ -91,17 +91,31 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             return (items, total);
         }
 
-        public Task<ExportNote?> GetByIdAsync(Guid id) =>
-        _context.ExportNotes
-            .Include(x => x.ExportBy)
-            .Include(x => x.ServiceCenter)
-            .Include(x => x.ExportNoteDetails)
-                .ThenInclude(xx => xx.ProposedReplacePart)
-            .Include(x => x.ExportNoteDetails)
-                .ThenInclude(xx => xx.PartItem)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        public Task<ExportNote?> GetByIdAsync(Guid id)
+        {
+            return _context.ExportNotes
+                .Include(x => x.ExportBy)
+                .Include(x => x.ServiceCenter)
+                .Include(x => x.ExportNoteDetails)
+                    .ThenInclude(xx => xx.ProposedReplacePart)
+                .Include(x => x.ExportNoteDetails)
+                    .ThenInclude(xx => xx.PartItem)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.ExportNotes.AnyAsync(x => x.Code == code);
+
+        public Task<ExportNote?> GetByOutOfStock(Guid id)
+        {
+            return _context.ExportNotes
+                    .Include(x => x.ExportBy)
+                    .Include(x => x.ServiceCenter)
+                    .Include(x => x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK))
+                        .ThenInclude(xx => xx.ProposedReplacePart)
+                    .Include(x => x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK))
+                        .ThenInclude(xx => xx.PartItem)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

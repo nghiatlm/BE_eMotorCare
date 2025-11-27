@@ -7,6 +7,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
     public interface IExportNoteRepository : IGenericRepository<ExportNote>
     {
         Task<bool> ExistsCodeAsync(string code);
+        Task<ExportNote?> GetByOutOfStock(Guid id);
         Task<ExportNote?> GetByIdAsync(Guid id);
         Task<(IReadOnlyList<ExportNote> Items, long Total)> GetPagedAsync(string? code,
              DateTime? startDate,
