@@ -6,6 +6,7 @@ using eMotoCare.DAL.Repositories.BatteryCheckRepository;
 using eMotoCare.DAL.Repositories.CustomerRepository;
 using eMotoCare.DAL.Repositories.EVCheckDetailRepository;
 using eMotoCare.DAL.Repositories.EVCheckRepository;
+using eMotoCare.DAL.Repositories.ExportNoteDetails;
 using eMotoCare.DAL.Repositories.ExportNoteRepository;
 using eMotoCare.DAL.Repositories.ImportNoteRepository;
 using eMotoCare.DAL.Repositories.MaintenancePlanRepository;
@@ -72,6 +73,11 @@ namespace eMotoCare.DAL
         private IVehicleRepository? _vehicleRepository;
         private IVehicleStageRepository? _vehicleStageRepository;
         private IServiceCenterSlotRepository _serviceCenterSlotRepository;
+        private IExportNoteDetailRepository? _exportNoteDetailRepository;
+
+        public IExportNoteDetailRepository ExportNoteDetails =>
+            _exportNoteDetailRepository ??= new ExportNoteDetailRepository(_unitOfWorkContext);
+
         public IAccountRepository Accounts =>
             _accountRepository ??= new AccountRepository(_unitOfWorkContext);
 

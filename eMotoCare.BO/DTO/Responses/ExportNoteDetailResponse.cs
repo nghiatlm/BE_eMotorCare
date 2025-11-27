@@ -1,10 +1,10 @@
-﻿
 
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.DTO.Responses
 {
-    public class ExportNoteResponse
+    public class ExportNoteDetailResponse
     {
         public Guid Id { get; set; }
         public string Code { get; set; }
@@ -17,6 +17,6 @@ namespace eMotoCare.BO.DTO.Responses
         public StaffResponse? ExportBy { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
         public ExportNoteStatus ExportNoteStatus { get; set; }
-
+        public ICollection<ExportNoteDetailsResponse>? ExportNoteDetails { get; set; }
     }
 }

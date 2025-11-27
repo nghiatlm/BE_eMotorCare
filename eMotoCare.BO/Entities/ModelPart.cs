@@ -26,8 +26,6 @@ namespace eMotoCare.BO.Entities
         [ForeignKey(nameof(PartId))]
         public virtual Part? Part { get; set; }
 
-        [Column("status", TypeName = "varchar(200)")]
-        [EnumDataType(typeof(Status))]
-        public Status Status { get; set; }
+
     }
 }

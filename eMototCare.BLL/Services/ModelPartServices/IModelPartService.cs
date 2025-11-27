@@ -9,7 +9,6 @@ namespace eMototCare.BLL.Services.ModelPartTypeServices
     {
         Task<PageResult<ModelPartResponse>> GetPagedAsync(
             string? search,
-            Status? status,
             Guid? id,
             Guid? modelId,
             Guid? partId,

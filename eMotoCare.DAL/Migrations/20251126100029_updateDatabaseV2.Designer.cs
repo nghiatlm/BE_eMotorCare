@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251126100029_updateDatabaseV2")]
+    partial class updateDatabaseV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -479,10 +482,6 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("service_center_id");
 
-                    b.Property<int?>("TotalExports")
-                        .HasColumnType("int")
-                        .HasColumnName("total_exports");
-
                     b.Property<int>("TotalQuantity")
                         .HasColumnType("int")
                         .HasColumnName("total_quantity");
@@ -520,11 +519,7 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
 
-                    b.Property<int?>("ExportIndex")
-                        .HasColumnType("int")
-                        .HasColumnName("export_index");
-
-                    b.Property<Guid>("ExportNoteId")
+                    b.Property<Guid>("ImportNoteId")
                         .HasColumnType("char(36)")
                         .HasColumnName("export_note_id");
 
@@ -532,7 +527,7 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("nvarchar(300)")
                         .HasColumnName("note");
 
-                    b.Property<Guid?>("PartItemId")
+                    b.Property<Guid>("PartItemId")
                         .HasColumnType("char(36)")
                         .HasColumnName("part_item_id");
 
@@ -543,11 +538,6 @@ namespace eMotoCare.DAL.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int")
                         .HasColumnName("quantity");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("varchar(200)")
-                        .HasColumnName("status");
 
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(65,30)")
@@ -563,7 +553,7 @@ namespace eMotoCare.DAL.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExportNoteId");
+                    b.HasIndex("ImportNoteId");
 
                     b.HasIndex("PartItemId");
 
@@ -881,6 +871,11 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("char(36)")
                         .HasColumnName("part_id");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("varchar(200)")
+                        .HasColumnName("status");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ModelId");
@@ -1029,11 +1024,6 @@ namespace eMotoCare.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(200)")
                         .HasColumnName("status");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("varchar(200)")
-                        .HasColumnName("type");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)")
@@ -1896,13 +1886,15 @@ namespace eMotoCare.DAL.Migrations
                 {
                     b.HasOne("eMotoCare.BO.Entities.ExportNote", "ExportNote")
                         .WithMany("ExportNoteDetails")
-                        .HasForeignKey("ExportNoteId")
+                        .HasForeignKey("ImportNoteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("eMotoCare.BO.Entities.PartItem", "PartItem")
                         .WithMany("ExportNoteDetails")
-                        .HasForeignKey("PartItemId");
+                        .HasForeignKey("PartItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("eMotoCare.BO.Entities.Part", "ProposedReplacePart")
                         .WithMany()

@@ -399,7 +399,54 @@ namespace eMototCare.BLL.Services.EVCheckServices
             var replaceDetails = evCheck
                 .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
                 .ToList();
+            if (replaceDetails.Any())
+            {
+                var customerName =
+                    evCheck.Appointment.Customer.LastName
+                    + " "
+                    + evCheck.Appointment.Customer.FirstName;
+                var phone = evCheck.Appointment.Customer.Account.Phone;
+                var exportNoteId = Guid.NewGuid();
+                var exportNote = new ExportNote
+                {
+                    Id = exportNoteId,
+                    Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
+                    ExportDate = DateTime.UtcNow,
+                    Type = ExportType.REPLACEMENT,
+                    ServiceCenterId = evCheck.Appointment.ServiceCenterId,
+                    Note = "Xuất phụ tùng cho appointment: " + evCheck.Appointment.Code,
+                    ExportNoteStatus = ExportNoteStatus.PROCESSING,
+                    TotalValue = 0,
+                    TotalQuantity = 0,
+                    ExportTo = customerName + " - " + phone,
+                };
+                await _unitOfWork.ExportNotes.CreateAsync(exportNote);
 
+                foreach (var detail in replaceDetails)
+                {
+                    var isInStock = await _unitOfWork.PartItems.GetAvailablePartItemsByPartIdAsync(detail.ProposedReplacePartId.Value, detail.EVCheck.Appointment.ServiceCenterId);
+                    var exportNoteDetail = new ExportNoteDetail
+                    {
+                        Id = Guid.NewGuid(),
+                        ExportNoteId = exportNoteId,
+                        PartItem = null,
+                        ProposedReplacePartId = detail.ProposedReplacePartId,
+                        Quantity = 1,
+                        UnitPrice = detail.ProposedReplacePart.PartItems.FirstOrDefault().Price,
+                    };
+                    if (isInStock.Any())
+                    {
+                        exportNoteDetail.Status = ExportNoteDetailStatus.STOCK_FOUND;
+                    } else
+                    {
+                        exportNoteDetail.Status = ExportNoteDetailStatus.STOCK_NOT_FOUND;
+                    }
+                    exportNote.TotalQuantity += 1;
+                    exportNoteDetail.TotalPrice = exportNoteDetail.UnitPrice * exportNoteDetail.Quantity;
+                    exportNote.TotalValue += exportNoteDetail.TotalPrice;
+                    await _unitOfWork.ExportNoteDetails.CreateAsync(exportNoteDetail);
+                }
+            }
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
             await _unitOfWork.EVChecks.UpdateAsync(evCheck);
             await _unitOfWork.SaveAsync();

@@ -25,7 +25,6 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
-            [FromQuery] Status? status,
             [FromQuery] Guid? id,
             [FromQuery] Guid? modelId,
             [FromQuery] Guid? partId,
@@ -35,7 +34,6 @@ namespace BE_eMotoCare.API.Controllers
         {
             var result = await _modelPartService.GetPagedAsync(
                 search,
-                status,
                 id,
                 modelId,
                 partId,

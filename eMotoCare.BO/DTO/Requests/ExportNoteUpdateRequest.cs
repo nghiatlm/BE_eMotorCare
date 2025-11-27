@@ -29,6 +29,7 @@ namespace eMotoCare.BO.Entities
 
         [EnumDataType(typeof(ExportNoteStatus))]
         public ExportNoteStatus? ExportNoteStatus { get; set; }
+        public int? TotalExports { get; set; }
 
     }
 }

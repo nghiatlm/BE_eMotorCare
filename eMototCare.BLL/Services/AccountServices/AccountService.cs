@@ -1,5 +1,4 @@
-﻿using System.Net;
-using AutoMapper;
+﻿using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -8,7 +7,10 @@ using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using eMototCare.BLL.Services.AccountService;
+using eMototCare.BLL.Services.EmailServices;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace eMototCare.BLL.Services.AccountServices
 {
@@ -17,16 +19,22 @@ namespace eMototCare.BLL.Services.AccountServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<AccountService> _logger;
+        private readonly IMemoryCache _cache;
+        private readonly IEmailService _mailService;
 
         public AccountService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<AccountService> logger
+            ILogger<AccountService> logger,
+            IMemoryCache cache,
+            IEmailService mailService
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _cache = cache;
+            _mailService = mailService;
         }
 
         public async Task<PageResult<AccountResponse>> GetPagedAsync(
@@ -146,7 +154,19 @@ namespace eMototCare.BLL.Services.AccountServices
                         "Mật khẩu không được để trống",
                         HttpStatusCode.BadRequest
                     );
-
+                if (req.RoleName == RoleName.ROLE_STAFF
+                    || req.RoleName == RoleName.ROLE_MANAGER
+                    || req.RoleName == RoleName.ROLE_TECHNICIAN
+                    || req.RoleName == RoleName.ROLE_STOREKEEPER)
+                {
+                    var otp = new Random().Next(100000, 999999).ToString();
+                    _cache.Set($"OTP_{email}", otp, TimeSpan.FromMinutes(5));
+                    await _mailService.SendLoginEmailAsync(
+                            email,
+                            "Xác minh đăng nhập nhân viên",
+                            otp
+                        );
+                }
                 var entity = _mapper.Map<Account>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Phone = phone;

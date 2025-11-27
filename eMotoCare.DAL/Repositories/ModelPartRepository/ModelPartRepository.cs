@@ -31,7 +31,6 @@ namespace eMotoCare.DAL.Repositories.ModelPartTypeRepository
             string? search,
             Guid? modelId,
             Guid? partId,
-            Status? status,
             Guid? id,
             int page,
             int pageSize
@@ -48,8 +47,7 @@ namespace eMotoCare.DAL.Repositories.ModelPartTypeRepository
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
 
-            if (status.HasValue)
-                q = q.Where(x => x.Status == status.Value);
+
 
             if (!string.IsNullOrWhiteSpace(search))
             {

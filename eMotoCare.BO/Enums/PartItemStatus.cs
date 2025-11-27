@@ -5,5 +5,6 @@
         ACTIVE,
         IN_ACTIVE,
         IN_STOCK,
+        INSTALLED,
     }
 }

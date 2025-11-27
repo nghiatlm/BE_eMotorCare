@@ -85,6 +85,7 @@ namespace eMotoCare.DAL.Repositories.ImportNoteRepository
         public async Task<ImportNote?> GetByIdAsync(Guid id) =>
         await _context.ImportNotes
                         .Include(i => i.ImportNoteDetails)
+                            .ThenInclude(p => p.PartItem)
                         .Include(i => i.ImportBy)
                         .Include(i => i.ServiceCenter)
                         .FirstOrDefaultAsync(x => x.Id == id);
