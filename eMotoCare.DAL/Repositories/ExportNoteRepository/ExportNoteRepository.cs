@@ -96,6 +96,9 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             .Include(x => x.ExportBy)
             .Include(x => x.ServiceCenter)
             .Include(x => x.ExportNoteDetails)
+                .ThenInclude(xx => xx.ProposedReplacePart)
+            .Include(x => x.ExportNoteDetails)
+                .ThenInclude(xx => xx.PartItem)  
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>

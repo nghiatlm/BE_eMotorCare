@@ -70,7 +70,7 @@ namespace BE_eMotoCare.API.Controllers
         {
             var item = await _exportService.GetByIdAsync(id);
             return Ok(
-                ApiResponse<ExportNoteResponse>.SuccessResponse(
+                ApiResponse<ExportNoteDetailResponse>.SuccessResponse(
                     item,
                     "Lấy Export Note thành công"
                 )

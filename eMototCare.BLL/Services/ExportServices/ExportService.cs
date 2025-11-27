@@ -249,7 +249,7 @@ namespace eMototCare.BLL.Services.ExportServices
             }
         }
 
-        public async Task<ExportNoteResponse?> GetByIdAsync(Guid id)
+        public async Task<ExportNoteDetailResponse?> GetByIdAsync(Guid id)
         {
             try
             {
@@ -257,7 +257,7 @@ namespace eMototCare.BLL.Services.ExportServices
                 if (entity is null)
                     throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
 
-                return _mapper.Map<ExportNoteResponse>(entity);
+                return _mapper.Map<ExportNoteDetailResponse>(entity);
             }
             catch (AppException)
             {
