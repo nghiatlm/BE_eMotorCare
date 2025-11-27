@@ -5,7 +5,6 @@ using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.ServiceCenterInventoryServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -27,11 +26,12 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] Guid? serviceCenterId,
             [FromQuery] string? serviceCenterInventoryName,
             [FromQuery] Status? status,
+            [FromQuery] string? partCode,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _serviceCenterInventoryService.GetPagedAsync(serviceCenterId, serviceCenterInventoryName, status, page, pageSize);
+            var data = await _serviceCenterInventoryService.GetPagedAsync(serviceCenterId, serviceCenterInventoryName, status, partCode, page, pageSize);
             return Ok(
                 ApiResponse<PageResult<ServiceCenterInventoryResponse>>.SuccessResponse(
                     data,

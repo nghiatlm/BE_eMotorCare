@@ -8,6 +8,6 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
     {
         Task<ServiceCenterInventory?> GetByIdAsync(Guid id);
         Task<ServiceCenterInventory?> GetByServiceCenterId(Guid id);
-        Task<(IReadOnlyList<ServiceCenterInventory> Items, long Total)> GetPagedAsync(Guid? serviceCenterId, string? serviceCenterInventoryName, Status? status, int page, int pageSize);
+        Task<(IReadOnlyList<ServiceCenterInventory> Items, long Total)> GetPagedAsync(Guid? serviceCenterId, string? serviceCenterInventoryName, Status? status, string? partCode, int page, int pageSize);
     }
 }
