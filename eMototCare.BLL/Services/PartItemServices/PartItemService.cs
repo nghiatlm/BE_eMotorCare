@@ -32,7 +32,7 @@ namespace eMototCare.BLL.Services.PartItemServices
              Guid? partId,
              string? serialNumber,
              PartItemStatus? status,
-             Guid? serviceCenterInventoryId,
+             Guid? serviceCenterId,
              int page,
              int pageSize
         )
@@ -43,7 +43,7 @@ namespace eMototCare.BLL.Services.PartItemServices
                     partId,
                     serialNumber,
                     status,
-                    serviceCenterInventoryId,
+                    serviceCenterId,
                     page,
                     pageSize
                 );
