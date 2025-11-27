@@ -12,6 +12,7 @@ using eMototCare.BLL.Services.DashboardServices;
 using eMototCare.BLL.Services.EmailServices;
 using eMototCare.BLL.Services.EVCheckDetailServices;
 using eMototCare.BLL.Services.EVCheckServices;
+using eMototCare.BLL.Services.ExportNoteDetailServices;
 using eMototCare.BLL.Services.ExportServices;
 using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.ImportNoteServices;
@@ -79,6 +80,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IProgramService, ProgramService>();
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IModelPartService, ModelPartService>();
+            services.AddScoped<IExportNoteDetailService, ExportNoteDetailService>();
 
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();

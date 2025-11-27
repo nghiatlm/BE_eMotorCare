@@ -16,9 +16,9 @@ namespace eMotoCare.BO.Entities
 
         [Required]
         [Column("export_note_id")]
-        public Guid ExportNoteDetailId { get; set; }
+        public Guid ExportNoteId { get; set; }
 
-        [ForeignKey(nameof(ExportNoteDetailId))]
+        [ForeignKey(nameof(ExportNoteId))]
         public virtual ExportNote? ExportNote { get; set; }
 
         
@@ -56,5 +56,6 @@ namespace eMotoCare.BO.Entities
         [Column("status", TypeName = "varchar(200)")]
         [EnumDataType(typeof(ExportNoteDetailStatus))]
         public ExportNoteDetailStatus Status { get; set; }
+
     }
 }

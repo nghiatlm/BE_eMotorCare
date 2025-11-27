@@ -6,6 +6,7 @@ namespace eMotoCare.BO.Enums
     {
         ACTIVE,
         IN_ACTIVE,
-        IN_STOCK
+        IN_STOCK,
+        INSTALLED
     }
 }

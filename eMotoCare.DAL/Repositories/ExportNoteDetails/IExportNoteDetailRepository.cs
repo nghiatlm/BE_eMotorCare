@@ -6,6 +6,6 @@ namespace eMotoCare.DAL.Repositories.ExportNoteDetails
 {
     public interface IExportNoteDetailRepository : IGenericRepository<ExportNoteDetail>
     {
-
+        Task<ExportNoteDetail?> GetByIdAsync(Guid id);
     }
 }

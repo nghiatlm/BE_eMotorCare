@@ -153,6 +153,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
                 .Include(x => x.EVCheck)
+                    .ThenInclude(x => x.EVCheckDetails)
                 .FirstOrDefaultAsync(x => x.Code == code);
 
         public Task UpdateStatusByIdAsync(Guid id, AppointmentStatus status)
