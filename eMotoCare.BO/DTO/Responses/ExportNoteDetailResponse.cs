@@ -17,6 +17,6 @@ namespace eMotoCare.BO.DTO.Responses
         public StaffResponse? ExportBy { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
         public ExportNoteStatus ExportNoteStatus { get; set; }
-        public ICollection<ExportNoteDetail>? ExportNoteDetails { get; set; }
+        public ICollection<ExportNoteDetailsResponse>? ExportNoteDetails { get; set; }
     }
 }
