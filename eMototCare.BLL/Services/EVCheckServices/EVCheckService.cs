@@ -137,10 +137,19 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 Id = Guid.NewGuid(),
                                 EVCheckId = entity.Id,
                                 Remedies = Remedies.LUBRICATE,
-                                PartItemId = detail.EVCheckDetail.PartItemId,
+                                PartItemId = detail.ReplacePartId.Value,
                                 Status = EVCheckDetailStatus.IN_PROGRESS,
                                 Result = "Thay thế phụ tùng mới từ hãng",
                             };
+                            var vehiclePartItem = new VehiclePartItem
+                            {
+                                Id = Guid.NewGuid(),
+                                InstallDate = DateTime.UtcNow,
+                                VehicleId = appointment.VehicleId.Value,
+                                PartItemId = detail.ReplacePartId.Value,
+                                ReplaceForId = detail.EVCheckDetail.PartItemId,
+                            };
+                            await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
                             await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
                         }
                         else if (detail.ReplacePartId == null)
@@ -185,6 +194,10 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     ?? throw new AppException("Không tìm thấy EVCheck", HttpStatusCode.NotFound);
 
                 entity.Status = EVCheckStatus.CANCELLED;
+                entity.EVCheckDetails.ToList().ForEach(d =>
+                {
+                    d.Status = EVCheckDetailStatus.COMPLETED;
+                });
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
