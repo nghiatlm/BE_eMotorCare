@@ -3,6 +3,7 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class PartItemRequest
     {
+        public Guid PartId { get; set; }
         public int Quantity { get; set; }
         public string? SerialNumber { get; set; }
         public decimal Price { get; set; }
