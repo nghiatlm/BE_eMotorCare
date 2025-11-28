@@ -190,6 +190,7 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     var partItem = _mapper.Map<PartItem>(req.ReplacePart);
                     var partItemId = Guid.NewGuid();
                     partItem.Id = partItemId;
+                    partItem.Status = PartItemStatus.INSTALLED;
                     entity.ReplacePartId = partItemId;
                     await _unitOfWork.PartItems.CreateAsync(partItem);
                     

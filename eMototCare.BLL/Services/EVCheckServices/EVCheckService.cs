@@ -364,6 +364,24 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     }
                 }
 
+                if (req.Status == EVCheckStatus.COMPLETED)
+                {
+                    if (appt != null)
+                    {
+                        if (appt.Status != AppointmentStatus.COMPLETED)
+                        {
+                            appt.Status = AppointmentStatus.COMPLETED;
+                        }
+                    }
+                    else
+                    {
+                        await _unitOfWork.Appointments.UpdateStatusByIdAsync(
+                            entity.AppointmentId,
+                            AppointmentStatus.COMPLETED
+                        );
+                    }
+                }
+
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
