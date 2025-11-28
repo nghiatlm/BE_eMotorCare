@@ -31,8 +31,6 @@ namespace eMotoCare.BO.DTO.Responses
 
         public EVCheckDetailResponse? EVCheckDetail { get; set; }
 
-        public RMAResponse? RMA { get; set; }
-
         public RMADetailStatus Status { get; set; }
 
         public PartItemResponse? ReplacePart { get; set; }
