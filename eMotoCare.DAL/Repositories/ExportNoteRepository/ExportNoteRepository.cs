@@ -113,5 +113,21 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             _context
                 .ExportNotes.Include(x => x.ExportNoteDetails)
                 .FirstOrDefaultAsync(x => x.Note.Contains(note));
+
+        public Task<ExportNote?> GetByOutOfStock(Guid id)
+        {
+            return _context
+                .ExportNotes.Include(x => x.ExportBy)
+                .Include(x => x.ServiceCenter)
+                .Include(x =>
+                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                )
+                .ThenInclude(xx => xx.ProposedReplacePart)
+                .Include(x =>
+                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                )
+                .ThenInclude(xx => xx.PartItem)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }
