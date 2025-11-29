@@ -103,5 +103,10 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.ExportNotes.AnyAsync(x => x.Code == code);
+
+        public Task<ExportNote> FindByNote(string note) =>
+            _context.ExportNotes
+            .Include (x => x.ExportNoteDetails)
+            .FirstOrDefaultAsync(x => x.Note.Contains(note));
     }
 }

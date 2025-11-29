@@ -27,5 +27,13 @@ namespace BE_eMotoCare.API.Controllers
             await _service.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật thành công"));
         }
+
+        [HttpGet("export-status")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_STOREKEEPER")]
+        public async Task<IActionResult> GetExportStatuses(string appointmentCode, Guid proposedPartId)
+        {
+            var status = await _service.GetExportStatus(appointmentCode, proposedPartId);
+            return Ok(ApiResponse<string>.SuccessResponse(status));
+        }
     }
 }
