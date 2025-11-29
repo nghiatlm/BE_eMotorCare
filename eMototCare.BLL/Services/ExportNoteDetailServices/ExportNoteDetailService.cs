@@ -134,12 +134,12 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                             }
                         } 
                     }
-
+                    entity.Status = req.Status.Value;
                     if (entity.ExportNote.ExportNoteDetails.All(d => d.Status == ExportNoteDetailStatus.COMPLETED))
                     {
                         entity.ExportNote.ExportNoteStatus = ExportNoteStatus.COMPLETED;
                     }
-                    entity.Status = req.Status.Value;
+                    
                 }
 
                 
