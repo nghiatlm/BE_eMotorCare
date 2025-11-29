@@ -207,6 +207,35 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     req.VehicleStageId = null;
                 }
+                if (req.Type == ServiceType.CAMPAIGN_TYPE)
+                {
+                    if (!req.CampaignId.HasValue || req.CampaignId.Value == Guid.Empty)
+                        throw new AppException(
+                            "Lịch campaign phải chọn CampaignId.",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    if (!req.VehicleId.HasValue || req.VehicleId.Value == Guid.Empty)
+                        throw new AppException(
+                            "Lịch campaign phải gắn với một Vehicle.",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    var allAppointmentsForCampaign = await _unitOfWork.Appointments.FindAllAsync();
+                    var existedCampaignForVehicle = allAppointmentsForCampaign.Any(a =>
+                        a.CampaignId == req.CampaignId.Value
+                        && a.VehicleId == req.VehicleId.Value
+                        && a.Status != AppointmentStatus.CANCELED
+                    );
+
+                    if (existedCampaignForVehicle)
+                    {
+                        throw new AppException(
+                            "Xe này đã được đặt lịch cho campaign này rồi, không thể đặt thêm.",
+                            HttpStatusCode.Conflict
+                        );
+                    }
+                }
                 if (req.VehicleStageId.HasValue)
                 {
                     var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
