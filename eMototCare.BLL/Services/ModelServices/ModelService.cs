@@ -7,6 +7,7 @@ using eMotoCare.BO.Enum;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using eMototCare.BLL.Services.FirebaseServices;
 using Microsoft.Extensions.Logging;
 
 namespace eMototCare.BLL.Services.ModelServices
@@ -16,12 +17,19 @@ namespace eMototCare.BLL.Services.ModelServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<ModelService> _logger;
+        private readonly IFirebaseService _firebase;
 
-        public ModelService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ModelService> logger)
+        public ModelService(
+            IUnitOfWork unitOfWork,
+            IMapper mapper,
+            ILogger<ModelService> logger,
+            IFirebaseService firebase
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _firebase = firebase;
         }
 
         public async Task<PageResult<ModelResponse>> GetPagedAsync(
@@ -253,6 +261,172 @@ namespace eMototCare.BLL.Services.ModelServices
             } while (await _unitOfWork.Models.ExistsCodeAsync(code) && guard < 10);
 
             return code;
+        }
+
+        public async Task<ModelResponse> SyncModelAsync(SyncModelRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                var value = request.modelIdOrName?.Trim();
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new AppException(
+                        "Giá trị đồng bộ (id hoặc name) không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!_firebase.IsFirestoreConfigured())
+                    throw new AppException(
+                        "Hệ thống chưa được cấu hình Firestore",
+                        HttpStatusCode.ServiceUnavailable
+                    );
+
+                // 1. Lấy model từ Firebase (theo id hoặc name)
+                var data = await _firebase.GetModelByIdAsync(value);
+                if (data == null)
+                    throw new AppException(
+                        "Không tìm thấy model trong hệ thống OEM",
+                        HttpStatusCode.NotFound
+                    );
+
+                var name = data.ContainsKey("name") ? data["name"]?.ToString()?.Trim() ?? "" : "";
+                var manufacturer = data.ContainsKey("manufacturer")
+                    ? data["manufacturer"]?.ToString()?.Trim() ?? ""
+                    : "";
+                var maintenancePlanIdStr = data.ContainsKey("maintenancePlanId")
+                    ? data["maintenancePlanId"]?.ToString()
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(name))
+                    throw new AppException(
+                        "Tên model từ OEM không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                // 2. Nếu model đã tồn tại trong DB (theo Name) -> trả về luôn
+                var existed = _unitOfWork
+                    .Models.FindAll()
+                    .FirstOrDefault(m => m.Name.ToLower() == name.ToLower());
+
+                if (existed != null)
+                    return _mapper.Map<ModelResponse>(existed);
+
+                if (string.IsNullOrWhiteSpace(manufacturer))
+                    throw new AppException(
+                        "Hãng sản xuất từ OEM không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!Guid.TryParse(maintenancePlanIdStr, out var maintenancePlanId))
+                    throw new AppException(
+                        "MaintenancePlanId từ OEM không hợp lệ",
+                        HttpStatusCode.BadRequest
+                    );
+
+                // 3. Đảm bảo MaintenancePlan tồn tại trong DB
+                var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(maintenancePlanId);
+                if (plan == null)
+                {
+                    // 3.1. Nếu chưa có -> lấy từ Firestore và lưu xuống DB
+                    var planData = await _firebase.GetMaintenancePlanByIdAsync(
+                        maintenancePlanIdStr!
+                    );
+                    if (planData == null)
+                        throw new AppException(
+                            "Không tìm thấy MaintenancePlan trên hệ thống OEM",
+                            HttpStatusCode.BadRequest
+                        );
+
+                    var planCode = planData.ContainsKey("code")
+                        ? planData["code"]?.ToString()?.Trim() ?? ""
+                        : "";
+                    var planName = planData.ContainsKey("name")
+                        ? planData["name"]?.ToString()?.Trim() ?? ""
+                        : "";
+                    var planDescription = planData.ContainsKey("description")
+                        ? planData["description"]?.ToString() ?? ""
+                        : "";
+
+                    Status planStatus = Status.ACTIVE;
+                    if (
+                        planData.ContainsKey("status")
+                        && Enum.TryParse<Status>(planData["status"]?.ToString(), true, out var st)
+                    )
+                    {
+                        planStatus = st;
+                    }
+
+                    var unit = planData.ContainsKey("unit")
+                        ? planData["unit"]?.ToString()?.Trim() ?? ""
+                        : "";
+                    if (string.IsNullOrWhiteSpace(unit))
+                        unit = "KILOMETER";
+
+                    int totalStages = 0;
+                    if (planData.ContainsKey("totalStages"))
+                    {
+                        var tsStr = planData["totalStages"]?.ToString();
+                        if (!string.IsNullOrWhiteSpace(tsStr))
+                            int.TryParse(tsStr, out totalStages);
+                    }
+
+                    DateTime? effectiveDate = null;
+                    if (
+                        planData.ContainsKey("effectiveDate")
+                        && DateTime.TryParse(planData["effectiveDate"]?.ToString(), out var eff)
+                    )
+                    {
+                        effectiveDate = eff;
+                    }
+
+                    plan = new MaintenancePlan
+                    {
+                        Id = maintenancePlanId,
+                        Code = planCode,
+                        Name = planName,
+                        Description = planDescription,
+                        Status = planStatus,
+                        Unit = new[]
+                        {
+                            Enum.TryParse<MaintenanceUnit>(unit, true, out var parsedUnit)
+                                ? parsedUnit
+                                : MaintenanceUnit.KILOMETER,
+                        },
+                        TotalStages = totalStages,
+                        EffectiveDate = effectiveDate ?? DateTime.MinValue,
+                    };
+
+                    await _unitOfWork.MaintenancePlans.CreateAsync(plan);
+                    await _unitOfWork.SaveAsync();
+                }
+
+                // 4. Tạo mới Model trỏ tới MaintenancePlan trong DB
+                var entity = new Model
+                {
+                    Id = Guid.NewGuid(),
+                    Code = await GenerateCodeAsync(),
+                    Name = name,
+                    Manufacturer = manufacturer,
+                    MaintenancePlanId = maintenancePlanId,
+                    Status = Status.ACTIVE,
+                };
+
+                await _unitOfWork.Models.CreateAsync(entity);
+                await _unitOfWork.SaveAsync();
+
+                return _mapper.Map<ModelResponse>(entity);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Sync Model failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

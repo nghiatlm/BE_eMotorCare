@@ -134,12 +134,12 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                             }
                         } 
                     }
-
+                    entity.Status = req.Status.Value;
                     if (entity.ExportNote.ExportNoteDetails.All(d => d.Status == ExportNoteDetailStatus.COMPLETED))
                     {
                         entity.ExportNote.ExportNoteStatus = ExportNoteStatus.COMPLETED;
                     }
-                    entity.Status = req.Status.Value;
+                    
                 }
 
                 
@@ -158,6 +158,27 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
 
+        }
+
+        public async Task<string> GetExportStatus(string appointmentCode, Guid proposedPartId)
+        {
+            var appointment = await _unitOfWork.Appointments.GetByCodeAsync(appointmentCode);
+            if (appointment == null)
+            {
+                throw new AppException("Không tìm thấy cuộc hẹn", HttpStatusCode.NotFound);
+            }
+            var part = await _unitOfWork.Parts.GetByIdAsync(proposedPartId);
+            if (part == null)
+            {
+                throw new AppException("Không tìm thấy phụ tùng", HttpStatusCode.NotFound);
+            }
+            var exportNote = await _unitOfWork.ExportNotes.FindByNote(appointmentCode);
+            if (exportNote == null)
+            {
+                throw new AppException("Không tìm thấy phiếu xuất kho tương ứng", HttpStatusCode.NotFound);
+            }
+            string status = exportNote.ExportNoteDetails.FirstOrDefault(d => d.ProposedReplacePartId == proposedPartId)?.Status.ToString() ?? "NOT_FOUND";
+            return status;
         }
     }
 }

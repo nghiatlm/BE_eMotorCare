@@ -6,5 +6,6 @@
         REPAIR_TYPE,
         WARRANTY_TYPE,
         CAMPAIGN_TYPE,
+        RECALL_TYPE,
     }
 }

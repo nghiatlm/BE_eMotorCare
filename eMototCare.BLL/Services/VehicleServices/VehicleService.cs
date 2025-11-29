@@ -8,6 +8,8 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using eMototCare.BLL.Services.FirebaseServices;
+using eMototCare.BLL.Services.ModelServices;
 using Microsoft.Extensions.Logging;
 
 namespace eMototCare.BLL.Services.VehicleServices
@@ -17,16 +19,22 @@ namespace eMototCare.BLL.Services.VehicleServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<VehicleService> _logger;
+        private readonly IFirebaseService _firebase;
+        private readonly IModelService _modelService;
 
         public VehicleService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
-            ILogger<VehicleService> logger
+            ILogger<VehicleService> logger,
+            IFirebaseService firebase,
+            IModelService modelService
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _firebase = firebase;
+            _modelService = modelService;
         }
 
         public async Task<PageResult<VehicleResponse>> GetPagedAsync(
@@ -346,6 +354,120 @@ namespace eMototCare.BLL.Services.VehicleServices
             };
 
             return response;
+        }
+
+        public async Task<VehicleResponse> SyncVehicleAsync(SyncVehicleRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
+
+                var chassisNumber = request.ChassisNumber?.Trim();
+                if (string.IsNullOrWhiteSpace(chassisNumber))
+                    throw new AppException(
+                        "ChassisNumber không được để trống",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (!_firebase.IsFirestoreConfigured())
+                    throw new AppException(
+                        "Hệ thống chưa được cấu hình Firestore",
+                        HttpStatusCode.ServiceUnavailable
+                    );
+
+                // 1. Kiểm tra trong DB trước
+                var existed = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
+                if (existed != null)
+                    return _mapper.Map<VehicleResponse>(existed);
+
+                // 2. Không có trong DB -> lấy từ Firestore theo chassisNumber
+                var vehicleTuple = await _firebase.GetVehicleByChassisNumberAsync(chassisNumber);
+                if (vehicleTuple == null)
+                    throw new AppException(
+                        "Không tìm thấy vehicle trong hệ thống OEM",
+                        HttpStatusCode.NotFound
+                    );
+
+                var firebaseVehicleId = vehicleTuple.Value.Id;
+                var data = vehicleTuple.Value.Data;
+
+                // 3. Đọc dữ liệu từ Firestore
+                var fsChassis = data.ContainsKey("chassis_number")
+                    ? data["chassis_number"]?.ToString()?.Trim() ?? ""
+                    : "";
+
+                var engineNumber = data.ContainsKey("engine_number")
+                    ? data["engine_number"]?.ToString()?.Trim() ?? ""
+                    : "";
+
+                var color = data.ContainsKey("color")
+                    ? data["color"]?.ToString()?.Trim() ?? ""
+                    : "";
+
+                var image = data.ContainsKey("image")
+                    ? data["image"]?.ToString()?.Trim() ?? ""
+                    : "";
+
+                var modelIdStr = data.ContainsKey("modelId") ? data["modelId"]?.ToString() : null;
+
+                if (string.IsNullOrWhiteSpace(fsChassis))
+                    throw new AppException(
+                        "Dữ liệu OEM thiếu chassis_number",
+                        HttpStatusCode.BadRequest
+                    );
+
+                // nếu OEM trả chassis khác thì vẫn ưu tiên theo request
+                var finalChassis = chassisNumber;
+
+                // 4. Đảm bảo Model tồn tại (tái sử dụng SyncModelAsync)
+                if (string.IsNullOrWhiteSpace(modelIdStr))
+                    throw new AppException(
+                        "Dữ liệu OEM không có modelId",
+                        HttpStatusCode.BadRequest
+                    );
+
+                var modelResp = await _modelService.SyncModelAsync(
+                    new SyncModelRequest { modelIdOrName = modelIdStr }
+                );
+                var modelId = modelResp.Id;
+
+                // 5. (tuỳ bạn) hiện tại chưa map CustomerId -> để null
+                Guid? customerId = null;
+
+                // 6. Tạo Vehicle mới trong DB (map đủ engine_number, color, image)
+                var vehicle = new Vehicle
+                {
+                    Id = Guid.NewGuid(),
+                    ChassisNumber = finalChassis,
+                    EngineNumber = engineNumber, // đổi tên property cho khớp entity nếu khác
+                    Color = color,
+                    Image = image, // hoặc ImageUrl, Avatar, ...
+                    ModelId = modelId,
+                    CustomerId = customerId,
+                    // nếu có Status / CreatedAt / UpdatedAt thì set thêm:
+                    // Status = VehicleStatus.ACTIVE,
+                    // CreatedAt = DateTime.UtcNow,
+                };
+
+                await _unitOfWork.Vehicles.CreateAsync(vehicle);
+                await _unitOfWork.SaveAsync();
+
+                // 7. (optional) đồng bộ luôn VehicleStage nếu cần – để sau cũng được
+                // var stagesData = await _firebase.GetVehicleStagesByVehicleIdAsync(firebaseVehicleId);
+                // ...
+
+                return _mapper.Map<VehicleResponse>(vehicle);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Sync Vehicle failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
         }
     }
 }

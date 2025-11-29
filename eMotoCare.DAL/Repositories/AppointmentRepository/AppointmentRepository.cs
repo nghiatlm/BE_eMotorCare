@@ -14,8 +14,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
 
         public Task<Appointment?> GetByIdAsync(Guid id) =>
             _context
-                .Appointments.AsNoTracking()
-                .Include(x => x.ServiceCenter)
+                .Appointments.Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
                 .ThenInclude(x => x.Account)
                 .Include(x => x.VehicleStage)
@@ -26,6 +25,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .ThenInclude(x => x.MaintenanceStage)
                 .Include(x => x.Vehicle)
                 .ThenInclude(x => x.Model)
+                //.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
@@ -153,7 +153,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .Appointments.Include(x => x.ServiceCenter)
                 .Include(x => x.Customer)
                 .Include(x => x.EVCheck)
-                    .ThenInclude(x => x.EVCheckDetails)
+                .ThenInclude(x => x.EVCheckDetails)
                 .FirstOrDefaultAsync(x => x.Code == code);
 
         public Task UpdateStatusByIdAsync(Guid id, AppointmentStatus status)

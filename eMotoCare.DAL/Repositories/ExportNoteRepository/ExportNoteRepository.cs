@@ -8,32 +8,31 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
 {
     public class ExportNoteRepository : GenericRepository<ExportNote>, IExportNoteRepository
     {
-        public ExportNoteRepository(ApplicationDbContext context) : base(context)
-        {
-        }
+        public ExportNoteRepository(ApplicationDbContext context)
+            : base(context) { }
 
         public async Task<(IReadOnlyList<ExportNote> Items, long Total)> GetPagedAsync(
-             string? code,
-             DateTime? startDate,
-             DateTime? endDate,
-             ExportType? exportType,
-             string? exportTo,
-             int? totalQuantity,
-             decimal? totalValue,
-             Guid? exportById,
-             Guid? serviceCenterId,
-             ExportNoteStatus? exportNoteStatus,
-             Guid? partItemId,
-             bool outOfStock = false,
-             int page = 1,
-             int pageSize = 10
+            string? code,
+            DateTime? startDate,
+            DateTime? endDate,
+            ExportType? exportType,
+            string? exportTo,
+            int? totalQuantity,
+            decimal? totalValue,
+            Guid? exportById,
+            Guid? serviceCenterId,
+            ExportNoteStatus? exportNoteStatus,
+            Guid? partItemId,
+            bool outOfStock = false,
+            int page = 1,
+            int pageSize = 10
         )
         {
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.ExportNotes
-                .Include(x => x.ExportBy)
+            var q = _context
+                .ExportNotes.Include(x => x.ExportBy)
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.ExportNoteDetails)
                 .AsNoTracking()
@@ -44,7 +43,9 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             if (startDate.HasValue && endDate.HasValue)
             {
                 var endDateInclusive = endDate.Value.Date.AddDays(1);
-                q = q.Where(x => x.ExportDate >= startDate.Value.Date && x.ExportDate < endDateInclusive);
+                q = q.Where(x =>
+                    x.ExportDate >= startDate.Value.Date && x.ExportDate < endDateInclusive
+                );
             }
             else if (startDate.HasValue)
             {
@@ -78,7 +79,9 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
                 q = q.Where(x => x.ExportNoteStatus == exportNoteStatus.Value);
             if (outOfStock)
             {
-                q = q.Where(x => x.ExportNoteDetails.Any(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK));
+                q = q.Where(x =>
+                    x.ExportNoteDetails.Any(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                );
             }
 
             var total = await q.LongCountAsync();
@@ -93,29 +96,38 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
 
         public Task<ExportNote?> GetByIdAsync(Guid id)
         {
-            return _context.ExportNotes
-                .Include(x => x.ExportBy)
+            return _context
+                .ExportNotes.Include(x => x.ExportBy)
                 .Include(x => x.ServiceCenter)
                 .Include(x => x.ExportNoteDetails)
-                    .ThenInclude(xx => xx.ProposedReplacePart)
+                .ThenInclude(xx => xx.ProposedReplacePart)
                 .Include(x => x.ExportNoteDetails)
-                    .ThenInclude(xx => xx.PartItem)
+                .ThenInclude(xx => xx.PartItem)
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.ExportNotes.AnyAsync(x => x.Code == code);
 
+        public Task<ExportNote> FindByNote(string note) =>
+            _context
+                .ExportNotes.Include(x => x.ExportNoteDetails)
+                .FirstOrDefaultAsync(x => x.Note.Contains(note));
+
         public Task<ExportNote?> GetByOutOfStock(Guid id)
         {
-            return _context.ExportNotes
-                    .Include(x => x.ExportBy)
-                    .Include(x => x.ServiceCenter)
-                    .Include(x => x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK))
-                        .ThenInclude(xx => xx.ProposedReplacePart)
-                    .Include(x => x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK))
-                        .ThenInclude(xx => xx.PartItem)
-                    .FirstOrDefaultAsync(x => x.Id == id);
+            return _context
+                .ExportNotes.Include(x => x.ExportBy)
+                .Include(x => x.ServiceCenter)
+                .Include(x =>
+                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                )
+                .ThenInclude(xx => xx.ProposedReplacePart)
+                .Include(x =>
+                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                )
+                .ThenInclude(xx => xx.PartItem)
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
     }
 }
