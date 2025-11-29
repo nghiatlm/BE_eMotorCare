@@ -79,6 +79,19 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
+        [HttpGet("out-of-stock/{id}")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> GetOutOfStock(Guid id)
+        {
+            var item = await _exportService.GetByOutOfStock(id);
+            return Ok(
+                ApiResponse<ExportNoteDetailResponse>.SuccessResponse(
+                    item,
+                    "Lấy Export Note thành công"
+                )
+            );
+        }
+
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
         [HttpGet("{exportNoteId}/part-items")]
         public async Task<IActionResult> GetPartItems(Guid exportNoteId)

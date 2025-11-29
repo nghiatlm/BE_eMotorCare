@@ -16,6 +16,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
             Guid? serviceCenterId,
             string? serviceCenterInventoryName,
             Status? status,
+            string? partCode,
             int page,
             int pageSize
         )
@@ -24,8 +25,6 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             var q = _context.ServiceCenterInventorys
-                .Include(x => x.PartItems)
-                    .ThenInclude(x => x.Part)
                 .Include(s => s.ServiceCenter)
                 .AsNoTracking()
                 .AsQueryable();
@@ -37,18 +36,23 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
 
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
-
-
-
-
-
+            if (!string.IsNullOrWhiteSpace(partCode))
+            {
+                // Only include PartItems whose Part.Code matches the provided partCode
+                q = q
+                    .Include(x => x.PartItems.Where(pi => pi.Part != null && pi.Part.Code == partCode))
+                        .ThenInclude(pi => pi.Part)
+                    .Where(x => x.PartItems.Any(pi => pi.Part != null && pi.Part.Code == partCode));
+            }
+            else
+            {
+                q = q.Include(x => x.PartItems).ThenInclude(pi => pi.Part);
+            }
             var total = await q.LongCountAsync();
-
             var items = await q.OrderByDescending(x => x.ServiceCenterInventoryName)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-
             return (items, total);
         }
 
@@ -59,8 +63,8 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
             .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<ServiceCenterInventory?> GetByServiceCenterId(Guid id) =>
-        _context.ServiceCenterInventorys 
-            .Include(x => x.PartItems) 
+        _context.ServiceCenterInventorys
+            .Include(x => x.PartItems)
             .Include(s => s.ServiceCenter)
             .FirstOrDefaultAsync(x => x.ServiceCenterId == id);
     }

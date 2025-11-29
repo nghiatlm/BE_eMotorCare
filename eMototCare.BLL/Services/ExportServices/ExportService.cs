@@ -291,5 +291,26 @@ namespace eMototCare.BLL.Services.ExportServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task<ExportNoteDetailResponse?> GetByOutOfStock(Guid id)
+        {
+            try
+            {
+                var entity = await _unitOfWork.ExportNotes.GetByOutOfStock(id);
+                if (entity is null)
+                    throw new AppException("Không tìm thấy ExportNote", HttpStatusCode.NotFound);
+
+                return _mapper.Map<ExportNoteDetailResponse>(entity);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetById ExportNote failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
     }
 }

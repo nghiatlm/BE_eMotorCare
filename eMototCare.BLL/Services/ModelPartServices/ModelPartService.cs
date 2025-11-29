@@ -48,7 +48,19 @@ namespace eMototCare.BLL.Services.ModelPartServices
                     page,
                     pageSize
                 );
+                if (page <= 0)
+                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
 
+                if (pageSize <= 0)
+                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
+                if (id.HasValue && id.Value == Guid.Empty)
+                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (modelId.HasValue && modelId.Value == Guid.Empty)
+                    throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
+
+                if (partId.HasValue && partId.Value == Guid.Empty)
+                    throw new AppException("PartId không hợp lệ", HttpStatusCode.BadRequest);
                 var rows = _mapper.Map<List<ModelPartResponse>>(items);
                 return new PageResult<ModelPartResponse>(rows, pageSize, page, (int)total);
             }
@@ -62,7 +74,8 @@ namespace eMototCare.BLL.Services.ModelPartServices
         public async Task<ModelPartResponse> GetByIdAsync(Guid id)
         {
             var entity = await _unitOfWork.ModelParts.GetByIdAsync(id);
-
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
             if (entity == null)
                 throw new AppException("Không tìm thấy ModelPart", HttpStatusCode.NotFound);
 
@@ -113,27 +126,28 @@ namespace eMototCare.BLL.Services.ModelPartServices
             var entity =
                 await _unitOfWork.ModelParts.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy ModelPart", HttpStatusCode.NotFound);
-
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
             var newModelId = req.ModelId ?? entity.ModelId;
             var newPartId = req.PartId ?? entity.PartId;
 
-            // validate modelId nếu có
             if (req.ModelId.HasValue)
             {
                 var model = await _unitOfWork.Models.GetByIdAsync(req.ModelId.Value);
                 if (model == null)
                     throw new AppException("Không tìm thấy Model", HttpStatusCode.NotFound);
             }
+            if (req.ModelId.HasValue && req.ModelId.Value == Guid.Empty)
+                throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
 
-            // validate PartId nếu có
+            if (req.PartId.HasValue && req.PartId.Value == Guid.Empty)
+                throw new AppException("PartId không hợp lệ", HttpStatusCode.BadRequest);
             if (req.PartId.HasValue)
             {
                 var Part = await _unitOfWork.Parts.GetByIdAsync(req.PartId.Value);
                 if (Part == null)
                     throw new AppException("Không tìm thấy Part", HttpStatusCode.NotFound);
             }
-
-            // check trùng cặp ModelId + PartId
             var duplicated = await _unitOfWork.ModelParts.ExistsAsync(
                 newModelId,
                 newPartId,
@@ -148,8 +162,6 @@ namespace eMototCare.BLL.Services.ModelPartServices
             entity.ModelId = newModelId;
             entity.PartId = newPartId;
 
-
-
             await _unitOfWork.ModelParts.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
 
@@ -158,13 +170,11 @@ namespace eMototCare.BLL.Services.ModelPartServices
 
         public async Task DeleteAsync(Guid id)
         {
+            if (id == Guid.Empty)
+                throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
             var entity =
                 await _unitOfWork.ModelParts.GetByIdAsync(id)
                 ?? throw new AppException("Không tìm thấy ModelPart", HttpStatusCode.NotFound);
-
-
-
-            
 
             await _unitOfWork.ModelParts.DeleteAsync(entity);
             await _unitOfWork.SaveAsync();

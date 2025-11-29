@@ -212,5 +212,23 @@ namespace eMototCare.BLL.Services.PartServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task<List<PartLabel>> GetPartsByModelandType(Guid modelId, Guid partTypeId)
+        {
+            try
+            {
+                var parts = await _unitOfWork.Parts.FindPartsByModelandType(modelId, partTypeId);
+                return _mapper.Map<List<PartLabel>>(parts);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetByPartType Part failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
     }
 }

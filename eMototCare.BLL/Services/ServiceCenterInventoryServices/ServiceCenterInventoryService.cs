@@ -32,6 +32,7 @@ namespace eMototCare.BLL.Services.ServiceCenterInventoryServices
             Guid? serviceCenterId,
             string? serviceCenterInventoryName,
             Status? status,
+            string? partCode,
             int page,
             int pageSize
         )
@@ -42,6 +43,7 @@ namespace eMototCare.BLL.Services.ServiceCenterInventoryServices
                     serviceCenterId,
                     serviceCenterInventoryName,
                     status,
+                    partCode,
                     page,
                     pageSize
                 );
@@ -68,11 +70,11 @@ namespace eMototCare.BLL.Services.ServiceCenterInventoryServices
 
                 var entity = _mapper.Map<ServiceCenterInventory>(req);
                 var sc = await _unitOfWork.ServiceCenterInventories.GetByServiceCenterId(req.ServiceCenterId);
-                    
-                    if (sc != null) throw new AppException(
-                        "SC đã tồn tại kho.",
-                        HttpStatusCode.NotFound
-                    );
+
+                if (sc != null) throw new AppException(
+                    "SC đã tồn tại kho.",
+                    HttpStatusCode.NotFound
+                );
 
 
                 entity.Id = Guid.NewGuid();

@@ -12,7 +12,7 @@ namespace eMototCare.BLL.Services.ServiceCenterInventoryServices
         Task<Guid> CreateAsync(ServiceCenterInventoryRequest req);
         Task DeleteAsync(Guid id);
         Task<ServiceCenterInventoryResponse?> GetByIdAsync(Guid id);
-        Task<PageResult<ServiceCenterInventoryResponse>> GetPagedAsync(Guid? serviceCenterId, string? serviceCenterInventoryName, Status? status, int page, int pageSize);
+        Task<PageResult<ServiceCenterInventoryResponse>> GetPagedAsync(Guid? serviceCenterId, string? serviceCenterInventoryName, Status? status, string? partCode, int page, int pageSize);
         Task UpdateAsync(Guid id, ServiceCenterInventoryUpdateRequest req);
     }
 }

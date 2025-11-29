@@ -148,5 +148,19 @@ namespace BE_eMotoCare.API.Controllers
                 )
             );
         }
+
+        [HttpGet("first-visit/vehicle-info")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER,ROLE_TECHNICIAN")]
+        public async Task<IActionResult> GetFirstVisitVehicleInfo([FromQuery] string chassisNumber)
+        {
+            var data = await _appointmentService.EnsureVehicleFromChassisAsync(chassisNumber);
+
+            return Ok(
+                ApiResponse<FirstVisitVehicleInfoResponse>.SuccessResponse(
+                    data,
+                    "Đồng bộ thông tin Khách hàng / Xe / Mốc bảo dưỡng thành công"
+                )
+            );
+        }
     }
 }

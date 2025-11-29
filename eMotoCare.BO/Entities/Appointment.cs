@@ -48,9 +48,9 @@ namespace eMotoCare.BO.Entities
         public virtual Vehicle? Vehicle { get; set; }
 
         [Column("campaign_id")]
-        public Guid? ProgramId { get; set; }
+        public Guid? CampaignId { get; set; }
 
-        [ForeignKey(nameof(ProgramId))]
+        [ForeignKey(nameof(CampaignId))]
         public virtual Program? Campaign { get; set; }
 
         [Required]

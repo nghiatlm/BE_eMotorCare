@@ -1,6 +1,7 @@
 ﻿using BE_eMotoCare.API.Extensions;
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.BatteryCheckServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,49 @@ namespace BE_eMotoCare.API.Controllers
         public BatteryChecksController(IBatteryCheckService batteryCheckService)
         {
             _batteryCheckService = batteryCheckService;
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
+        public async Task<IActionResult> GetPaged(
+            [FromQuery] Guid? evCheckDetailId,
+            [FromQuery] DateTime? fromDate,
+            [FromQuery] DateTime? toDate,
+            [FromQuery] string? sortBy,
+            [FromQuery] bool sortDesc = true,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var data = await _batteryCheckService.GetPagedAsync(
+                evCheckDetailId,
+                fromDate,
+                toDate,
+                sortBy,
+                sortDesc,
+                page,
+                pageSize
+            );
+
+            return Ok(
+                ApiResponse<PageResult<BatteryCheckAnalysisResponse>>.SuccessResponse(
+                    data,
+                    "Lấy danh sách BatteryCheck thành công"
+                )
+            );
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var data = await _batteryCheckService.GetByIdAsync(id);
+            return Ok(
+                ApiResponse<BatteryCheckAnalysisResponse>.SuccessResponse(
+                    data,
+                    "Lấy chi tiết BatteryCheck thành công"
+                )
+            );
         }
 
         [HttpPost("import")]
