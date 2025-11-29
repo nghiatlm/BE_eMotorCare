@@ -131,6 +131,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                                     .ThenInclude(x => x.Model)
                 .Include(x => x.RMADetails)
                     .ThenInclude(x => x.ReplacePart)
+                        .ThenInclude(x => x.Part)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
