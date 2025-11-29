@@ -80,5 +80,18 @@ namespace BE_eMotoCare.API.Controllers
             await _modelService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Vô hiệu hóa model thành công"));
         }
+
+        [HttpPost("sync-model")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_ADMIN,ROLE_STAFF")]
+        public async Task<IActionResult> Sync([FromBody] SyncModelRequest request)
+        {
+            var model = await _modelService.SyncModelAsync(request);
+            return Ok(
+                ApiResponse<ModelResponse>.SuccessResponse(
+                    model,
+                    "Đồng bộ model từ Firebase thành công"
+                )
+            );
+        }
     }
 }

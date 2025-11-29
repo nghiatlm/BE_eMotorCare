@@ -183,21 +183,28 @@ namespace eMototCare.BLL.Services.FirebaseServices
             }
         }
 
-        public async Task<Dictionary<string, object>?> GetModelByIdAsync(string modelId)
+        public async Task<Dictionary<string, object>?> GetModelByIdAsync(string modelIdOrName)
         {
             if (_firestoreDb == null)
                 throw new AppException("Firestore chưa được cấu hình");
 
             try
             {
-                // ĐẢM BẢO tên collection TRÙNG với Firestore (model / models)
-                var document = _firestoreDb.Collection("model").Document(modelId);
-                // nếu Firestore của bạn là "models" thì đổi lại thành "models"
-
-                var snapshot = await document.GetSnapshotAsync();
+                DocumentSnapshot? snapshot;
+                var docRef = _firestoreDb.Collection("model").Document(modelIdOrName);
+                snapshot = await docRef.GetSnapshotAsync();
 
                 if (!snapshot.Exists)
-                    return null;
+                {
+                    var col = _firestoreDb.Collection("model");
+                    var query = col.WhereEqualTo("name", modelIdOrName);
+                    var snap = await query.GetSnapshotAsync();
+
+                    if (snap.Count == 0)
+                        return null;
+
+                    snapshot = snap.Documents[0];
+                }
 
                 return snapshot.ToDictionary();
             }
@@ -264,6 +271,30 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 var docRef = _firestoreDb
                     .Collection("maintenancestage")
                     .Document(maintenanceStageId);
+                var snapshot = await docRef.GetSnapshotAsync();
+
+                if (!snapshot.Exists)
+                    return null;
+
+                return snapshot.ToDictionary();
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<Dictionary<string, object>?> GetMaintenancePlanByIdAsync(
+            string maintenancePlanId
+        )
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var docRef = _firestoreDb.Collection("maintenanceplan").Document(maintenancePlanId);
                 var snapshot = await docRef.GetSnapshotAsync();
 
                 if (!snapshot.Exists)

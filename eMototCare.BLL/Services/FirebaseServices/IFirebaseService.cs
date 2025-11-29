@@ -10,9 +10,10 @@ namespace eMototCare.BLL.Services.FirebaseServices
         Task<(string Id, Dictionary<string, object> Data)?> GetVehicleByChassisNumberAsync(
             string chassisNumber
         );
-        Task<Dictionary<string, object>?> GetModelByIdAsync(string modelId);
+        Task<Dictionary<string, object>?> GetModelByIdAsync(string modelIdOrName);
         Task<Dictionary<string, object>?> GetCustomerByIdAsync(string customerId);
         Task<List<Dictionary<string, object>>> GetVehicleStagesByVehicleIdAsync(string vehicleId);
         Task<Dictionary<string, object>?> GetMaintenanceStageByIdAsync(string maintenanceStageId);
+        Task<Dictionary<string, object>?> GetMaintenancePlanByIdAsync(string maintenancePlanId);
     }
 }

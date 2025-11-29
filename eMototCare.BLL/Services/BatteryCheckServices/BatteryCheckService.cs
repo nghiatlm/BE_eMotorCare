@@ -38,6 +38,17 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
         {
             try
             {
+                var existed = await _unitOfWork.BatteryChecks.GetByEVCheckDetailIdAsync(
+                    evCheckDetailId
+                );
+
+                if (existed != null)
+                {
+                    throw new AppException(
+                        "Đã tồn tại dữ liệu Battery cho EVCheckDetail này. Vui lòng xóa/cập nhật thay vì import lại.",
+                        HttpStatusCode.Conflict
+                    );
+                }
                 if (fileStream == null)
                     throw new AppException(
                         "File upload không được null.",
