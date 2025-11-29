@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Pages;
 
 namespace eMototCare.BLL.Services.BatteryCheckServices
 {
@@ -13,6 +14,16 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             Guid evCheckDetailId,
             Stream fileStream,
             CancellationToken ct = default
+        );
+        Task<BatteryCheckAnalysisResponse> GetByIdAsync(Guid id);
+        Task<PageResult<BatteryCheckAnalysisResponse>> GetPagedAsync(
+            Guid? evCheckDetailId,
+            DateTime? fromDate,
+            DateTime? toDate,
+            string? sortBy,
+            bool sortDesc,
+            int page,
+            int pageSize
         );
     }
 }

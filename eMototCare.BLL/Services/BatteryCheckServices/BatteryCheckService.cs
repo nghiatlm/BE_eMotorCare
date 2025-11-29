@@ -6,6 +6,7 @@ using eMotoCare.BO.Common.AISettings;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
 using eMotoCare.BO.Exceptions;
+using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -526,6 +527,139 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             }
 
             return null;
+        }
+
+        public async Task<BatteryCheckAnalysisResponse> GetByIdAsync(Guid id)
+        {
+            if (id == Guid.Empty)
+                throw new AppException("BatteryCheckId không hợp lệ.", HttpStatusCode.BadRequest);
+            var entity =
+                await _unitOfWork.BatteryChecks.GetByIdAsync(id)
+                ?? throw new AppException("Không tìm thấy BatteryCheck", HttpStatusCode.NotFound);
+
+            return BuildSummaryFromEntity(entity);
+        }
+
+        public async Task<PageResult<BatteryCheckAnalysisResponse>> GetPagedAsync(
+            Guid? evCheckDetailId,
+            DateTime? fromDate,
+            DateTime? toDate,
+            string? sortBy,
+            bool sortDesc,
+            int page,
+            int pageSize
+        )
+        {
+            try
+            {
+                var (items, total) = await _unitOfWork.BatteryChecks.GetPagedAsync(
+                    evCheckDetailId,
+                    fromDate,
+                    toDate,
+                    sortBy,
+                    sortDesc,
+                    page,
+                    pageSize
+                );
+
+                if (evCheckDetailId.HasValue && evCheckDetailId.Value == Guid.Empty)
+                    throw new AppException(
+                        "EVCheckDetailId không hợp lệ.",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (fromDate.HasValue && toDate.HasValue && fromDate > toDate)
+                    throw new AppException(
+                        "Từ ngày (fromDate) phải nhỏ hơn hoặc bằng đến ngày (toDate).",
+                        HttpStatusCode.BadRequest
+                    );
+
+                if (page <= 0)
+                    throw new AppException("Page phải >= 1.", HttpStatusCode.BadRequest);
+
+                if (pageSize <= 0 || pageSize > 200)
+                    throw new AppException(
+                        "PageSize phải trong khoảng 1–200.",
+                        HttpStatusCode.BadRequest
+                    );
+
+                var allowedSort = new[] { "createdat", "updatedat" };
+                var sortKey = (sortBy ?? "createdAt").Trim().ToLowerInvariant();
+
+                if (!allowedSort.Contains(sortKey))
+                    throw new AppException(
+                        "sortBy không hợp lệ. Chỉ hỗ trợ: createdAt, updatedAt.",
+                        HttpStatusCode.BadRequest
+                    );
+                var rows = items.Select(BuildSummaryFromEntity).ToList();
+
+                return new PageResult<BatteryCheckAnalysisResponse>(
+                    rows,
+                    pageSize,
+                    page,
+                    (int)total
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetPaged BatteryCheck failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private BatteryCheckAnalysisResponse BuildSummaryFromEntity(BatteryCheck entity)
+        {
+            int n = entity.Time.Length;
+
+            float minVoltage = entity.Voltage.Min();
+            float maxVoltage = entity.Voltage.Max();
+            float avgVoltage = entity.Voltage.Average();
+
+            float minCurrent = entity.current.Min();
+            float maxCurrent = entity.current.Max();
+            float avgCurrent = entity.current.Average();
+
+            float minTemp = entity.Temp.Min();
+            float maxTemp = entity.Temp.Max();
+            float avgTemp = entity.Temp.Average();
+
+            float minSoc = entity.SOC.Min();
+            float maxSoc = entity.SOC.Max();
+            float avgSoc = entity.SOC.Average();
+
+            float minSoh = entity.SOH.Min();
+            float maxSoh = entity.SOH.Max();
+            float avgSoh = entity.SOH.Average();
+
+            return new BatteryCheckAnalysisResponse
+            {
+                Id = entity.Id,
+                EVCheckDetailId = entity.EVCheckDetailId,
+                SampleCount = n,
+
+                MinVoltage = minVoltage,
+                MaxVoltage = maxVoltage,
+                AvgVoltage = avgVoltage,
+
+                MinCurrent = minCurrent,
+                MaxCurrent = maxCurrent,
+                AvgCurrent = avgCurrent,
+
+                MinTemp = minTemp,
+                MaxTemp = maxTemp,
+                AvgTemp = avgTemp,
+
+                MinSOC = minSoc,
+                MaxSOC = maxSoc,
+                AvgSOC = avgSoc,
+
+                MinSOH = minSoh,
+                MaxSOH = maxSoh,
+                AvgSOH = avgSoh,
+
+                // lấy từ cột Solution (JSON string) nếu có
+                Conclusion = entity.Solution ?? string.Empty,
+            };
         }
     }
 }
