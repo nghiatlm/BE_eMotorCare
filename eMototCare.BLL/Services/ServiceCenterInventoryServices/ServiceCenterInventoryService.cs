@@ -44,6 +44,8 @@ namespace eMototCare.BLL.Services.ServiceCenterInventoryServices
                     serviceCenterInventoryName,
                     status,
                     partCode,
+                    null,
+                    null,
                     page,
                     pageSize
                 );
