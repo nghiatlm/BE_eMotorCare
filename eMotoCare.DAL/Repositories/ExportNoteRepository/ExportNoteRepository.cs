@@ -80,7 +80,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             if (outOfStock)
             {
                 q = q.Where(x =>
-                    x.ExportNoteDetails.Any(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                    x.ExportNoteDetails.Any(d => d.Status == ExportNoteDetailStatus.STOCK_NOT_FOUND)
                 );
             }
 
