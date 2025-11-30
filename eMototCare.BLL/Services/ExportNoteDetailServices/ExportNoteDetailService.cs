@@ -82,6 +82,7 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                             partItem.Status = PartItemStatus.INSTALLED;
                             partItem.Quantity = 0;
                             partItem.ServiceCenterInventoryId = null;
+                            partItem.Part.Quantity -= 1;
                             await _unitOfWork.PartItems.UpdateAsync(partItem);
                             if (partItem.WarrantyPeriod != null)
                             {
@@ -89,7 +90,7 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                                     partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(partItem.WarrantyPeriod.Value);
                             }
                         }
-                        
+                        appointment.EVCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
 
                     } else if (req.Status == ExportNoteDetailStatus.COMPLETED && entity.PartItemId != null && entity.ExportNote.Type == ExportType.REPLACEMENT)
                     {
@@ -126,18 +127,21 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                             partItem.Status = PartItemStatus.INSTALLED;
                             partItem.Quantity = 0;
                             partItem.ServiceCenterInventoryId = null;
+                            partItem.Part.Quantity -= 1;
                             await _unitOfWork.PartItems.UpdateAsync(partItem);
                             if (partItem.WarrantyPeriod != null)
                             {
                                 partItem.WarantyStartDate = DateTime.UtcNow;
                                 partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(partItem.WarrantyPeriod.Value);
                             }
-                        } 
+                        }
+                        appointment.EVCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
                     }
                     entity.Status = req.Status.Value;
                     if (entity.ExportNote.ExportNoteDetails.All(d => d.Status == ExportNoteDetailStatus.COMPLETED))
                     {
                         entity.ExportNote.ExportNoteStatus = ExportNoteStatus.COMPLETED;
+                        
                     }
                     
                 }
