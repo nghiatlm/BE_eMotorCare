@@ -37,7 +37,8 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
                     || (x.Account != null && x.Account.Phone.ToLower().Contains(search))
                 );
             }
-
+            if (serviceCenterId.HasValue)
+                q = q.Where(x => x.ServiceCenterId == serviceCenterId.Value);
             if (position.HasValue)
                 q = q.Where(x => x.Position == position.Value);
             if (staffId.HasValue)
