@@ -82,6 +82,7 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                             partItem.Status = PartItemStatus.INSTALLED;
                             partItem.Quantity = 0;
                             partItem.ServiceCenterInventoryId = null;
+                            partItem.Part.Quantity -= 1;
                             await _unitOfWork.PartItems.UpdateAsync(partItem);
                             if (partItem.WarrantyPeriod != null)
                             {
@@ -126,6 +127,7 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                             partItem.Status = PartItemStatus.INSTALLED;
                             partItem.Quantity = 0;
                             partItem.ServiceCenterInventoryId = null;
+                            partItem.Part.Quantity -= 1;
                             await _unitOfWork.PartItems.UpdateAsync(partItem);
                             if (partItem.WarrantyPeriod != null)
                             {
