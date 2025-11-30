@@ -59,7 +59,9 @@ namespace eMotoCare.DAL.Repositories.PartRepository
         }
 
         public Task<Part?> GetByIdAsync(Guid id) =>
-        _context.Parts.FirstOrDefaultAsync(x => x.Id == id);
+        _context.Parts
+            .Include(x => x.PartType)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         public Task<bool> ExistsCodeAsync(string code) =>
             _context.Parts.AnyAsync(x => x.Code == code);
