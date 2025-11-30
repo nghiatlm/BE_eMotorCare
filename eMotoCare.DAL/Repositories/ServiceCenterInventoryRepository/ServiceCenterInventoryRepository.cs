@@ -1,5 +1,6 @@
 ﻿using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
+using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
 
             var q = _context.ServiceCenterInventorys
                 .Include(s => s.ServiceCenter)
+                .Include(s => s.PartItems)
                 .AsNoTracking()
                 .AsQueryable();
             if (serviceCenterId.HasValue)
@@ -39,14 +41,17 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterInventoryRepository
             if (!string.IsNullOrWhiteSpace(partCode))
             {
                 // Only include PartItems whose Part.Code matches the provided partCode
+                // and have Quantity > 0 and Status == IN_STOCK
                 q = q
-                    .Include(x => x.PartItems.Where(pi => pi.Part != null && pi.Part.Code == partCode))
+                    .Include(x => x.PartItems.Where(pi => pi.Part != null && pi.Part.Code == partCode && pi.Quantity > 0 && pi.Status == PartItemStatus.IN_STOCK))
                         .ThenInclude(pi => pi.Part)
-                    .Where(x => x.PartItems.Any(pi => pi.Part != null && pi.Part.Code == partCode));
+                    .Where(x => x.PartItems.Any(pi => pi.Part != null && pi.Part.Code == partCode && pi.Quantity > 0 && pi.Status == PartItemStatus.IN_STOCK));
             }
             else
             {
-                q = q.Include(x => x.PartItems).ThenInclude(pi => pi.Part);
+                // Include only PartItems that are in stock and have positive quantity
+                q = q.Include(x => x.PartItems.Where(pi => pi.Quantity > 0 && pi.Status == PartItemStatus.IN_STOCK))
+                        .ThenInclude(pi => pi.Part);
             }
             var total = await q.LongCountAsync();
             var items = await q.OrderByDescending(x => x.ServiceCenterInventoryName)
