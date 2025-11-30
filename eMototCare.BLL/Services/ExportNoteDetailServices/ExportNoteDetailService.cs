@@ -89,7 +89,7 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                                     partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(partItem.WarrantyPeriod.Value);
                             }
                         }
-                        
+                        appointment.EVCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
 
                     } else if (req.Status == ExportNoteDetailStatus.COMPLETED && entity.PartItemId != null && entity.ExportNote.Type == ExportType.REPLACEMENT)
                     {
@@ -132,12 +132,14 @@ namespace eMototCare.BLL.Services.ExportNoteDetailServices
                                 partItem.WarantyStartDate = DateTime.UtcNow;
                                 partItem.WarantyEndDate = DateTime.UtcNow.AddMonths(partItem.WarrantyPeriod.Value);
                             }
-                        } 
+                        }
+                        appointment.EVCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
                     }
                     entity.Status = req.Status.Value;
                     if (entity.ExportNote.ExportNoteDetails.All(d => d.Status == ExportNoteDetailStatus.COMPLETED))
                     {
                         entity.ExportNote.ExportNoteStatus = ExportNoteStatus.COMPLETED;
+                        
                     }
                     
                 }
