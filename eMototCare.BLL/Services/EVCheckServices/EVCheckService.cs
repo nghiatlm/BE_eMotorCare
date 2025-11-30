@@ -426,7 +426,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
             {
                 throw new AppException("EVCheck not found", HttpStatusCode.NotFound);
             }
-            evCheck.Status = EVCheckStatus.QUOTE_APPROVED;
+            evCheck.Status = EVCheckStatus.REPAIR_IN_PROGRESS;
             var replaceDetails = evCheck
                 .EVCheckDetails.Where(d => d.ProposedReplacePartId != null)
                 .ToList();
