@@ -31,6 +31,8 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
                 .AsNoTracking()
                 .AsQueryable();
 
+            q = q.Where(x => x.Quantity > 0);
+
             if (partId.HasValue)
                 q = q.Where(x => x.PartId == partId.Value);
             if (!string.IsNullOrWhiteSpace(serialNumber))
