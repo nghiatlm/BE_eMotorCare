@@ -15,5 +15,8 @@ namespace eMototCare.BLL.Services.FirebaseServices
         Task<List<Dictionary<string, object>>> GetVehicleStagesByVehicleIdAsync(string vehicleId);
         Task<Dictionary<string, object>?> GetMaintenanceStageByIdAsync(string maintenanceStageId);
         Task<Dictionary<string, object>?> GetMaintenancePlanByIdAsync(string maintenancePlanId);
+        Task<List<Dictionary<string, object>>> GetVehiclePartItemsByVehicleIdAsync(
+            string vehicleId
+        );
     }
 }
