@@ -1131,7 +1131,38 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 WarrantyExpiry = TryParseDate(vData, "warranty_expiry") ?? DateTime.UtcNow,
             };
             await _unitOfWork.Vehicles.CreateAsync(vehicle);
+            var vehiclePartItemsData = await _firebase.GetVehiclePartItemsByVehicleIdAsync(
+                vehicleDocId
+            );
 
+            foreach (var vpiData in vehiclePartItemsData)
+            {
+                var partItemIdStr = vpiData.TryGetValue("partItemId", out var piObj)
+                    ? piObj?.ToString()
+                    : null;
+
+                if (string.IsNullOrWhiteSpace(partItemIdStr))
+                    continue;
+
+                if (!Guid.TryParse(partItemIdStr, out Guid partItemGuid))
+                    continue;
+
+                var createdAt = TryParseDate(vpiData, "createdAt") ?? DateTime.UtcNow;
+                var updatedAt = TryParseDate(vpiData, "updatedAt") ?? createdAt;
+                var installDate = TryParseDate(vpiData, "installDate");
+
+                var vpiEntity = new VehiclePartItem
+                {
+                    Id = Guid.NewGuid(),
+                    VehicleId = vehicle.Id,
+                    PartItemId = partItemGuid,
+                    CreatedAt = createdAt,
+                    UpdatedAt = updatedAt,
+                    InstallDate = installDate ?? createdAt,
+                };
+
+                await _unitOfWork.VehiclePartItems.CreateAsync(vpiEntity);
+            }
             var stageDataList = await _firebase.GetVehicleStagesByVehicleIdAsync(vehicleDocId);
             var vehicleStages = new List<VehicleStage>();
 
@@ -1351,13 +1382,15 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 chassisNumber,
                 accountId
             );
-
+            var vpis = await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(vehicle.Id);
+            var vpiResponses = _mapper.Map<List<VehiclePartItemResponse>>(vpis);
             return new FirstVisitVehicleInfoResponse
             {
                 Customer = _mapper.Map<CustomerResponse>(customer),
                 Vehicle = _mapper.Map<VehicleResponse>(vehicle),
                 VehicleStage =
                     vehicleStage != null ? _mapper.Map<VehicleStageResponse>(vehicleStage) : null,
+                VehiclePartItems = vpiResponses,
             };
         }
     }

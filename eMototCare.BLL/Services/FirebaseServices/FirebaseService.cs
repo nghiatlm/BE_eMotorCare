@@ -308,5 +308,29 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 return null;
             }
         }
+
+        public async Task<List<Dictionary<string, object>>> GetVehiclePartItemsByVehicleIdAsync(
+            string vehicleId
+        )
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            var col = _firestoreDb.Collection("vehiclepartitem");
+            var query = col.WhereEqualTo("vehicleId", vehicleId);
+            var snapshot = await query.GetSnapshotAsync();
+
+            Console.WriteLine(
+                $"[Firestore] GetVehiclePartItemsByVehicleId vehicleId={vehicleId}, count={snapshot.Count}"
+            );
+
+            var list = new List<Dictionary<string, object>>();
+            foreach (var doc in snapshot.Documents)
+            {
+                list.Add(doc.ToDictionary());
+            }
+
+            return list;
+        }
     }
 }
