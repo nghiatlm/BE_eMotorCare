@@ -1,12 +1,10 @@
 ﻿using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
-using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.PartItemServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
