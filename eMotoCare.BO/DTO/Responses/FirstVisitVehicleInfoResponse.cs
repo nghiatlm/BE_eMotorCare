@@ -5,5 +5,6 @@
         public CustomerResponse Customer { get; set; } = default!;
         public VehicleResponse Vehicle { get; set; } = default!;
         public VehicleStageResponse? VehicleStage { get; set; }
+        public List<VehiclePartItemResponse> VehiclePartItems { get; set; } = new();
     }
 }
