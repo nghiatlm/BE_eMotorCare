@@ -69,6 +69,11 @@ namespace eMotoCare.DAL.Repositories.VehiclePartItemRepository
             if (toInstallDate.HasValue)
                 q = q.Where(x => x.InstallDate.Date <= toInstallDate.Value.Date);
 
+            q = q.GroupBy(x => x.PartItem.PartId)
+                       .Select(g => g.OrderByDescending(x => x.InstallDate)
+                       .ThenByDescending(x => x.CreatedAt)
+                       .First());
+
             var total = await q.LongCountAsync();
             var items = await q.OrderByDescending(x => x.InstallDate)
                 .ThenByDescending(x => x.CreatedAt)

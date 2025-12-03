@@ -6,5 +6,6 @@
         IN_ACTIVE,
         IN_STOCK,
         INSTALLED,
+        MANUFACTURER_RECALL
     }
 }
