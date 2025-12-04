@@ -17,6 +17,11 @@ namespace BE_eMotoCare.API.Realtime.Services
             await _hubContext.Clients.All.SendAsync("ReceiveUpdate", entity, data);
         }
 
+        public async Task NotifyCreateAsync(string entity, object data)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveCreate", entity, data);
+        }
+
         public async Task NotifyDeleteAsync(string entity, object data)
         {
             await _hubContext.Clients.All.SendAsync("ReceiveDelete", entity, data);

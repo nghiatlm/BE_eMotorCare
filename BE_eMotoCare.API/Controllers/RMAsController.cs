@@ -68,6 +68,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Create([FromBody] RMARequest request)
         {
             var id = await _service.CreateAsync(request);
+            await _notifier.NotifyCreateAsync("RMA", new { Id = id });
             return Ok(
                 ApiResponse<object>.SuccessResponse(new { id }, "Tạo RMA thành công")
             );

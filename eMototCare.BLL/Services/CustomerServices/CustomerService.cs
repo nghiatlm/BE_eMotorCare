@@ -293,6 +293,7 @@ namespace eMototCare.BLL.Services.CustomerServices
             var customer = await _unitOfWork.Customers.GetByCitizenId(citizenId);
 
             if (customer == null)
+
                 throw new AppException(
                     "Không tìm thấy khách hàng có Citizen ID này",
                     HttpStatusCode.NotFound
@@ -336,6 +337,20 @@ namespace eMototCare.BLL.Services.CustomerServices
                     );
                     return false;
                 }
+
+                var customerExist = await _unitOfWork.Customers.GetByCitizenId(citizenId);
+
+                if (customerExist != null)
+                {
+                    customerExist.AccountId = accountId;
+
+                    _unitOfWork.Customers.Update(customerExist);
+                    await _unitOfWork.SaveAsync();
+
+                    return true;
+                }
+
+                
 
                 var data = await _firebase.GetCustomerByCitizenIdAsync(citizenId);
                 if (data == null)
