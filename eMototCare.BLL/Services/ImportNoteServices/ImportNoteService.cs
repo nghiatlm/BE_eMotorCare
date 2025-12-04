@@ -117,7 +117,7 @@ namespace eMototCare.BLL.Services.ImportNoteServices
                         Price = item.Price,
                         WarrantyPeriod = item.WarrantyPeriod,
                         Quantity = item.Quantity,
-                        Status = PartItemStatus.ACTIVE,
+                        Status = PartItemStatus.IN_STOCK,
                         ServiceCenterInventoryId = inventory.Id,
                         IsManufacturerWarranty = item.IsManufacturerWarranty,
                         WarantyStartDate = item.WarantyStartDate,
