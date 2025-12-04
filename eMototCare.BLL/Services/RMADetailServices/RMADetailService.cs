@@ -192,6 +192,7 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     partItem.Id = partItemId;
                     partItem.Status = PartItemStatus.INSTALLED;
                     entity.ReplacePartId = partItemId;
+                    entity.EVCheckDetail.PartItem.Status = PartItemStatus.MANUFACTURER_RECALL;
                     await _unitOfWork.PartItems.CreateAsync(partItem);
                     
                 }

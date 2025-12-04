@@ -8,10 +8,8 @@ using eMotoCare.BO.Enum;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using System.Numerics;
 
 namespace eMototCare.BLL.Services.MaintenancePlanServices
 {

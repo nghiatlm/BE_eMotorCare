@@ -149,6 +149,31 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 PartItemId = detail.ReplacePartId.Value,
                                 ReplaceForId = detail.EVCheckDetail.PartItemId,
                             };
+                            var exportNote = new ExportNote
+                            {
+                                Id = Guid.NewGuid(),
+                                Code = $"EXPORT-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}",
+                                ExportDate = DateTime.UtcNow,
+                                Type = ExportType.REPLACEMENT,
+                                ServiceCenterId = appointment.ServiceCenterId,
+                                Note = "Xuất phụ tùng bảo hành gửi về từ hãng: " + appointment.Code,
+                                ExportNoteStatus = ExportNoteStatus.COMPLETED,
+                                TotalValue = detail.ReplacePart.Price,
+                                TotalQuantity = 1,
+                                ExportTo = appointment.Customer.LastName + " " + appointment.Customer.FirstName + " - " + appointment.Customer.Account.Phone,
+                            };
+                            var exportNoteDetail = new ExportNoteDetail
+                            {
+                                Id = Guid.NewGuid(),
+                                ExportNoteId = exportNote.Id,
+                                PartItemId = detail.ReplacePartId,
+                                Quantity = 1,
+                                UnitPrice = detail.ReplacePart.Price,
+                                TotalPrice = detail.ReplacePart.Price,
+                                Status = ExportNoteDetailStatus.COMPLETED,
+                            };
+                            await _unitOfWork.ExportNotes.CreateAsync(exportNote);
+                            await _unitOfWork.ExportNoteDetails.CreateAsync(exportNoteDetail);
                             await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
                             await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
                         }

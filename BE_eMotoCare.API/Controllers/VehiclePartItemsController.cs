@@ -2,6 +2,7 @@
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Pages;
+using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.VehiclePartItemServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -14,10 +15,12 @@ namespace BE_eMotoCare.API.Controllers
     public class VehiclePartItemsController : ControllerBase
     {
         private readonly IVehiclePartItemService _vehiclePartItemService;
+        private readonly IFirebaseService _firebaseService;
 
-        public VehiclePartItemsController(IVehiclePartItemService vehiclePartItemService)
+        public VehiclePartItemsController(IVehiclePartItemService vehiclePartItemService, IFirebaseService firebaseService)
         {
             _vehiclePartItemService = vehiclePartItemService;
+            _firebaseService = firebaseService;
         }
 
         [HttpGet]
@@ -86,6 +89,17 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _vehiclePartItemService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá thành công"));
+        }
+
+        [HttpPost("sync-data")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_ADMIN")]
+        public async Task<IActionResult> SyncMaintenanceData()
+        {
+            var result = await _firebaseService.GetVehiclePartitemAsync();
+            if (!result)
+            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ thất bại"));
+
+            return Ok(ApiResponse<string>.SuccessResponse("Đồng bộ vehicle part item thành công."));
         }
     }
 }

@@ -109,6 +109,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Create([FromBody] ExportNoteRequest request)
         {
             var id = await _exportService.CreateAsync(request);
+            await _notifier.NotifyCreateAsync("Export Note Created", new { Id = id });
             return Ok(
                 ApiResponse<object>.SuccessResponse(new { id }, "Tạo Export Note thành công, status: RECEIVING")
             );
