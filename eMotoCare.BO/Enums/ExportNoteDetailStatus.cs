@@ -8,6 +8,7 @@ namespace eMotoCare.BO.Enums
         OUT_OF_STOCK,
         COMPLETED,
         STOCK_FOUND,
-        STOCK_NOT_FOUND
+        STOCK_NOT_FOUND,
+        NOT_FOUND
     }
 }
