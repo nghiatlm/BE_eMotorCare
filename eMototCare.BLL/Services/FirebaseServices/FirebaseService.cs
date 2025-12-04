@@ -549,8 +549,8 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             StartDate = data.ContainsKey("start_date") ? Convert.ToDateTime(data["start_date"]) : DateTime.UtcNow,
                             EndDate = data.ContainsKey("end_date") ? (DateTime?)Convert.ToDateTime(data["end_date"]) : null,
                             AttachmentUrl = data.ContainsKey("attachment_url") ? data["attachment_url"].ToString() ?? "" : "",
-                            CreatedBy = data.ContainsKey("created_by") ? (Guid?)Guid.Parse(data["created_by"].ToString() ?? "") : null,
-                            UpdatedBy = data.ContainsKey("updated_by") ? (Guid?)Guid.Parse(data["updated_by"].ToString() ?? "") : null,
+                            CreatedBy = data.ContainsKey("created_by") ? (Guid?)Guid.Parse(data["created_by"].ToString() ?? null) : null,
+                            UpdatedBy = data.ContainsKey("updated_by") ? (Guid?)Guid.Parse(data["updated_by"].ToString() ?? null) : null,
                             Description = data.ContainsKey("description") ? data["description"].ToString() ?? "" : "",
                             Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
                             CreatedAt = data.ContainsKey("created_at") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
@@ -602,7 +602,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         {
                             Id = Guid.Parse(docId),
                             ProgramId = data.ContainsKey("program_id") ? Guid.Parse(data["program_id"].ToString() ?? throw new AppException("program_id trong firebase đang trống")) : throw new AppException("program_id không tồn tại trong Firebase"),
-                            RecallPartId = data.ContainsKey("part_id") ? (Guid?)Guid.Parse(data["part_id"].ToString() ?? "") : null,
+                            RecallPartId = data.ContainsKey("part_id") ? (Guid?)Guid.Parse(data["part_id"].ToString() ?? null) : null,
                             ServiceType = data.ContainsKey("service_type") ? data["service_type"].ToString() ?? "" : "",
                             DiscountPercent = data.ContainsKey("discount_percent") ? (int?)Convert.ToInt32(data["discount_percent"]) : null,
                             BonusAmount = data.ContainsKey("bonus_amount") ? (int?)Convert.ToInt32(data["bonus_amount"]) : null,
@@ -611,6 +611,57 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         };
 
                         await _unitOfWork.ProgramDetails.CreateAsync(programDetail);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
+        }
+        public async Task<bool> GetVehiclePartitemAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("vehiclepartitem");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn của vehiclepartitem đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.VehiclePartItems.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    string docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+
+                        var vehiclePartItem = new VehiclePartItem
+                        {
+                            Id = Guid.Parse(docId),
+                            InstallDate = data.ContainsKey("install_date") ? Convert.ToDateTime(data["install_date"]) : throw new AppException("Install Date đang trống"),
+                            VehicleId = data.ContainsKey("vehicle_id") ? Guid.Parse(data["vehicle_id"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
+                            PartItemId = data.ContainsKey("part_item_id") ? Guid.Parse(data["part_item_id"].ToString() ?? throw new AppException("part_item_id trong firebase đang trống")) : throw new AppException("part_item_id không tồn tại trong Firebase"),
+                            ReplaceForId = data.ContainsKey("replace_for_id") ? (Guid?)Guid.Parse(data["replace_for_id"].ToString() ?? null) : null,
+                            CreatedAt = data.ContainsKey("created_at") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updated_at") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                        };
+
+                        await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
 
                     }
                 }
