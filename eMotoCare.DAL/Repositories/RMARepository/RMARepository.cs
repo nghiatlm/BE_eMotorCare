@@ -116,6 +116,7 @@ namespace eMotoCare.DAL.Repositories.RMARepository
                         .ThenInclude(x => x.EVCheck)
                             .ThenInclude(x => x.Appointment)
                                 .ThenInclude(x => x.Customer)
+                                    .ThenInclude(x => x.Account)
                 .Include(x => x.RMADetails)
                     .ThenInclude(x => x.EVCheckDetail)
                         .ThenInclude(x => x.EVCheck)
