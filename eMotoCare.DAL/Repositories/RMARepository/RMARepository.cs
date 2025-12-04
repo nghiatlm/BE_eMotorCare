@@ -169,9 +169,13 @@ namespace eMotoCare.DAL.Repositories.RMARepository
         public async Task<RMA?> GetByCodeAsync(string code)
         {
             return await _context
-                .RMAs.Include(x => x.RMADetails)
+                .RMAs
+                .Include(x => x.RMADetails)
                 .ThenInclude(x => x.EVCheckDetail)
                 .ThenInclude(x => x.PartItem)
+                .ThenInclude(x => x.Part)
+                .Include(x => x.RMADetails)
+                .ThenInclude(x => x.ReplacePart)
                 .ThenInclude(x => x.Part)
                 .FirstOrDefaultAsync(x => x.Code == code);
         }
