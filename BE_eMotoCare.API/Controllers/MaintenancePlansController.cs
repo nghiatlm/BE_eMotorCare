@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using BE_eMotoCare.API.Realtime.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using eMototCare.BLL.Services.FirebaseServices;
 
 namespace BE_eMotoCare.API.Controllers
 {
@@ -17,11 +18,13 @@ namespace BE_eMotoCare.API.Controllers
     {
         private readonly IMaintenancePlanService _maintenancePlanService;
         private readonly INotifierService _notifier;
+        private readonly IFirebaseService _firebaseService;
 
-        public MaintenancePlansController(IMaintenancePlanService maintenancePlanService, INotifierService notifier)
+        public MaintenancePlansController(IMaintenancePlanService maintenancePlanService, INotifierService notifier, IFirebaseService firebaseService)
         {
             _maintenancePlanService = maintenancePlanService;
             _notifier = notifier;
+            _firebaseService = firebaseService;
         }
 
         [HttpGet]
@@ -87,6 +90,23 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật Maintenance Plan thành công")
             );
+        }
+
+        [HttpPost("sync-data")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_ADMIN")]
+        public async Task<IActionResult> SyncMaintenanceData()
+        {
+            var result = await _firebaseService.GetMaintenancePlanAsync();
+            if (!result)
+            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu lịch bảo dưỡng không thành công."));
+            var maintenanceStage = await _firebaseService.GetMaintenanceStageAsync();
+            if (!maintenanceStage)
+            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu các giai đoạn bảo dưỡng không thành công."));
+            var maintenanceStageDetail = await _firebaseService.GetMaintenanceStageDetailAsync();
+            if (!maintenanceStageDetail)
+            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu chi tiết các giai đoạn bảo dưỡng không thành công."));
+
+            return Ok(ApiResponse<string>.SuccessResponse("Đồng bộ dữ liệu lịch bảo dưỡng và các giai đoạn bảo dưỡng thành công."));
         }
     }
 }

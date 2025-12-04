@@ -1,10 +1,14 @@
-using System.Text.Json;
+using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Exceptions;
+using eMotoCare.DAL;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace eMototCare.BLL.Services.FirebaseServices
 {
@@ -12,9 +16,11 @@ namespace eMototCare.BLL.Services.FirebaseServices
     {
         private readonly FirebaseApp _firebaseApp;
         private readonly FirestoreDb? _firestoreDb;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public FirebaseService(IConfiguration configuration)
+        public FirebaseService(IConfiguration configuration, IUnitOfWork unitOfWork)
         {
+            _unitOfWork = unitOfWork;
             if (FirebaseApp.DefaultInstance != null)
             {
                 _firebaseApp = FirebaseApp.DefaultInstance;
@@ -24,6 +30,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
             var firebaseAppOptions = BuildAppOptions(configuration);
             _firebaseApp = FirebaseApp.Create(firebaseAppOptions);
             _firestoreDb = InitializeFirestoreFromApp(_firebaseApp, configuration);
+            
         }
 
         private AppOptions BuildAppOptions(IConfiguration configuration)
@@ -331,6 +338,183 @@ namespace eMototCare.BLL.Services.FirebaseServices
             }
 
             return list;
+        }
+
+        public async Task<bool> GetMaintenancePlanAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("maintenanceplan");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.MaintenancePlans.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    string docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+                        var unitString = data.ContainsKey("unit") ? data["unit"].ToString() : "";
+                        Console.WriteLine("unitString: " + unitString);
+
+                        var values = unitString.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                               .Select(v => v.Trim())
+                                               .ToList();
+                        Console.WriteLine("After split: " + string.Join(" | ", values));
+
+                        var enumValues = values
+                            .Where(v => Enum.TryParse<MaintenanceUnit>(v, true, out _))
+                            .Select(v => Enum.Parse<MaintenanceUnit>(v, true))
+                            .ToArray();
+
+                        
+                        var newPlan = new MaintenancePlan
+                        {
+                            Id = Guid.Parse(docId),
+                            Code = data.ContainsKey("code") ? data["code"].ToString() ?? "" : "",
+                            Name = data.ContainsKey("name") ? data["name"].ToString() ?? "" : "",
+                            Description = data.ContainsKey("description") ? data["description"].ToString() ?? "" : "",
+                            Unit = enumValues,
+                            TotalStages = data.ContainsKey("total_stages") ? Convert.ToInt32(data["total_stages"]) : 0,
+                            EffectiveDate = data.ContainsKey("effective_date") ? Convert.ToDateTime(data["effective_date"]) : DateTime.UtcNow,
+                            Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
+                            CreatedAt = data.ContainsKey("created_at") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updated_at") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                        };
+
+                        await _unitOfWork.MaintenancePlans.CreateAsync(newPlan);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
+        }
+
+        public async Task<bool> GetMaintenanceStageAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("maintenancestage");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn của Maintenance Stage đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.MaintenanceStages.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    string docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+
+                        var newStage = new MaintenanceStage
+                        {
+                            Id = Guid.Parse(docId),
+                            MaintenancePlanId = data.ContainsKey("maintenance_plan_id") ? Guid.Parse(data["maintenance_plan_id"].ToString() ?? throw new AppException("maintenance_plan_id trong firebase đang trống")) : throw new AppException("maintenance_plan_id không tồn tại trong Firebase"),
+                            Name = data.ContainsKey("name") ? data["name"].ToString() ?? "" : "",
+                            Description = data.ContainsKey("description") ? data["description"].ToString() ?? "" : "",
+                            Mileage = data.ContainsKey("mileage") ? Enum.Parse<Mileage>(data["mileage"].ToString() ?? "NONE") : throw new AppException("Mileage của Stage đang trống"),
+                            DurationMonth = data.ContainsKey("duration_month") ? Enum.Parse<DurationMonth>(data["duration_month"].ToString() ?? "NONE") : throw new AppException("DurationMonth của Stage đang trống"),
+                            EstimatedTime = data.ContainsKey("estimated_time") ? (int?)Convert.ToInt32(data["estimated_time"]) : null,
+                            Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
+                            CreatedAt = data.ContainsKey("created_at") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updated_at") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                        };
+
+                        await _unitOfWork.MaintenanceStages.CreateAsync(newStage);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
+        }
+        public async Task<bool> GetMaintenanceStageDetailAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("maintenancestagedetail");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn của Maintenance Stage Detail đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.MaintenanceStageDetails.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    string docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+
+                        var newStageDetail = new MaintenanceStageDetail
+                        {
+                            Id = Guid.Parse(docId),
+                            MaintenanceStageId = data.ContainsKey("maintenance_stage_id") ? Guid.Parse(data["maintenance_stage_id"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase"),
+                            PartId = data.ContainsKey("part_id") ? Guid.Parse(data["part_id"].ToString() ?? throw new AppException("part_id trong firebase đang trống")) : throw new AppException("part_id không tồn tại trong Firebase"),
+                            ActionType = data.ContainsKey("action_type") ? ((string)data["action_type"]).Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                                .Select(v => Enum.Parse<ActionType>(v.Trim(), true))
+                                                .ToArray() : throw new AppException("ActionType của Stage Detail đang trống"),
+                            Description = data.ContainsKey("description") ? data["description"].ToString() ?? "" : "",
+                            Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
+                            CreatedAt = data.ContainsKey("created_at") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updated_at") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                        };
+
+                        await _unitOfWork.MaintenanceStageDetails.CreateAsync(newStageDetail);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
         }
     }
 }
