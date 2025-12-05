@@ -135,6 +135,11 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     SOH = sohs.ToArray(),
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
+                    EnergyCapability = null,
+                    ChargeDischargeEfficiency = null,
+                    DegradationStatus = null,
+                    RemainingUsefulLife = null,
+                    Safety = null,
                 };
 
                 await _unitOfWork.BatteryChecks.CreateAsync(entity);
@@ -219,7 +224,6 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 var provider = _aiSettings.Provider?.ToLowerInvariant();
                 string rawText;
 
-                // 2) Gọi AI provider (OpenAI hoặc Gemini) → LẤY RAW TEXT
                 if (provider == "gemini")
                 {
                     rawText = await CallGeminiAsync(prompt, ct);
@@ -262,8 +266,45 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     avgSoh
                 );
             }
+            BatteryConclusionDto? conclusionObj = null;
+            try
+            {
+                conclusionObj = JsonSerializer.Deserialize<BatteryConclusionDto>(aiJson);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Deserialize kết quả AI BatteryCheck thất bại. aiJson = {Json}",
+                    aiJson
+                );
+            }
 
-            entity.Solution = aiJson;
+            if (conclusionObj != null)
+            {
+                entity.EnergyCapability = JsonSerializer.Serialize(conclusionObj.energyCapability);
+                entity.ChargeDischargeEfficiency = JsonSerializer.Serialize(
+                    conclusionObj.chargeDischargeEfficiency
+                );
+                entity.DegradationStatus = JsonSerializer.Serialize(
+                    conclusionObj.degradationStatus
+                );
+                entity.RemainingUsefulLife = JsonSerializer.Serialize(
+                    conclusionObj.remainingUsefulLife
+                );
+                entity.Safety = JsonSerializer.Serialize(conclusionObj.safety);
+                var solution = conclusionObj.solution;
+
+                if (string.IsNullOrWhiteSpace(solution))
+                    solution = "Bảo hành hoặc thay thế";
+
+                entity.Solution =
+                    solution == "Bình thường" ? "Bình thường" : "Bảo hành hoặc thay thế";
+            }
+            {
+                _logger.LogWarning("Không thể parse JSON AI — Solution fallback.");
+                entity.Solution = "Bảo hành hoặc thay thế";
+            }
             await _unitOfWork.BatteryChecks.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
 
@@ -421,6 +462,9 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                       5) Khả năng an toàn  
                          - Đánh giá nguy cơ quá nhiệt, sụt áp bất thường hoặc cell lỗi.
 
+                      Sau đó hãy đưa ra **kết luận tổng thể** về tình trạng pin theo 2 mức:
+                         - ""Bình thường""
+                         - hoặc ""Bảo hành hoặc thay thế""
                       Trả lời theo mẫu JSON sau, KHÔNG thêm trường khác:
                          {{
                            ""energyCapability"": ""..."",
@@ -428,9 +472,14 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                            ""degradationStatus"": ""..."",
                            ""remainingUsefulLife"": ""..."",
                            ""safety"": ""...""
+                           ""solution"": ""Bình thường"" hoặc ""Bảo hành hoặc thay thế""
                          }}
 
-                     Hãy trả lời tiếng Việt, dễ hiểu, tập trung vào ý chính.";
+                     Lưu ý:
+                        - Bắt buộc trả về JSON hợp lệ.
+                        - Trường ""solution"" CHỈ ĐƯỢC nhận một trong hai giá trị chính xác:
+                          ""Bình thường"" hoặc ""Bảo hành hoặc thay thế"".
+                        - Trả lời tiếng Việt, dễ hiểu, tập trung vào ý chính.";
         }
 
         //gọi API OpenAi
@@ -618,6 +667,30 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             }
         }
 
+        private string BuildConclusionJsonFromEntity(BatteryCheck entity)
+        {
+            if (
+                !string.IsNullOrWhiteSpace(entity.EnergyCapability)
+                || !string.IsNullOrWhiteSpace(entity.ChargeDischargeEfficiency)
+                || !string.IsNullOrWhiteSpace(entity.DegradationStatus)
+                || !string.IsNullOrWhiteSpace(entity.RemainingUsefulLife)
+                || !string.IsNullOrWhiteSpace(entity.Safety)
+            )
+            {
+                var obj = new
+                {
+                    energyCapability = entity.EnergyCapability ?? string.Empty,
+                    chargeDischargeEfficiency = entity.ChargeDischargeEfficiency ?? string.Empty,
+                    degradationStatus = entity.DegradationStatus ?? string.Empty,
+                    remainingUsefulLife = entity.RemainingUsefulLife ?? string.Empty,
+                    safety = entity.Safety ?? string.Empty,
+                };
+
+                return JsonSerializer.Serialize(obj);
+            }
+            return entity.Solution ?? string.Empty;
+        }
+
         private BatteryCheckAnalysisResponse BuildSummaryFromEntity(BatteryCheck entity)
         {
             int n = entity.Time.Length;
@@ -668,9 +741,18 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 MaxSOH = maxSoh,
                 AvgSOH = avgSoh,
 
-                // lấy từ cột Solution (JSON string) nếu có
-                Conclusion = entity.Solution ?? string.Empty,
+                Conclusion = BuildConclusionJsonFromEntity(entity),
             };
+        }
+
+        private sealed class BatteryConclusionDto
+        {
+            public string energyCapability { get; set; } = string.Empty;
+            public string chargeDischargeEfficiency { get; set; } = string.Empty;
+            public string degradationStatus { get; set; } = string.Empty;
+            public string remainingUsefulLife { get; set; } = string.Empty;
+            public string safety { get; set; } = string.Empty;
+            public string solution { get; set; } = string.Empty;
         }
     }
 }

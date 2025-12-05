@@ -54,7 +54,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN,ROLE_ADMIN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _partService.GetByIdAsync(id);
