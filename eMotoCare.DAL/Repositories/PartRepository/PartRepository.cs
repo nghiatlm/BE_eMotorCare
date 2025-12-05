@@ -52,7 +52,7 @@ namespace eMotoCare.DAL.Repositories.PartRepository
 
             if (serviceCenterId.HasValue)
                 q = q.Where(x => x.PartItems.Any(pi => pi.ServiceCenterInventory != null &&
-                                                 pi.ServiceCenterInventory.ServiceCenterId == serviceCenterId.Value);
+                                                 pi.ServiceCenterInventory.ServiceCenterId == serviceCenterId.Value));
 
 
             var total = await q.LongCountAsync();
