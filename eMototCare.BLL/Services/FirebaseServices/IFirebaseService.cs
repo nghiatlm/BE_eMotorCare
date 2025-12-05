@@ -24,5 +24,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
         Task<bool> GetProgramAsync();
         Task<bool> GetProgramDetailAsync();
         Task<bool> GetVehiclePartitemAsync();
+        Task<bool> GetModelAsync();
     }
 }

@@ -678,5 +678,55 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 throw new AppException(ex.Message);
             }
         }
+        public async Task<bool> GetModelAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("model");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn của model đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.Models.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    string docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+
+                        var model = new Model
+                        {
+                            Id = Guid.Parse(docId),
+                            Code = data.ContainsKey("code") ? data["code"].ToString() ?? throw new AppException("Code đang trống") : throw new AppException("Code đang trống"),
+                            Name = data.ContainsKey("name") ? data["name"].ToString() ?? throw new AppException("Name đang trống") : throw new AppException("Name đang trống"),
+                            Manufacturer = data.ContainsKey("manufacturer") ? data["manufacturer"].ToString() ?? throw new AppException("Manufacturer đang trống") : throw new AppException("Manufacturer đang trống"),
+                            MaintenancePlanId = data.ContainsKey("maintenance_plan_id") ? Guid.Parse(data["maintenance_plan_id"].ToString() ?? throw new AppException("maintenance_plan_id trong firebase đang trống")) : throw new AppException("maintenance_plan_id không tồn tại trong Firebase"),
+                            Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
+                        };
+
+                        await _unitOfWork.Models.CreateAsync(model);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
+        }
     }
 }
