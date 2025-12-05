@@ -80,7 +80,7 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
             if (outOfStock)
             {
                 q = q.Where(x =>
-                    x.ExportNoteDetails.Any(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                    x.ExportNoteDetails.Any(d => d.Status == ExportNoteDetailStatus.STOCK_NOT_FOUND)
                 );
             }
 
@@ -120,11 +120,11 @@ namespace eMotoCare.DAL.Repositories.ExportNoteRepository
                 .ExportNotes.Include(x => x.ExportBy)
                 .Include(x => x.ServiceCenter)
                 .Include(x =>
-                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.STOCK_NOT_FOUND)
                 )
                 .ThenInclude(xx => xx.ProposedReplacePart)
                 .Include(x =>
-                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.OUT_OF_STOCK)
+                    x.ExportNoteDetails.Where(d => d.Status == ExportNoteDetailStatus.STOCK_NOT_FOUND)
                 )
                 .ThenInclude(xx => xx.PartItem)
                 .FirstOrDefaultAsync(x => x.Id == id);
