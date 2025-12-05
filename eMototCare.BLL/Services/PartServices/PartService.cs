@@ -38,6 +38,7 @@ namespace eMototCare.BLL.Services.PartServices
             string? name,
             Status? status,
             int? quantity,
+            Guid? serviceCenterId,
             int page,
             int pageSize
         )
@@ -50,6 +51,7 @@ namespace eMototCare.BLL.Services.PartServices
                     name,
                     status,
                     quantity,
+                    serviceCenterId,
                     page,
                     pageSize
                 );

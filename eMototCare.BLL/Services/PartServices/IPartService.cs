@@ -14,7 +14,7 @@ namespace eMototCare.BLL.Services.PartServices
         Task<Guid> CreateAsync(PartRequest req);
         Task DeleteAsync(Guid id);
         Task<PartResponse?> GetByIdAsync(Guid id);
-        Task<PageResult<PartResponse>> GetPagedAsync(Guid? partTypeId, string? code, string? name, Status? status, int? quantity, int page, int pageSize);
+        Task<PageResult<PartResponse>> GetPagedAsync(Guid? partTypeId, string? code, string? name, Status? status, int? quantity, Guid? serviceCenterId, int page, int pageSize);
         Task UpdateAsync(Guid id, PartUpdateRequest req);
         Task<List<PartLabel>> GetByPartType(Guid partTypeId);
         Task<List<PartLabel>> GetPartsByModelandType(Guid modelId, Guid partTypeId);
