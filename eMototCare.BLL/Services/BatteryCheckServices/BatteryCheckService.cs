@@ -266,10 +266,10 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     avgSoh
                 );
             }
-            BatteryConclusionDto? conclusionObj = null;
+            BatteryConclusionResponse? conclusionObj = null;
             try
             {
-                conclusionObj = JsonSerializer.Deserialize<BatteryConclusionDto>(aiJson);
+                conclusionObj = JsonSerializer.Deserialize<BatteryConclusionResponse>(aiJson);
             }
             catch (Exception ex)
             {
@@ -293,6 +293,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     conclusionObj.remainingUsefulLife
                 );
                 entity.Safety = JsonSerializer.Serialize(conclusionObj.safety);
+
                 var solution = conclusionObj.solution;
 
                 if (string.IsNullOrWhiteSpace(solution))
@@ -301,10 +302,12 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 entity.Solution =
                     solution == "Bình thường" ? "Bình thường" : "Bảo hành hoặc thay thế";
             }
+            else
             {
                 _logger.LogWarning("Không thể parse JSON AI — Solution fallback.");
                 entity.Solution = "Bảo hành hoặc thay thế";
             }
+
             await _unitOfWork.BatteryChecks.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
 
@@ -334,7 +337,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 MaxSOH = maxSoh,
                 AvgSOH = avgSoh,
 
-                Conclusion = aiJson,
+                Conclusion = conclusionObj,
             };
         }
 
@@ -679,16 +682,37 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             {
                 var obj = new
                 {
-                    energyCapability = entity.EnergyCapability ?? string.Empty,
-                    chargeDischargeEfficiency = entity.ChargeDischargeEfficiency ?? string.Empty,
-                    degradationStatus = entity.DegradationStatus ?? string.Empty,
-                    remainingUsefulLife = entity.RemainingUsefulLife ?? string.Empty,
-                    safety = entity.Safety ?? string.Empty,
+                    energyCapability = NormalizeText(entity.EnergyCapability),
+                    chargeDischargeEfficiency = NormalizeText(entity.ChargeDischargeEfficiency),
+                    degradationStatus = NormalizeText(entity.DegradationStatus),
+                    remainingUsefulLife = NormalizeText(entity.RemainingUsefulLife),
+                    safety = NormalizeText(entity.Safety),
+                    solution = entity.Solution ?? string.Empty,
                 };
 
                 return JsonSerializer.Serialize(obj);
             }
             return entity.Solution ?? string.Empty;
+        }
+
+        private static string NormalizeText(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            value = value.Trim();
+            if (value.Length >= 2 && value[0] == '"' && value[^1] == '"')
+            {
+                try
+                {
+                    var inner = JsonSerializer.Deserialize<string>(value);
+                    if (!string.IsNullOrWhiteSpace(inner))
+                        return inner;
+                }
+                catch { }
+            }
+
+            return value;
         }
 
         private BatteryCheckAnalysisResponse BuildSummaryFromEntity(BatteryCheck entity)
@@ -741,18 +765,16 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                 MaxSOH = maxSoh,
                 AvgSOH = avgSoh,
 
-                Conclusion = BuildConclusionJsonFromEntity(entity),
+                Conclusion = new BatteryConclusionResponse
+                {
+                    energyCapability = NormalizeText(entity.EnergyCapability),
+                    chargeDischargeEfficiency = NormalizeText(entity.ChargeDischargeEfficiency),
+                    degradationStatus = NormalizeText(entity.DegradationStatus),
+                    remainingUsefulLife = NormalizeText(entity.RemainingUsefulLife),
+                    safety = NormalizeText(entity.Safety),
+                    solution = entity.Solution ?? string.Empty,
+                },
             };
-        }
-
-        private sealed class BatteryConclusionDto
-        {
-            public string energyCapability { get; set; } = string.Empty;
-            public string chargeDischargeEfficiency { get; set; } = string.Empty;
-            public string degradationStatus { get; set; } = string.Empty;
-            public string remainingUsefulLife { get; set; } = string.Empty;
-            public string safety { get; set; } = string.Empty;
-            public string solution { get; set; } = string.Empty;
         }
     }
 }
