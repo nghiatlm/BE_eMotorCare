@@ -43,6 +43,7 @@ namespace BE_eMotoCare.API.Controllers
                 name,
                 status,
                 quantity,
+                serviceCenterId,
                 page,
                 pageSize
             );
