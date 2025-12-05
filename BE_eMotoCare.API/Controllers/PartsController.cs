@@ -32,6 +32,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] string? name,
             [FromQuery] Status? status,
             [FromQuery] int? quantity,
+            [FromQuery] Guid? serviceCenterId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )

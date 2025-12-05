@@ -3,6 +3,7 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
+using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.ModelServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace BE_eMotoCare.API.Controllers
     public class ModelsController : ControllerBase
     {
         private readonly IModelService _modelService;
+        private readonly IFirebaseService _firebaseService;
 
-        public ModelsController(IModelService modelService)
+        public ModelsController(IModelService modelService, IFirebaseService firebaseService)
         {
             _modelService = modelService;
+            _firebaseService = firebaseService;
         }
 
         [HttpGet]
@@ -83,12 +86,11 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPost("sync-model")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_ADMIN,ROLE_STAFF")]
-        public async Task<IActionResult> Sync([FromBody] SyncModelRequest request)
+        public async Task<IActionResult> Sync()
         {
-            var model = await _modelService.SyncModelAsync(request);
+            var model = await _firebaseService.GetModelAsync();
             return Ok(
-                ApiResponse<ModelResponse>.SuccessResponse(
-                    model,
+                ApiResponse<string>.SuccessResponse(
                     "Đồng bộ model từ Firebase thành công"
                 )
             );

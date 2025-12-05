@@ -5,6 +5,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography.X509Certificates;
 
 namespace eMotoCare.DAL.Repositories.PartRepository
 {
@@ -20,6 +21,7 @@ namespace eMotoCare.DAL.Repositories.PartRepository
             string? name,
             Status? status,
             int? quantity,
+            Guid? serviceCenterId,
             int page,
             int pageSize
         )
@@ -29,6 +31,8 @@ namespace eMotoCare.DAL.Repositories.PartRepository
 
             var q = _context.Parts
                 .Include(x => x.PartType)
+                .Include(x => x.PartItems)
+                    .ThenInclude(x => x.ServiceCenterInventory)
                 .AsNoTracking()
                 .AsQueryable();
             if (partTypeId.HasValue)
@@ -46,6 +50,9 @@ namespace eMotoCare.DAL.Repositories.PartRepository
             if (quantity.HasValue)
                 q = q.Where(x => x.Quantity == quantity.Value);
 
+            if (serviceCenterId.HasValue)
+                q = q.Where(x => x.PartItems.Any(pi => pi.ServiceCenterInventory != null &&
+                                                 pi.ServiceCenterInventory.ServiceCenterId == serviceCenterId.Value));
 
 
             var total = await q.LongCountAsync();
