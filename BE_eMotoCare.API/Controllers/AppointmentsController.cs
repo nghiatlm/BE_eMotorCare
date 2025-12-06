@@ -48,6 +48,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] AppointmentStatus? status,
             [FromQuery] Guid? serviceCenterId,
             [FromQuery] Guid? customerId,
+            [FromQuery] Guid? technicianId,
             [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate,
             [FromQuery] int page = 1,
@@ -59,6 +60,7 @@ namespace BE_eMotoCare.API.Controllers
                 status,
                 serviceCenterId,
                 customerId,
+                technicianId,
                 fromDate,
                 toDate,
                 page,
@@ -79,19 +81,6 @@ namespace BE_eMotoCare.API.Controllers
             var item = await _appointmentService.GetByIdAsync(id);
             return Ok(
                 ApiResponse<AppointmentResponse>.SuccessResponse(item, "Lấy lịch hẹn thành công")
-            );
-        }
-
-        [HttpGet("technician/{technicianId}")]
-        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> GetByTechnician(Guid technicianId)
-        {
-            var data = await _appointmentService.GetByTechnicianIdAsync(technicianId);
-            return Ok(
-                ApiResponse<List<AppointmentResponse>>.SuccessResponse(
-                    data,
-                    "Lấy cuộc hẹn của technician thành công"
-                )
             );
         }
 
@@ -122,31 +111,6 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _appointmentService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá lịch hẹn thành công"));
-        }
-
-        [HttpGet("missing-parts")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
-        public async Task<IActionResult> GetMissingParts(
-            [FromQuery] Guid? appointmentId,
-            [FromQuery] string? sortBy,
-            [FromQuery] bool sortDesc = true,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10
-        )
-        {
-            var data = await _appointmentService.GetMissingPartsAsync(
-                appointmentId,
-                sortBy,
-                sortDesc,
-                page,
-                pageSize
-            );
-            return Ok(
-                ApiResponse<List<MissingPartResponse>>.SuccessResponse(
-                    data,
-                    "Lấy danh sách phụ tùng còn thiếu thành công"
-                )
-            );
         }
 
         [HttpGet("first-visit/vehicle-info")]

@@ -11,21 +11,20 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             AppointmentStatus? status,
             Guid? serviceCenterId,
             Guid? customerId,
+            Guid? technicianId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
             int pageSize
         );
         Task<Appointment?> GetByCodeAsync(string code);
-
         Task<Appointment?> GetByIdAsync(Guid id);
         Task<bool> ExistsCodeAsync(string code);
-
         Task<IReadOnlyList<string>> GetAvailableSlotsAsync(Guid serviceCenterId, DateTime date);
-
         Task UpdateStatusByIdAsync(Guid appointmentId, AppointmentStatus appointmentStatus);
-        Task<IReadOnlyList<Appointment>> GetByTechnicianIdAsync(Guid technicianId);
         Task<List<Appointment>> GetByVehicleIdAsync(Guid vehicleId);
-        Task<(int totalAppointment, double totalRevenue)> TotalAppoinmentAndRevenue(Guid? serviceCenterId);
+        Task<(int totalAppointment, double totalRevenue)> TotalAppoinmentAndRevenue(
+            Guid? serviceCenterId
+        );
     }
 }

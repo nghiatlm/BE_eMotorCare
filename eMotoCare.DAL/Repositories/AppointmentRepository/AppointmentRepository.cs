@@ -36,6 +36,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             AppointmentStatus? status,
             Guid? serviceCenterId,
             Guid? customerId,
+            Guid? technicianId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -54,6 +55,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 .ThenInclude(x => x.MaintenanceStage)
                 .Include(x => x.Vehicle)
                 .ThenInclude(x => x.Model)
+                .Include(x => x.EVCheck)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -74,6 +76,10 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 q = q.Where(x => x.Status == status.Value);
             if (serviceCenterId.HasValue)
                 q = q.Where(x => x.ServiceCenterId == serviceCenterId.Value);
+            if (technicianId.HasValue)
+                q = q.Where(a =>
+                    a.EVCheck != null && a.EVCheck.TaskExecutorId == technicianId.Value
+                );
             if (fromDate.HasValue)
                 q = q.Where(x => x.AppointmentDate.Date >= fromDate.Value.Date);
             if (toDate.HasValue)
@@ -162,24 +168,6 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             _context.Attach(appt);
             _context.Entry(appt).Property(a => a.Status).IsModified = true;
             return Task.CompletedTask;
-        }
-
-        public async Task<IReadOnlyList<Appointment>> GetByTechnicianIdAsync(Guid technicianId)
-        {
-            return await _context
-                .Appointments.AsNoTracking()
-                .Include(a => a.Customer)
-                .Include(a => a.ServiceCenter)
-                .Include(a => a.VehicleStage)
-                .ThenInclude(a => a.MaintenanceStage)
-                .ThenInclude(a => a.MaintenanceStageDetails)
-                .Include(a => a.EVCheck)
-                .Include(a => a.Vehicle)
-                .ThenInclude(a => a.Model)
-                .Where(a => a.EVCheck != null && a.EVCheck.TaskExecutorId == technicianId)
-                .OrderByDescending(a => a.AppointmentDate)
-                .ThenByDescending(a => a.CreatedAt)
-                .ToListAsync();
         }
 
         public Task<List<Appointment>> GetByVehicleIdAsync(Guid vehicleId)

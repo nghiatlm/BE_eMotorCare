@@ -14,7 +14,10 @@ namespace eMotoCare.BO.DTO.Responses
         public VehicleResponse? Vehicle { get; set; }
         public DateTime DateOfImplementation { get; set; }
         public VehicleStageStatus Status { get; set; }
-
+        public DateTime? ExpectedStartDate { get; set; }
+        public DateTime? ExpectedEndDate { get; set; }
+        public DateTime? ExpectedImplementationDate { get; set; }
+        public DateTime? ActualImplementationDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
