@@ -133,11 +133,17 @@ namespace eMototCare.BLL.Services.VehicleStageServices
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.DateOfImplementation == default)
+                if (
+                    req.ExpectedStartDate.HasValue
+                    && req.ExpectedEndDate.HasValue
+                    && req.ExpectedStartDate.Value > req.ExpectedEndDate.Value
+                )
+                {
                     throw new AppException(
-                        "DateOfImplementation không hợp lệ",
+                        "ExpectedStartDate không được lớn hơn ExpectedEndDate",
                         HttpStatusCode.BadRequest
                     );
+                }
 
                 var vehicle =
                     await _unitOfWork.Vehicles.GetByIdAsync(req.VehicleId)
@@ -213,11 +219,17 @@ namespace eMototCare.BLL.Services.VehicleStageServices
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.DateOfImplementation == default)
+                if (
+                    req.ExpectedStartDate.HasValue
+                    && req.ExpectedEndDate.HasValue
+                    && req.ExpectedStartDate.Value > req.ExpectedEndDate.Value
+                )
+                {
                     throw new AppException(
-                        "DateOfImplementation không hợp lệ",
+                        "ExpectedStartDate không được lớn hơn ExpectedEndDate",
                         HttpStatusCode.BadRequest
                     );
+                }
                 var vehicle =
                     await _unitOfWork.Vehicles.GetByIdAsync(req.VehicleId)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.BadRequest);

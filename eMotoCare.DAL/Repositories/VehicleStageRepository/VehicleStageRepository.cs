@@ -51,12 +51,26 @@ namespace eMotoCare.DAL.Repositories.VehicleStageRepository
             if (status.HasValue)
                 q = q.Where(x => x.Status == status.Value);
             if (fromDate.HasValue)
-                q = q.Where(x => x.DateOfImplementation.Date >= fromDate.Value.Date);
+            {
+                var from = fromDate.Value.Date;
+                q = q.Where(x =>
+                    x.ExpectedImplementationDate.HasValue
+                    && x.ExpectedImplementationDate.Value.Date >= from
+                );
+            }
             if (toDate.HasValue)
-                q = q.Where(x => x.DateOfImplementation.Date <= toDate.Value.Date);
+            {
+                var to = toDate.Value.Date;
+                q = q.Where(x =>
+                    x.ExpectedImplementationDate.HasValue
+                    && x.ExpectedImplementationDate.Value.Date <= to
+                );
+            }
 
             var total = await q.LongCountAsync();
-            var items = await q.OrderBy(x => x.DateOfImplementation)
+            var items = await q.OrderBy(x =>
+                    x.ExpectedImplementationDate ?? x.ActualImplementationDate ?? DateTime.MaxValue
+                )
                 .ThenBy(x => x.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)

@@ -58,7 +58,7 @@ namespace eMototCare.BLL.Services.BackgroundServices
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // Xác định mốc “đầu ngày hôm nay” (theo UTC hoặc timezone cấu hình)
+            // Đầu ngày hôm nay theo timezone VN
             DateTime today = string.IsNullOrWhiteSpace(TimeZoneId)
                 ? DateTime.UtcNow.Date
                 : TimeZoneInfo
@@ -67,60 +67,94 @@ namespace eMototCare.BLL.Services.BackgroundServices
                         TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId!)
                     )
                     .Date;
-            var pastThreshold = today.AddDays(-10);
-            var futureThreshold = today.AddDays(10);
-            var activeStatuses = new[]
-            {
-                VehicleStageStatus.NO_START,
-                VehicleStageStatus.UPCOMING,
-                VehicleStageStatus.EXPIRED,
-            };
-            // 1) Set EXPIRED: quá 10 ngày trước today
+
+            // 1) EXPIRED: hôm nay > ExpectedEndDate
             var expired = await db
                 .VehicleStages.Where(vs =>
                     vs.Status != VehicleStageStatus.COMPLETED
                     && vs.Status != VehicleStageStatus.EXPIRED
-                    && vs.DateOfImplementation < pastThreshold
+                    && vs.ExpectedEndDate.HasValue
+                    && vs.ExpectedEndDate.Value.Date < today
                 )
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(vs => vs.Status, VehicleStageStatus.EXPIRED),
                     ct
                 );
-            // 2) Set UPCOMING: nằm trong [-10; +10] ngày tính từ today
+
+            // 2) UPCOMING: hôm nay nằm trong [ExpectedStartDate; ExpectedEndDate]
+            //    - Nếu có cả Start & End: Start <= today <= End
+            //    - Nếu chỉ có Start      : Start <= today
+            //    - Nếu chỉ có End        : today <= End
             var upcoming = await db
                 .VehicleStages.Where(vs =>
                     vs.Status != VehicleStageStatus.COMPLETED
                     && vs.Status != VehicleStageStatus.UPCOMING
-                    && vs.DateOfImplementation >= pastThreshold
-                    && vs.DateOfImplementation <= futureThreshold
+                    && (
+                        // Có cả Start & End
+                        (
+                            vs.ExpectedStartDate.HasValue
+                            && vs.ExpectedEndDate.HasValue
+                            && vs.ExpectedStartDate.Value.Date <= today
+                            && vs.ExpectedEndDate.Value.Date >= today
+                        )
+                        ||
+                        // Chỉ có Start
+                        (
+                            vs.ExpectedStartDate.HasValue
+                            && !vs.ExpectedEndDate.HasValue
+                            && vs.ExpectedStartDate.Value.Date <= today
+                        )
+                        ||
+                        // Chỉ có End
+                        (
+                            !vs.ExpectedStartDate.HasValue
+                            && vs.ExpectedEndDate.HasValue
+                            && vs.ExpectedEndDate.Value.Date >= today
+                        )
+                    )
                 )
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(vs => vs.Status, VehicleStageStatus.UPCOMING),
                     ct
                 );
 
-            // 3) Set NO_START: sau hơn 10 ngày kể từ today
-            var nostart = await db
+            // 3) NO_START: hôm nay < ExpectedStartDate
+            var noStartFuture = await db
                 .VehicleStages.Where(vs =>
                     vs.Status != VehicleStageStatus.COMPLETED
                     && vs.Status != VehicleStageStatus.NO_START
-                    && vs.DateOfImplementation > futureThreshold
+                    && vs.ExpectedStartDate.HasValue
+                    && vs.ExpectedStartDate.Value.Date > today
                 )
                 .ExecuteUpdateAsync(
                     s => s.SetProperty(vs => vs.Status, VehicleStageStatus.NO_START),
                     ct
                 );
 
-            if (expired + upcoming + nostart > 0)
+            // 4) NO_START: chưa có start/end (chưa cấu hình mốc thời gian)
+            var noStartNoDates = await db
+                .VehicleStages.Where(vs =>
+                    vs.Status != VehicleStageStatus.COMPLETED
+                    && vs.Status != VehicleStageStatus.NO_START
+                    && !vs.ExpectedStartDate.HasValue
+                    && !vs.ExpectedEndDate.HasValue
+                )
+                .ExecuteUpdateAsync(
+                    s => s.SetProperty(vs => vs.Status, VehicleStageStatus.NO_START),
+                    ct
+                );
+
+            var totalUpdated = expired + upcoming + noStartFuture + noStartNoDates;
+
+            if (totalUpdated > 0)
             {
                 _logger.LogInformation(
-                    "VehicleStage status updated on {Today} (past<{Past}, future>{Future}): EXPIRED={Expired}, UPCOMING={Upcoming}, NO_START={NoStart}",
+                    "VehicleStage status updated on {Today}: EXPIRED={Expired}, UPCOMING={Upcoming}, NO_START_FUTURE={NoStartFuture}, NO_START_NO_DATES={NoStartNoDates}",
                     today.ToString("yyyy-MM-dd"),
-                    pastThreshold.ToString("yyyy-MM-dd"),
-                    futureThreshold.ToString("yyyy-MM-dd"),
                     expired,
                     upcoming,
-                    nostart
+                    noStartFuture,
+                    noStartNoDates
                 );
             }
         }

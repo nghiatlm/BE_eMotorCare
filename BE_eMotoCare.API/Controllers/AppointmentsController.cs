@@ -124,31 +124,6 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá lịch hẹn thành công"));
         }
 
-        [HttpGet("missing-parts")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_STOREKEEPER,ROLE_TECHNICIAN")]
-        public async Task<IActionResult> GetMissingParts(
-            [FromQuery] Guid? appointmentId,
-            [FromQuery] string? sortBy,
-            [FromQuery] bool sortDesc = true,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10
-        )
-        {
-            var data = await _appointmentService.GetMissingPartsAsync(
-                appointmentId,
-                sortBy,
-                sortDesc,
-                page,
-                pageSize
-            );
-            return Ok(
-                ApiResponse<List<MissingPartResponse>>.SuccessResponse(
-                    data,
-                    "Lấy danh sách phụ tùng còn thiếu thành công"
-                )
-            );
-        }
-
         [HttpGet("first-visit/vehicle-info")]
         [Authorize(Roles = "ROLE_STAFF,ROLE_MANAGER,ROLE_CUSTOMER,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetFirstVisitVehicleInfo([FromQuery] string chassisNumber)
