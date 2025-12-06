@@ -44,6 +44,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             AppointmentStatus? status,
             Guid? serviceCenterId,
             Guid? customerId,
+            Guid? technicianId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -57,6 +58,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     status,
                     serviceCenterId,
                     customerId,
+                    technicianId,
                     fromDate,
                     toDate,
                     page,
@@ -654,14 +656,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
             entity.Status = status;
             await _unitOfWork.Appointments.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
-        }
-
-        public async Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId)
-        {
-            if (technicianId == Guid.Empty)
-                throw new AppException("TechnicianId không hợp lệ", HttpStatusCode.BadRequest);
-            var appointments = await _unitOfWork.Appointments.GetByTechnicianIdAsync(technicianId);
-            return _mapper.Map<List<AppointmentResponse>>(appointments);
         }
 
         private async Task<(

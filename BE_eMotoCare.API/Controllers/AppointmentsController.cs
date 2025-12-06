@@ -48,6 +48,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] AppointmentStatus? status,
             [FromQuery] Guid? serviceCenterId,
             [FromQuery] Guid? customerId,
+            [FromQuery] Guid? technicianId,
             [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate,
             [FromQuery] int page = 1,
@@ -59,6 +60,7 @@ namespace BE_eMotoCare.API.Controllers
                 status,
                 serviceCenterId,
                 customerId,
+                technicianId,
                 fromDate,
                 toDate,
                 page,
@@ -79,19 +81,6 @@ namespace BE_eMotoCare.API.Controllers
             var item = await _appointmentService.GetByIdAsync(id);
             return Ok(
                 ApiResponse<AppointmentResponse>.SuccessResponse(item, "Lấy lịch hẹn thành công")
-            );
-        }
-
-        [HttpGet("technician/{technicianId}")]
-        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> GetByTechnician(Guid technicianId)
-        {
-            var data = await _appointmentService.GetByTechnicianIdAsync(technicianId);
-            return Ok(
-                ApiResponse<List<AppointmentResponse>>.SuccessResponse(
-                    data,
-                    "Lấy cuộc hẹn của technician thành công"
-                )
             );
         }
 

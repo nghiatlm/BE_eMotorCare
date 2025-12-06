@@ -12,6 +12,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             AppointmentStatus? status,
             Guid? serviceCenterId,
             Guid? customerId,
+            Guid? technicianId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -19,15 +20,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
         );
 
         Task<AppointmentResponse?> GetByIdAsync(Guid id);
-
         Task<Guid> CreateAsync(AppointmentRequest req);
         Task UpdateAsync(Guid id, AppointmentUpdateRequest req);
         Task DeleteAsync(Guid id);
-
         Task<IReadOnlyList<string>> GetAvailableSlotsAsync(Guid serviceCenterId, DateTime date);
         Task UpdateStatusAsync(Guid id, AppointmentStatus status);
-
-        Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId);
         Task<FirstVisitVehicleInfoResponse> EnsureVehicleFromChassisAsync(string chassisNumber);
     }
 }
