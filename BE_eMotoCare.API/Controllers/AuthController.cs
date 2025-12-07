@@ -41,7 +41,7 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
         }
 
-        [HttpPost("verify/staff")]
+        [HttpGet("verify/staff")]
         public async Task<IActionResult> VerifyLoginStaffAsync([FromQuery] string token)
         {
             try
