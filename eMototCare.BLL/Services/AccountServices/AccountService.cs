@@ -7,6 +7,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using eMototCare.BLL.JwtServices;
 using eMototCare.BLL.Services.AccountService;
 using eMototCare.BLL.Services.EmailServices;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,13 +22,15 @@ namespace eMototCare.BLL.Services.AccountServices
         private readonly ILogger<AccountService> _logger;
         private readonly IMemoryCache _cache;
         private readonly IEmailService _mailService;
+        private readonly IJwtService _jwtService;
 
         public AccountService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<AccountService> logger,
             IMemoryCache cache,
-            IEmailService mailService
+            IEmailService mailService,
+            IJwtService jwtService
         )
         {
             _unitOfWork = unitOfWork;
@@ -35,6 +38,7 @@ namespace eMototCare.BLL.Services.AccountServices
             _logger = logger;
             _cache = cache;
             _mailService = mailService;
+            _jwtService = jwtService;
         }
 
         public async Task<PageResult<AccountResponse>> GetPagedAsync(
@@ -185,12 +189,13 @@ namespace eMototCare.BLL.Services.AccountServices
                     || req.RoleName == RoleName.ROLE_STOREKEEPER
                 )
                 {
-                    var otp = new Random().Next(100000, 999999).ToString();
-                    _cache.Set($"OTP_{email}", otp, TimeSpan.FromMinutes(5));
+                    string verifyToken = _jwtService.GenerateEmailVerificationToken(email);
+                    string url = $"https://bemodernestate.site/api/v1/auths/verify/staff?token={verifyToken}";
+                    //string url = $"https://localhost:7134/api/v1/auths/verify/staff?token={verifyToken}";
                     await _mailService.SendLoginEmailAsync(
                         email,
-                        "Xác minh đăng nhập nhân viên",
-                        otp
+                        "Xác minh tài khoản nhân viên",
+                        url
                     );
                 }
                 var entity = _mapper.Map<Account>(req);

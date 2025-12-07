@@ -1,4 +1,3 @@
-using System.Net;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -9,8 +8,12 @@ using eMotoCare.DAL.Repositories.AccountRepository;
 using eMototCare.BLL.HashPasswords;
 using eMototCare.BLL.JwtServices;
 using eMototCare.BLL.Services.EmailServices;
+using FirebaseAdmin;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.Net;
+using System.Security.Claims;
 
 namespace eMototCare.BLL.Services.AuthServices
 {
@@ -109,12 +112,13 @@ namespace eMototCare.BLL.Services.AuthServices
                 }
                 if (account.Stattus == AccountStatus.IN_ACTIVE)
                 {
-                    var otp = new Random().Next(100000, 999999).ToString();
-                    _cache.Set($"OTP_{account.Email}", otp, TimeSpan.FromMinutes(5));
+                    string verifyToken = _jwtService.GenerateEmailVerificationToken(account.Email);
+                    string url = $"https://bemodernestate.site/api/v1/auths/verify/staff?token={verifyToken}";
+                    //string url = $"https://localhost:7134/api/v1/auths/verify/staff?token={verifyToken}";
                     await _mailService.SendLoginEmailAsync(
                         account.Email,
-                        "Xác minh đăng nhập nhân viên",
-                        otp
+                        "Xác minh tài khoản nhân viên",
+                        url
                     );
                     return null;
                 }
@@ -144,27 +148,7 @@ namespace eMototCare.BLL.Services.AuthServices
             }
         }
 
-        public async Task<bool> VerifyLoginStaffAsync(VerifyLoginRequest request)
-        {
-            var account = await _unitOfWork.Accounts.FindByEmail(request.Email);
-            if (account == null)
-                throw new AppException("Tài khoản không tồn tại", HttpStatusCode.NotFound);
-
-            if (!_cache.TryGetValue($"OTP_{request.Email}", out string cachedOtp))
-                throw new AppException(
-                    "OTP đã hết hạn hoặc không tồn tại",
-                    HttpStatusCode.BadRequest
-                );
-
-            if (cachedOtp != request.Otp)
-                throw new AppException("OTP không đúng", HttpStatusCode.BadRequest);
-
-            _cache.Remove($"OTP_{request.Email}");
-            account.Stattus = AccountStatus.ACTIVE;
-            await _unitOfWork.Accounts.UpdateAsync(account);
-            await _unitOfWork.SaveAsync();
-            return true;
-        }
+        
 
         public async Task<bool> Register(RegisterRequest request)
         {
@@ -205,6 +189,37 @@ namespace eMototCare.BLL.Services.AuthServices
             account.Stattus = AccountStatus.ACTIVE;
             await _unitOfWork.Accounts.UpdateAsync(account);
             await _unitOfWork.SaveAsync();
+        }
+
+        public async Task<bool> VerifyEmailAsync(string token)
+        {
+            try
+            {
+                var principal = _jwtService.ValidateTokenClaimsPrincipal(token);
+                var email = principal.FindFirst(ClaimTypes.Email)?.Value;
+
+                if (email == null)
+                    throw new AppException("Email không tồn tại");
+
+                var account = await _unitOfWork.Accounts.GetByEmailAsync(email);
+                if (account == null)
+                    throw new AppException("Không tìm thấy tài khoản");
+
+                if (account.Stattus == AccountStatus.ACTIVE)
+                    throw new AppException("Tài khoản đã kích hoạt rồi");
+
+                account.Stattus = AccountStatus.ACTIVE;
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (SecurityTokenExpiredException e)
+            {
+                throw new AppException(e.Message);
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
         }
     }
 }

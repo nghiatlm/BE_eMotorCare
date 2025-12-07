@@ -10,5 +10,6 @@ namespace eMototCare.BLL.JwtServices
         public int? ValidateToken(string token);
         public ClaimsPrincipal ValidateTokenClaimsPrincipal(string token);
         public string RefeshToken(string email);
+        string GenerateEmailVerificationToken(string email);
     }
 }

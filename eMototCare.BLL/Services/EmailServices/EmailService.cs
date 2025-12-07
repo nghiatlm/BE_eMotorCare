@@ -17,7 +17,7 @@ namespace eMototCare.BLL.Services.EmailServices
             _logger = logger;
         }
 
-        public async Task SendLoginEmailAsync(string to, string subject, string otpCode)
+        public async Task SendLoginEmailAsync(string to, string subject, string verifyUrl)
         {
             var fromName = Environment.GetEnvironmentVariable("MailSettings__FromName")
                       ?? _settings.FromName;
@@ -33,20 +33,66 @@ namespace eMototCare.BLL.Services.EmailServices
                 port = p;
             else
                 port = _settings.Port;
-            string html = $@"
-        <html>
-            <body style='font-family:Arial,sans-serif; color:#333;'>
-                <h2 style='color:#0078D4;'>Xác thực đăng nhập</h2>
-                <p>Xin chào,</p>
-                <p>Bạn vừa yêu cầu đăng nhập vào hệ thống eMotoCare.</p>
-                <p>Mã OTP của bạn là:</p>
-                <h1 style='letter-spacing:3px; color:#0078D4;'>{otpCode}</h1>
-                <p>Mã này có hiệu lực trong 5 phút.</p>
-                <br/>
-                <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
-                <p>Trân trọng,<br/><b>eMotoCare Team</b></p>
-            </body>
-        </html>";
+            string html = "<body \n" +
+                    "    style=\"font-family: Arial, sans-serif;\n" +
+                    "            background-color: #f4f4f4;\n" +
+                    "            margin: 0;\n" +
+                    "            padding: 0;\n" +
+                    "            -webkit-text-size-adjust: none;\n" +
+                    "            -ms-text-size-adjust: none;\">\n" +
+                    "    <div class=\"email-container\"\n" +
+                    "         style=\"max-width: 600px;\n" +
+                    "                margin: auto;\n" +
+                    "                background-color: #ffffff;\n" +
+                    "                padding: 20px;\n" +
+                    "                border-radius: 8px;\n" +
+                    "                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\">\n" +
+                    "        <div class=\"header\"\n" +
+                    "             style=\"text-align: center;\n" +
+                    "                    padding-bottom: 20px;\">\n" +
+                    "            <img src=\"\"\n" +
+                    "                alt=\"Logo\" style=\"max-width: 300px;\">\n" +
+                    "        </div>\n" +
+                    "        <div class=\"content\"\n" +
+                    "              style=\"text-align: center;\n" +
+                    "                    color: #333333;\">\n" +
+                    "            <h1\n" +
+                    "            style=\"font-size: 24px;\n" +
+                    "                margin: 0;\n" +
+                    "                padding: 0;\"\n" +
+                    "            >Verify your email address</h1>\n" +
+                    "            <p\n" +
+                    "            style=\"font-size: 16px;\n" +
+                    "                    line-height: 1.5;\">Welcome to Modern Estate.</p>\n" +
+                    "            <p\n" +
+                    "            style=\"font-size: 16px;\n" +
+                    "                line-height: 1.5;\">Please click the button below to confirm your email address and activate your account.</p>\n" +
+                    "            <a href=\"" + verifyUrl + "\" class=\"btn\"\n" +
+                    "               style=\"display: inline-block;\n" +
+                    "               margin-top: 20px;\n" +
+                    "               padding: 15px 25px;\n" +
+                    "               font-size: 16px;\n" +
+                    "               color: #ffffff;\n" +
+                    "               background-color: #f52d56;\n" +
+                    "               border-radius: 5px;\n" +
+                    "               text-decoration: none;\">Confirm Email</a>\n" +
+                    "<p style=\"margin-top: 20px; font-size: 14px; color: #555555;\">" +
+                    "If the button doesn't work, please press the link below:\n" +
+                    "</p>\n" +
+                    "<p style=\"font-size: 14px; color: #1a0dab;\">\n" +
+                    "    <a href=\"" + verifyUrl + "\" style=\"color: #1a0dab; text-decoration: underline;\">Verify your account</a>\n" +
+                    "</p>" +
+                    "            <p>If you received this email in error, simply ignore this email and do not click the button.</p>\n" +
+                    "        </div>\n" +
+                    "        <div class=\"footer\"\n" +
+                    "             style=\"text-align: center;\n" +
+                    "             font-size: 14px;\n" +
+                    "             color: #777777;\n" +
+                    "             margin-top: 20px;\">\n" +
+                    "            <h2>Thank you, have a good day .</h2></br>Modern Estate Team\n" +
+                    "        </div>\n" +
+                    "    </div>\n" +
+                    "</body>";
             var email = new MimeMessage();
             email.From.Add(new MailboxAddress(fromName, fromEmail));
             email.To.Add(MailboxAddress.Parse(to));
