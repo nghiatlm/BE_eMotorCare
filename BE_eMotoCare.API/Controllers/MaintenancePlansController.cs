@@ -1,14 +1,14 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Pages;
+using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.MaintenancePlanServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using BE_eMotoCare.API.Realtime.Services;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using eMototCare.BLL.Services.FirebaseServices;
 
 namespace BE_eMotoCare.API.Controllers
 {
@@ -20,7 +20,11 @@ namespace BE_eMotoCare.API.Controllers
         private readonly INotifierService _notifier;
         private readonly IFirebaseService _firebaseService;
 
-        public MaintenancePlansController(IMaintenancePlanService maintenancePlanService, INotifierService notifier, IFirebaseService firebaseService)
+        public MaintenancePlansController(
+            IMaintenancePlanService maintenancePlanService,
+            INotifierService notifier,
+            IFirebaseService firebaseService
+        )
         {
             _maintenancePlanService = maintenancePlanService;
             _notifier = notifier;
@@ -28,7 +32,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> GetByParams(
             [FromQuery] string? code,
             [FromQuery] string? description,
@@ -40,7 +44,16 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10
         )
         {
-            var data = await _maintenancePlanService.GetPagedAsync(code, description, name, totalStage, status, maintenanceUnit, page, pageSize);
+            var data = await _maintenancePlanService.GetPagedAsync(
+                code,
+                description,
+                name,
+                totalStage,
+                status,
+                maintenanceUnit,
+                page,
+                pageSize
+            );
             return Ok(
                 ApiResponse<PageResult<MaintenancePlanResponse>>.SuccessResponse(
                     data,
@@ -50,7 +63,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_STAFF,ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var item = await _maintenancePlanService.GetByIdAsync(id);
@@ -83,7 +96,10 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] MaintenancePlanUpdateRequest request)
+        public async Task<IActionResult> Update(
+            Guid id,
+            [FromBody] MaintenancePlanUpdateRequest request
+        )
         {
             await _maintenancePlanService.UpdateAsync(id, request);
             await _notifier.NotifyUpdateAsync("MaintenancePlan", new { Id = id });
@@ -98,15 +114,31 @@ namespace BE_eMotoCare.API.Controllers
         {
             var result = await _firebaseService.GetMaintenancePlanAsync();
             if (!result)
-            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu lịch bảo dưỡng không thành công."));
+                return BadRequest(
+                    ApiResponse<string>.BadRequest(
+                        "Đồng bộ dữ liệu lịch bảo dưỡng không thành công."
+                    )
+                );
             var maintenanceStage = await _firebaseService.GetMaintenanceStageAsync();
             if (!maintenanceStage)
-            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu các giai đoạn bảo dưỡng không thành công."));
+                return BadRequest(
+                    ApiResponse<string>.BadRequest(
+                        "Đồng bộ dữ liệu các giai đoạn bảo dưỡng không thành công."
+                    )
+                );
             var maintenanceStageDetail = await _firebaseService.GetMaintenanceStageDetailAsync();
             if (!maintenanceStageDetail)
-            return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu chi tiết các giai đoạn bảo dưỡng không thành công."));
+                return BadRequest(
+                    ApiResponse<string>.BadRequest(
+                        "Đồng bộ dữ liệu chi tiết các giai đoạn bảo dưỡng không thành công."
+                    )
+                );
 
-            return Ok(ApiResponse<string>.SuccessResponse("Đồng bộ dữ liệu lịch bảo dưỡng và các giai đoạn bảo dưỡng thành công."));
+            return Ok(
+                ApiResponse<string>.SuccessResponse(
+                    "Đồng bộ dữ liệu lịch bảo dưỡng và các giai đoạn bảo dưỡng thành công."
+                )
+            );
         }
     }
 }

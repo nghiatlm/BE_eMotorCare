@@ -100,15 +100,8 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
                 if (req == null)
                     throw new AppException("Request không được null", HttpStatusCode.BadRequest);
 
-                var code = req.Code.Trim();
                 var email = req.Email.Trim().ToLowerInvariant();
                 var phone = req.Phone.Trim();
-
-                if (string.IsNullOrWhiteSpace(code))
-                    throw new AppException(
-                        "Mã ServiceCenter không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
 
                 if (string.IsNullOrWhiteSpace(req.Name))
                     throw new AppException(
@@ -133,20 +126,21 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
 
                 if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
                     throw new AppException("Trạng thái không hợp lệ", HttpStatusCode.BadRequest);
-                if (await _unitOfWork.ServiceCenters.ExistsCodeAsync(code))
-                    throw new AppException("Mã ServiceCenter đã tồn tại", HttpStatusCode.Conflict);
+
                 if (await _unitOfWork.ServiceCenters.ExistsEmailAsync(email))
                     throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
+
                 if (await _unitOfWork.ServiceCenters.ExistsPhoneAsync(phone))
                     throw new AppException("Số điện thoại đã tồn tại", HttpStatusCode.Conflict);
+                var count = await _unitOfWork.ServiceCenters.FindAllAsync();
+                var generatedCode = $"SVCT-{count.Count + 1:D5}";
 
                 var entity = _mapper.Map<ServiceCenter>(req);
                 entity.Id = Guid.NewGuid();
-                entity.Code = code;
+                entity.Code = generatedCode;
                 entity.Email = email;
                 entity.Phone = phone;
-                var count = _unitOfWork.Customers.FindAll().Count;
-                entity.Code = $"SVCT-{count + 1:D5}";
+
                 await _unitOfWork.ServiceCenters.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -261,6 +255,7 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
             {
                 if (id == Guid.Empty)
                     throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
                 var entity =
                     await _unitOfWork.ServiceCenters.GetByIdAsync(id)
                     ?? throw new AppException(
@@ -268,10 +263,12 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
                         HttpStatusCode.NotFound
                     );
 
-                await _unitOfWork.ServiceCenters.DeleteAsync(entity);
+                entity.Status = StatusEnum.IN_ACTIVE;
+
+                await _unitOfWork.ServiceCenters.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Deleted ServiceCenter {Id}", id);
+                _logger.LogInformation("ServiceCenter {Id} status changed to IN_ACTIVE", id);
             }
             catch (AppException)
             {
@@ -279,7 +276,11 @@ namespace eMototCare.BLL.Services.ServiceCenterServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delete ServiceCenter failed: {Message}", ex.Message);
+                _logger.LogError(
+                    ex,
+                    "Failed to change ServiceCenter status: {Message}",
+                    ex.Message
+                );
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

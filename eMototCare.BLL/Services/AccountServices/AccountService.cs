@@ -254,11 +254,7 @@ namespace eMototCare.BLL.Services.AccountServices
 
                 var newPhone = (req.Phone ?? string.Empty).Trim();
                 var newEmail = req.Email?.Trim().ToLowerInvariant();
-                if (string.IsNullOrWhiteSpace(newPhone) && string.IsNullOrWhiteSpace(newEmail))
-                    throw new AppException(
-                        "Không được xoá cả Phone và Email",
-                        HttpStatusCode.BadRequest
-                    );
+
                 if (!Enum.IsDefined(typeof(RoleName), req.RoleName))
                     throw new AppException("Role không hợp lệ", HttpStatusCode.BadRequest);
                 if (!Enum.IsDefined(typeof(AccountStatus), req.Status))
@@ -348,14 +344,16 @@ namespace eMototCare.BLL.Services.AccountServices
             {
                 if (id == Guid.Empty)
                     throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
+
                 var entity =
                     await _unitOfWork.Accounts.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy tài khoản", HttpStatusCode.NotFound);
+
                 entity.Stattus = AccountStatus.IN_ACTIVE;
-                await _unitOfWork.Accounts.DeleteAsync(entity);
+                await _unitOfWork.Accounts.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
-                _logger.LogInformation("Admin deactivated account {Id}", id);
+                _logger.LogInformation("Account status updated to IN_ACTIVE for {Id}", id);
             }
             catch (AppException)
             {
@@ -363,7 +361,7 @@ namespace eMototCare.BLL.Services.AccountServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Deactivate admin user failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Failed to update account status: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }

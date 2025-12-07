@@ -707,7 +707,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Code = data.ContainsKey("code") ? data["code"].ToString() ?? throw new AppException("Code đang trống") : throw new AppException("Code đang trống"),
                             Name = data.ContainsKey("name") ? data["name"].ToString() ?? throw new AppException("Name đang trống") : throw new AppException("Name đang trống"),
                             Manufacturer = data.ContainsKey("manufacturer") ? data["manufacturer"].ToString() ?? throw new AppException("Manufacturer đang trống") : throw new AppException("Manufacturer đang trống"),
-                            MaintenancePlanId = data.ContainsKey("maintenance_plan_id") ? Guid.Parse(data["maintenance_plan_id"].ToString() ?? throw new AppException("maintenance_plan_id trong firebase đang trống")) : throw new AppException("maintenance_plan_id không tồn tại trong Firebase"),
+                            MaintenancePlanId = data.ContainsKey("maintenancePlanId") ? Guid.Parse(data["maintenancePlanId"].ToString() ?? throw new AppException("maintenancePlanId trong firebase đang trống")) : throw new AppException("maintenancePlanId không tồn tại trong Firebase"),
                             Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
                         };
 
