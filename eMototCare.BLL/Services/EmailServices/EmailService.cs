@@ -33,66 +33,41 @@ namespace eMototCare.BLL.Services.EmailServices
                 port = p;
             else
                 port = _settings.Port;
-            string html = "<body \n" +
-                    "    style=\"font-family: Arial, sans-serif;\n" +
-                    "            background-color: #f4f4f4;\n" +
-                    "            margin: 0;\n" +
-                    "            padding: 0;\n" +
-                    "            -webkit-text-size-adjust: none;\n" +
-                    "            -ms-text-size-adjust: none;\">\n" +
-                    "    <div class=\"email-container\"\n" +
-                    "         style=\"max-width: 600px;\n" +
-                    "                margin: auto;\n" +
-                    "                background-color: #ffffff;\n" +
-                    "                padding: 20px;\n" +
-                    "                border-radius: 8px;\n" +
-                    "                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\">\n" +
-                    "        <div class=\"header\"\n" +
-                    "             style=\"text-align: center;\n" +
-                    "                    padding-bottom: 20px;\">\n" +
-                    "            <img src=\"\"\n" +
-                    "                alt=\"Logo\" style=\"max-width: 300px;\">\n" +
-                    "        </div>\n" +
-                    "        <div class=\"content\"\n" +
-                    "              style=\"text-align: center;\n" +
-                    "                    color: #333333;\">\n" +
-                    "            <h1\n" +
-                    "            style=\"font-size: 24px;\n" +
-                    "                margin: 0;\n" +
-                    "                padding: 0;\"\n" +
-                    "            >Verify your email address</h1>\n" +
-                    "            <p\n" +
-                    "            style=\"font-size: 16px;\n" +
-                    "                    line-height: 1.5;\">Welcome to Modern Estate.</p>\n" +
-                    "            <p\n" +
-                    "            style=\"font-size: 16px;\n" +
-                    "                line-height: 1.5;\">Please click the button below to confirm your email address and activate your account.</p>\n" +
-                    "            <a href=\"" + verifyUrl + "\" class=\"btn\"\n" +
-                    "               style=\"display: inline-block;\n" +
-                    "               margin-top: 20px;\n" +
-                    "               padding: 15px 25px;\n" +
-                    "               font-size: 16px;\n" +
-                    "               color: #ffffff;\n" +
-                    "               background-color: #f52d56;\n" +
-                    "               border-radius: 5px;\n" +
-                    "               text-decoration: none;\">Confirm Email</a>\n" +
-                    "<p style=\"margin-top: 20px; font-size: 14px; color: #555555;\">" +
-                    "If the button doesn't work, please press the link below:\n" +
-                    "</p>\n" +
-                    "<p style=\"font-size: 14px; color: #1a0dab;\">\n" +
-                    "    <a href=\"" + verifyUrl + "\" style=\"color: #1a0dab; text-decoration: underline;\">Verify your account</a>\n" +
-                    "</p>" +
-                    "            <p>If you received this email in error, simply ignore this email and do not click the button.</p>\n" +
-                    "        </div>\n" +
-                    "        <div class=\"footer\"\n" +
-                    "             style=\"text-align: center;\n" +
-                    "             font-size: 14px;\n" +
-                    "             color: #777777;\n" +
-                    "             margin-top: 20px;\">\n" +
-                    "            <h2>Thank you, have a good day .</h2></br>Modern Estate Team\n" +
-                    "        </div>\n" +
-                    "    </div>\n" +
-                    "</body>";
+            string html = "<body " +
+    "style=\"font-family: Arial, sans-serif;" +
+    "background-color: #f4f4f4;" +
+    "margin: 0;" +
+    "padding: 0;" +
+    "-webkit-text-size-adjust: none;" +
+    "-ms-text-size-adjust: none;\">" +
+    "<div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\">" +
+
+    "<div style=\"text-align: center; padding-bottom: 20px; color: #333333;\">" +
+    "<h1 style=\"font-size: 24px; margin: 0; padding: 0;\">Kích hoạt tài khoản nhân viên</h1>" +
+    "<p style=\"font-size: 16px; line-height: 1.5;\">Chào mừng bạn đến với hệ thống eMotoCare!</p>" +
+    "<p style=\"font-size: 16px; line-height: 1.5;\">Vui lòng nhấn nút bên dưới để xác thực email và kích hoạt tài khoản của bạn.</p>" +
+
+    "<a href=\"" + verifyUrl + "\" " +
+    "style=\"display: inline-block; margin-top: 20px; padding: 15px 25px; font-size: 16px; color: #ffffff; background-color: #f52d56; border-radius: 5px; text-decoration: none;\">" +
+    "Xác nhận tài khoản</a>" +
+
+    "<p style=\"margin-top: 20px; font-size: 14px; color: #555555;\">" +
+    "Nếu nút bên trên không hoạt động, vui lòng truy cập liên kết dưới đây:" +
+    "</p>" +
+
+    "<p style=\"font-size: 14px;\">" +
+    "<a href=\"" + verifyUrl + "\" style=\"color: #1a0dab; text-decoration: underline;\">Xác thực tài khoản</a></p>" +
+
+    "<p style=\"font-size: 14px; color: #777777; margin-top: 20px;\">" +
+    "Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này." +
+    "</p>" +
+
+    "<div style=\"text-align: center; font-size: 14px; color: #777777; margin-top: 30px;\">" +
+    "<strong>Trân trọng,<br/>Đội ngũ eMotoCare</strong>" +
+    "</div>" +
+    "</div>" +
+    "</body>";
+
             var email = new MimeMessage();
             email.From.Add(new MailboxAddress(fromName, fromEmail));
             email.To.Add(MailboxAddress.Parse(to));
