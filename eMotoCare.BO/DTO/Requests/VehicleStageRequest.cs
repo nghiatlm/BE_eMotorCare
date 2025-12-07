@@ -10,7 +10,8 @@ namespace eMotoCare.BO.DTO.Requests
         public int ActualMaintenanceMileage { get; set; }
         public MaintenanceUnit ActualMaintenanceUnit { get; set; }
         public Guid VehicleId { get; set; }
-        public DateTime DateOfImplementation { get; set; }
+        public DateTime? ExpectedStartDate { get; set; }
+        public DateTime? ExpectedEndDate { get; set; }
         public VehicleStageStatus Status { get; set; }
     }
 }

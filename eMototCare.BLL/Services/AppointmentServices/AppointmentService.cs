@@ -44,6 +44,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
             AppointmentStatus? status,
             Guid? serviceCenterId,
             Guid? customerId,
+            Guid? technicianId,
             DateTime? fromDate,
             DateTime? toDate,
             int page,
@@ -57,6 +58,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     status,
                     serviceCenterId,
                     customerId,
+                    technicianId,
                     fromDate,
                     toDate,
                     page,
@@ -236,11 +238,10 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         );
                     }
                 }
+                VehicleStage? stage = null;
                 if (req.VehicleStageId.HasValue)
                 {
-                    var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
-                        req.VehicleStageId.Value
-                    );
+                    stage = await _unitOfWork.VehicleStages.GetByIdAsync(req.VehicleStageId.Value);
                     if (stage is null)
                         throw new AppException(
                             "Mốc bảo dưỡng không tồn tại.",
@@ -250,7 +251,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     switch (stage.Status)
                     {
                         case VehicleStageStatus.UPCOMING:
-
                             break;
 
                         case VehicleStageStatus.COMPLETED:
@@ -271,6 +271,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                 HttpStatusCode.BadRequest
                             );
                     }
+
                     var allAppointments = await _unitOfWork.Appointments.FindAllAsync();
                     var existed = allAppointments.Any(a =>
                         a.VehicleStageId == req.VehicleStageId.Value
@@ -283,6 +284,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             HttpStatusCode.BadRequest
                         );
                 }
+
                 var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
                     s =>
                         s.ServiceCenterId == req.ServiceCenterId
@@ -327,6 +329,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 entity.Code = code;
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
+                if (stage != null)
+                {
+                    stage.ExpectedImplementationDate = req.AppointmentDate;
+                    await _unitOfWork.VehicleStages.UpdateAsync(stage);
+                }
                 await _unitOfWork.SaveAsync();
                 if (req.RmaId.HasValue)
                 {
@@ -453,6 +460,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         HttpStatusCode.Forbidden
                     );
                 }
+                VehicleStage? relatedStage = entity.VehicleStage;
                 if (oldStatus != req.Status)
                 {
                     switch (req.Status)
@@ -513,7 +521,13 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     HttpStatusCode.Conflict
                                 );
                             }
-
+                            if (
+                                relatedStage != null
+                                && !relatedStage.ActualImplementationDate.HasValue
+                            )
+                            {
+                                relatedStage.ActualImplementationDate = DateTime.UtcNow.AddHours(7);
+                            }
                             if (
                                 !string.IsNullOrWhiteSpace(req.Code)
                                 && !string.Equals(
@@ -531,23 +545,22 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             break;
 
                         case AppointmentStatus.COMPLETED:
-                            if (entity.VehicleStageId.HasValue)
+                            if (
+                                relatedStage != null
+                                && relatedStage.Status != VehicleStageStatus.COMPLETED
+                            )
                             {
-                                var stage = await _unitOfWork.VehicleStages.GetByIdAsync(
-                                    entity.VehicleStageId.Value
-                                );
-                                if (stage != null && stage.Status != VehicleStageStatus.COMPLETED)
+                                relatedStage.Status = VehicleStageStatus.COMPLETED;
+                                if (!relatedStage.ActualImplementationDate.HasValue)
                                 {
-                                    stage.Status = VehicleStageStatus.COMPLETED;
-                                    stage.DateOfImplementation = DateTime.UtcNow;
-
-                                    await _unitOfWork.VehicleStages.UpdateAsync(stage);
-                                    _logger.LogInformation(
-                                        "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
-                                        stage.Id,
-                                        entity.Id
-                                    );
+                                    relatedStage.ActualImplementationDate = DateTime.UtcNow;
                                 }
+
+                                _logger.LogInformation(
+                                    "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
+                                    relatedStage.Id,
+                                    entity.Id
+                                );
                             }
                             break;
                         default:
@@ -556,6 +569,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     entity.Status = req.Status;
                 }
+
                 await _unitOfWork.Appointments.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
                 _logger.LogInformation("Updated Appointment {Id}", id);
@@ -644,235 +658,6 @@ namespace eMototCare.BLL.Services.AppointmentServices
             await _unitOfWork.SaveAsync();
         }
 
-        public async Task<List<AppointmentResponse>> GetByTechnicianIdAsync(Guid technicianId)
-        {
-            if (technicianId == Guid.Empty)
-                throw new AppException("TechnicianId không hợp lệ", HttpStatusCode.BadRequest);
-            var appointments = await _unitOfWork.Appointments.GetByTechnicianIdAsync(technicianId);
-            return _mapper.Map<List<AppointmentResponse>>(appointments);
-        }
-
-        public async Task<List<MissingPartResponse>> GetMissingPartsAsync(
-            Guid? appointmentId,
-            string? sortBy,
-            bool sortDesc,
-            int page,
-            int pageSize
-        )
-        {
-            try
-            {
-                if (page <= 0)
-                    throw new AppException("Page phải > 0", HttpStatusCode.BadRequest);
-
-                if (pageSize <= 0)
-                    throw new AppException("PageSize phải > 0", HttpStatusCode.BadRequest);
-
-                if (appointmentId.HasValue && appointmentId.Value == Guid.Empty)
-                    throw new AppException("AppointmentId không hợp lệ", HttpStatusCode.BadRequest);
-                if (!appointmentId.HasValue)
-                {
-                    var result = new List<MissingPartResponse>();
-
-                    var allAppointments = await _unitOfWork.Appointments.FindAllAsync();
-
-                    foreach (var apptItem in allAppointments)
-                    {
-                        var evCheckItem = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(
-                            apptItem.Id
-                        );
-                        if (
-                            evCheckItem == null
-                            || evCheckItem.EVCheckDetails == null
-                            || !evCheckItem.EVCheckDetails.Any()
-                        )
-                            continue;
-
-                        var single = await GetMissingPartsAsync(
-                            apptItem.Id,
-                            sortBy,
-                            sortDesc,
-                            1,
-                            int.MaxValue
-                        );
-                        if (single != null && single.Any())
-                            result.AddRange(single);
-                    }
-
-                    return result;
-                }
-
-                var appt =
-                    await _unitOfWork.Appointments.GetByIdAsync(appointmentId.Value)
-                    ?? throw new AppException(
-                        "Không tìm thấy Appointment",
-                        HttpStatusCode.NotFound
-                    );
-
-                var evCheck = await _unitOfWork.EVChecks.GetByAppointmentIdAsync(
-                    appointmentId.Value
-                );
-                if (
-                    evCheck == null
-                    || evCheck.EVCheckDetails == null
-                    || !evCheck.EVCheckDetails.Any()
-                )
-                    return new List<MissingPartResponse>();
-
-                var scId = appt.ServiceCenterId;
-                var inventoryItems = await _unitOfWork.PartItems.GetByServiceCenterIdAsync(scId);
-
-                var availableByPart = inventoryItems
-                    .Where(pi => pi.Status == PartItemStatus.ACTIVE && pi.Quantity > 0)
-                    .GroupBy(pi => pi.PartId)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => new
-                        {
-                            AvailableQty = g.Sum(x => x.Quantity),
-                            Part = g.FirstOrDefault()?.Part,
-                        }
-                    );
-
-                var needed = new Dictionary<Guid, int>();
-                var neededDetails = new Dictionary<Guid, List<EVCheckDetail>>();
-
-                foreach (var d in evCheck.EVCheckDetails)
-                {
-                    if (d.Status == EVCheckDetailStatus.CANCELED)
-                        continue;
-                    if (d.ProposedReplacePartId.HasValue)
-                        continue;
-
-                    Guid? requiredPartId = null;
-
-                    if (d.MaintenanceStageDetailId.HasValue)
-                    {
-                        var msd =
-                            d.MaintenanceStageDetail
-                            ?? await _unitOfWork.MaintenanceStageDetails.GetByIdAsync(
-                                d.MaintenanceStageDetailId.Value
-                            );
-                        requiredPartId = msd?.PartId;
-                    }
-
-                    if (!requiredPartId.HasValue && d.PartItemId != Guid.Empty)
-                    {
-                        var pi =
-                            d.PartItem ?? await _unitOfWork.PartItems.GetByIdAsync(d.PartItemId);
-                        requiredPartId = pi?.PartId;
-                    }
-
-                    if (!requiredPartId.HasValue)
-                        continue;
-
-                    var pid = requiredPartId.Value;
-                    if (!needed.ContainsKey(pid))
-                        needed[pid] = 0;
-                    needed[pid] += 1;
-
-                    if (!neededDetails.ContainsKey(pid))
-                        neededDetails[pid] = new List<EVCheckDetail>();
-                    neededDetails[pid].Add(d);
-                }
-
-                // 5) Build kết quả cho các Part còn thiếu (details)
-                var details = new List<MissingPartDetailResponse>();
-                int index = 1;
-                foreach (var kv in needed)
-                {
-                    var partId = kv.Key;
-                    var neededQty = kv.Value;
-
-                    var availInfo = availableByPart.TryGetValue(partId, out var ai) ? ai : null;
-                    var availableQty = availInfo?.AvailableQty ?? 0;
-                    var missingQty = Math.Max(neededQty - availableQty, 0);
-
-                    // chỉ trả những cái còn thiếu
-                    if (missingQty <= 0)
-                        continue;
-
-                    var part = availInfo?.Part ?? await _unitOfWork.Parts.GetByIdAsync(partId);
-
-                    var suggest = "CN khác (có thể điều chuyển)";
-                    if (availableQty > 0)
-                        suggest = $"{appt.ServiceCenter?.Name} (Kho hiện có {availableQty})";
-
-                    details.Add(
-                        new MissingPartDetailResponse
-                        {
-                            Index = index++,
-                            Image = part?.Image,
-                            Code = part?.Code ?? "",
-                            Name = part?.Name ?? "",
-                            RequestedQty = neededQty,
-                            SuggestCenter = suggest,
-                            StockStatus = availableQty > 0 ? "Có thể điều chuyển" : "Hết hàng",
-                        }
-                    );
-                }
-
-                // Tổng số lượng để FE dùng nếu cần
-                var totalNeeded = needed.Values.Sum();
-
-                var totalAvailable = availableByPart
-                    .Where(kv => needed.ContainsKey(kv.Key))
-                    .Sum(kv => kv.Value.AvailableQty);
-
-                var totalMissing = Math.Max(totalNeeded - totalAvailable, 0);
-
-                var note = string.Join(
-                    "; ",
-                    evCheck
-                        .EVCheckDetails.Select(x => x.Result)
-                        .Where(r => !string.IsNullOrWhiteSpace(r))
-                        .Distinct()
-                );
-
-                var requestCode = $"REQ-{appt.AppointmentDate:yyyy}-{appt.Code}";
-                string createdByName = string.Empty;
-                var staff = await _unitOfWork.Staffs.GetByIdAsync(evCheck.TaskExecutorId);
-                if (staff != null)
-                    createdByName = $"{staff.FirstName} {staff.LastName}".Trim();
-
-                return new List<MissingPartResponse>
-                {
-                    new MissingPartResponse
-                    {
-                        AppointmentId = appt.Id,
-
-                        ServiceCenterId = appt.ServiceCenterId,
-                        ServiceCenterName = appt.ServiceCenter?.Name ?? "",
-
-                        RequestCode = requestCode,
-                        RequestedAt = evCheck.CheckDate,
-
-                        CreatedById = evCheck.TaskExecutorId,
-                        CreatedByName = createdByName,
-
-                        //Status = "DRAFT",
-                        Note = string.IsNullOrWhiteSpace(note) ? null : note,
-
-                        Details = details,
-                    },
-                };
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "GetMissingPartsAsync failed for {AppointmentId}: {Message}",
-                    appointmentId,
-                    ex.Message
-                );
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
-            }
-        }
-
         private async Task<(
             Customer Customer,
             Vehicle Vehicle,
@@ -891,9 +676,15 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var upcoming =
                     stages
                         .Where(s => s.Status == VehicleStageStatus.UPCOMING)
-                        .OrderBy(s => s.DateOfImplementation)
+                        .OrderBy(s =>
+                            s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MaxValue
+                        )
                         .FirstOrDefault()
-                    ?? stages.OrderByDescending(s => s.DateOfImplementation).FirstOrDefault();
+                    ?? stages
+                        .OrderByDescending(s =>
+                            s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MinValue
+                        )
+                        .FirstOrDefault();
 
                 var customer =
                     localVehicle.Customer
@@ -1328,6 +1119,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     vsStatus = sParsed;
                 }
 
+                var implDate = TryParseDate(sd, "dateOfImplementation") ?? DateTime.UtcNow;
+
                 var vs = new VehicleStage
                 {
                     Id = Guid.NewGuid(),
@@ -1335,8 +1128,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     MaintenanceStageId = maintenanceStageId.Value,
                     ActualMaintenanceMileage = 0,
                     ActualMaintenanceUnit = MaintenanceUnit.KILOMETER,
-                    DateOfImplementation =
-                        TryParseDate(sd, "dateOfImplementation") ?? DateTime.UtcNow,
+
+                    ExpectedStartDate = implDate,
+                    ExpectedEndDate = null,
+                    ExpectedImplementationDate = implDate,
+                    ActualImplementationDate = null,
+
                     Status = vsStatus,
                 };
 
@@ -1346,9 +1143,15 @@ namespace eMototCare.BLL.Services.AppointmentServices
             VehicleStage? selectedStage =
                 vehicleStages
                     .Where(s => s.Status == VehicleStageStatus.UPCOMING)
-                    .OrderBy(s => s.DateOfImplementation)
+                    .OrderBy(s =>
+                        s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MaxValue
+                    )
                     .FirstOrDefault()
-                ?? vehicleStages.OrderByDescending(s => s.DateOfImplementation).FirstOrDefault();
+                ?? vehicleStages
+                    .OrderByDescending(s =>
+                        s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MinValue
+                    )
+                    .FirstOrDefault();
 
             await _unitOfWork.SaveAsync();
 
