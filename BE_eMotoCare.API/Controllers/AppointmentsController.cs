@@ -109,8 +109,13 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_MANAGER")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            await _appointmentService.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá lịch hẹn thành công"));
+            await _appointmentService.UpdateStatusAsync(id, AppointmentStatus.CANCELED);
+            return Ok(
+                ApiResponse<string>.SuccessResponse(
+                    null,
+                    "Lịch hẹn đã được chuyển trạng thái thành CANCELED"
+                )
+            );
         }
 
         [HttpGet("first-visit/vehicle-info")]

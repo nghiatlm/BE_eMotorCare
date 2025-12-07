@@ -58,10 +58,10 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(ServiceCenterId))]
         public virtual ServiceCenter? ServiceCenter { get; set; }
-        public virtual ICollection<RMA>? RMAs { get; set; } //note
-        public virtual ICollection<EVCheck>? EVChecks { get; set; } //note
-        public virtual ICollection<Appointment>? Appointments { get; set; } //note
-        public virtual ICollection<ExportNote>? ExportNotes { get; set; } //note
-        public virtual ICollection<ImportNote>? ImportNotes { get; set; } //note
+        public virtual ICollection<RMA>? RMAs { get; set; }
+        public virtual ICollection<EVCheck>? EVChecks { get; set; }
+        public virtual ICollection<Appointment>? Appointments { get; set; }
+        public virtual ICollection<ExportNote>? ExportNotes { get; set; }
+        public virtual ICollection<ImportNote>? ImportNotes { get; set; }
     }
 }
