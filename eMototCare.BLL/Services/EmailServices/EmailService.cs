@@ -50,7 +50,7 @@ namespace eMototCare.BLL.Services.EmailServices
                     "        <div class=\"header\"\n" +
                     "             style=\"text-align: center;\n" +
                     "                    padding-bottom: 20px;\">\n" +
-                    "            <img src=\"https://firebasestorage.googleapis.com/v0/b/diamond-6401b.appspot.com/o/Logo.png?alt=media&token=13f983ed-b3e1-4bbe-83b2-a47edf62c6a6\"\n" +
+                    "            <img src=\"\"\n" +
                     "                alt=\"Logo\" style=\"max-width: 300px;\">\n" +
                     "        </div>\n" +
                     "        <div class=\"content\"\n" +
