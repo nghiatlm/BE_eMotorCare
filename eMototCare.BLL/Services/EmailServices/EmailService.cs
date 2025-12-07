@@ -63,7 +63,7 @@ namespace eMototCare.BLL.Services.EmailServices
                     "            >Verify your email address</h1>\n" +
                     "            <p\n" +
                     "            style=\"font-size: 16px;\n" +
-                    "                    line-height: 1.5;\">Welcome to Modern Estate.</p>\n" +
+                    "                    line-height: 1.5;\">Welcome to eMotoCare.</p>\n" +
                     "            <p\n" +
                     "            style=\"font-size: 16px;\n" +
                     "                line-height: 1.5;\">Please click the button below to confirm your email address and activate your account.</p>\n" +
@@ -89,7 +89,7 @@ namespace eMototCare.BLL.Services.EmailServices
                     "             font-size: 14px;\n" +
                     "             color: #777777;\n" +
                     "             margin-top: 20px;\">\n" +
-                    "            <h2>Thank you, have a good day .</h2></br>Modern Estate Team\n" +
+                    "            <h2>Thank you, have a good day .</h2></br>eMotoCare Team\n" +
                     "        </div>\n" +
                     "    </div>\n" +
                     "</body>";
