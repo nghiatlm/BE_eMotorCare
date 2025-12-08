@@ -1,5 +1,4 @@
 ﻿using BE_eMotoCare.API.Realtime.Hubs;
-using eMototCare.BLL.Services.BackgroundServices;
 using eMototCare.BLL.Services.NotificationServices;
 using Microsoft.AspNetCore.SignalR;
 

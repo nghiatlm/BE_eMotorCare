@@ -7,5 +7,6 @@ namespace eMotoCare.DAL.Repositories.NotificationRepository
 {
     public interface INotificationRepository : IGenericRepository<Notification>
     {
+        Task<Notification?> GetByIdAsync(Guid id);
     }
 }

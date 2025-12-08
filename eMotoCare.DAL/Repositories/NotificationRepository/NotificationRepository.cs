@@ -3,7 +3,7 @@
 using eMotoCare.BO.Entities;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
-using eMotoCare.DAL.Repositories.ModelRepository;
+using Microsoft.EntityFrameworkCore;
 
 namespace eMotoCare.DAL.Repositories.NotificationRepository
 {
@@ -11,5 +11,11 @@ namespace eMotoCare.DAL.Repositories.NotificationRepository
     {
         public NotificationRepository(ApplicationDbContext context)
             : base(context) { }
+
+        public Task<Notification?> GetByIdAsync(Guid id) =>
+        _context.Notifications
+            .Include(x => x.Receiver)
+            .ThenInclude(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.Id == id);
     }
 }
