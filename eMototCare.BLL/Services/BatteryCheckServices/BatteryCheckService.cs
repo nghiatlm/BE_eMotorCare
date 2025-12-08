@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using AutoMapper;
 using eMotoCare.BO.Common.AISettings;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -18,16 +19,18 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<BatteryCheckService> _logger;
         private readonly AiSettings _aiSettings;
-
+        private readonly IMapper _mapper;
         public BatteryCheckService(
             IUnitOfWork unitOfWork,
             ILogger<BatteryCheckService> logger,
-            IOptions<AiSettings> aiOptions
+            IOptions<AiSettings> aiOptions,
+            IMapper mapper
         )
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
             _aiSettings = aiOptions.Value;
+            _mapper = mapper;
         }
 
         public async Task<BatteryCheckAnalysisResponse> ImportFromCsvAsync(
@@ -670,31 +673,6 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             }
         }
 
-        private string BuildConclusionJsonFromEntity(BatteryCheck entity)
-        {
-            if (
-                !string.IsNullOrWhiteSpace(entity.EnergyCapability)
-                || !string.IsNullOrWhiteSpace(entity.ChargeDischargeEfficiency)
-                || !string.IsNullOrWhiteSpace(entity.DegradationStatus)
-                || !string.IsNullOrWhiteSpace(entity.RemainingUsefulLife)
-                || !string.IsNullOrWhiteSpace(entity.Safety)
-            )
-            {
-                var obj = new
-                {
-                    energyCapability = NormalizeText(entity.EnergyCapability),
-                    chargeDischargeEfficiency = NormalizeText(entity.ChargeDischargeEfficiency),
-                    degradationStatus = NormalizeText(entity.DegradationStatus),
-                    remainingUsefulLife = NormalizeText(entity.RemainingUsefulLife),
-                    safety = NormalizeText(entity.Safety),
-                    solution = entity.Solution ?? string.Empty,
-                };
-
-                return JsonSerializer.Serialize(obj);
-            }
-            return entity.Solution ?? string.Empty;
-        }
-
         private static string NormalizeText(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -739,6 +717,11 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             float maxSoh = entity.SOH.Max();
             float avgSoh = entity.SOH.Average();
 
+            var vehicleEntity = entity.EVCheckDetail?.EVCheck?.Appointment?.Vehicle;
+            var vehicleDto = vehicleEntity != null
+                ? _mapper.Map<VehicleResponse>(vehicleEntity)
+                : null;
+
             return new BatteryCheckAnalysisResponse
             {
                 Id = entity.Id,
@@ -774,6 +757,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     safety = NormalizeText(entity.Safety),
                     solution = entity.Solution ?? string.Empty,
                 },
+                Vehicle = vehicleDto,
             };
         }
     }
