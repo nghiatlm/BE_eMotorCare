@@ -701,18 +701,52 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     {
                         var data = doc.ToDictionary();
 
+                        var maintenancePlanIdStr = data.ContainsKey("maintenancePlanId")
+                            ? data["maintenancePlanId"]?.ToString()
+                            : null;
+
+                        if (!Guid.TryParse(maintenancePlanIdStr, out var maintenancePlanId))
+                            throw new AppException("maintenancePlanId từ Firebase không hợp lệ");
+
+                        var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(maintenancePlanId);
+                        if (plan == null)
+                        {
+                            var planDoc = await _firestoreDb
+                                .Collection("maintenanceplan")
+                                .Document(maintenancePlanIdStr!)
+                                .GetSnapshotAsync();
+
+                            if (!planDoc.Exists)
+                                throw new AppException("Không tìm thấy MaintenancePlan trên Firebase");
+
+                            var planData = planDoc.ToDictionary();
+
+                            plan = new MaintenancePlan
+                            {
+                                Id = maintenancePlanId,                        
+                                Code = planData["code"]?.ToString(),
+                                Name = planData["name"]?.ToString(),
+                                Description = planData["description"]?.ToString(),
+                                Status = Status.ACTIVE,
+                            };
+
+                            await _unitOfWork.MaintenancePlans.CreateAsync(plan);
+                        }
+
+                        // 2. Tạo Model
                         var model = new Model
                         {
                             Id = Guid.Parse(docId),
-                            Code = data.ContainsKey("code") ? data["code"].ToString() ?? throw new AppException("Code đang trống") : throw new AppException("Code đang trống"),
-                            Name = data.ContainsKey("name") ? data["name"].ToString() ?? throw new AppException("Name đang trống") : throw new AppException("Name đang trống"),
-                            Manufacturer = data.ContainsKey("manufacturer") ? data["manufacturer"].ToString() ?? throw new AppException("Manufacturer đang trống") : throw new AppException("Manufacturer đang trống"),
-                            MaintenancePlanId = data.ContainsKey("maintenancePlanId") ? Guid.Parse(data["maintenancePlanId"].ToString() ?? throw new AppException("maintenancePlanId trong firebase đang trống")) : throw new AppException("maintenancePlanId không tồn tại trong Firebase"),
-                            Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
+                            Code = data["code"]?.ToString() ?? throw new AppException("Code đang trống"),
+                            Name = data["name"]?.ToString() ?? throw new AppException("Name đang trống"),
+                            Manufacturer = data["manufacturer"]?.ToString() ?? throw new AppException("Manufacturer đang trống"),
+                            MaintenancePlanId = maintenancePlanId,
+                            Status = data.ContainsKey("status")
+                                ? Enum.Parse<Status>(data["status"]?.ToString() ?? "ACTIVE")
+                                : Status.ACTIVE,
                         };
 
                         await _unitOfWork.Models.CreateAsync(model);
-
                     }
                 }
                 await _unitOfWork.SaveAsync();

@@ -20,7 +20,8 @@ namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
 
         public Task<BatteryCheck?> GetByIdAsync(Guid id)
         {
-            return _context.BatteryChecks.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            return _context.BatteryChecks.AsNoTracking().Include(b => b.EVCheckDetail!).ThenInclude(d => d.EVCheck!).ThenInclude(c => c.Appointment!).ThenInclude(a => a.Vehicle).FirstOrDefaultAsync(x => x.Id == id);
+
         }
 
         public async Task<(IReadOnlyList<BatteryCheck> Items, long Total)> GetPagedAsync(
@@ -36,7 +37,7 @@ namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
             page = Math.Max(1, page);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var q = _context.BatteryChecks.AsNoTracking().AsQueryable();
+            var q = _context.BatteryChecks.AsNoTracking().Include(b => b.EVCheckDetail!).ThenInclude(d => d.EVCheck!).ThenInclude(c => c.Appointment!).ThenInclude(a => a.Vehicle).AsQueryable();
 
             if (evCheckDetailId.HasValue && evCheckDetailId.Value != Guid.Empty)
                 q = q.Where(b => b.EVCheckDetailId == evCheckDetailId.Value);
