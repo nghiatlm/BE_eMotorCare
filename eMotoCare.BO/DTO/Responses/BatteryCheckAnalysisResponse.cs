@@ -27,5 +27,6 @@ namespace eMotoCare.BO.DTO.Responses
         public float MaxSOH { get; set; }
         public float AvgSOH { get; set; }
         public BatteryConclusionResponse? Conclusion { get; set; }
+        public VehicleResponse? Vehicle { get; set; }
     }
 }
