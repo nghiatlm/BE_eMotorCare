@@ -730,9 +730,9 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             if (!Enum.TryParse<MaintenanceUnit>(unitStr, true, out var unitEnum))
                                 unitEnum = MaintenanceUnit.KILOMETER;
                             int totalStages = 0;
-                            if (planData.ContainsKey("totalStages"))
+                            if (planData.ContainsKey("total_stages"))
                             {
-                                var tsStr = planData["totalStages"]?.ToString();
+                                var tsStr = planData["total_stages"]?.ToString();
                                 if (!string.IsNullOrWhiteSpace(tsStr))
                                     int.TryParse(tsStr, out totalStages);
                             }
@@ -757,8 +757,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             await _unitOfWork.MaintenancePlans.CreateAsync(plan);
                         }
 
-
-                        // 2. Tạo Model
                         var model = new Model
                         {
                             Id = Guid.Parse(docId),
