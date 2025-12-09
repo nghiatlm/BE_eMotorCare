@@ -42,8 +42,8 @@ namespace eMotoCare.BO.Entities
 
         [Column("fcm_token", TypeName = "json")]
         public string[]? FcmToken { get; set; }
-        [Column("last_login")]
-        public DateTime? LastLogin { get; set; }
+        [Column("login_count")]
+        public int LoginCount { get; set; } = 0;
         public virtual ICollection<Notification>? Notifications { get; set; }
 
     }

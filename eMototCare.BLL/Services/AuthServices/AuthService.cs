@@ -13,6 +13,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Ocsp;
 using System.Net;
 using System.Security.Claims;
 
@@ -64,6 +65,9 @@ namespace eMototCare.BLL.Services.AuthServices
                 string token = _jwtService.GenerateJwtToken(account);
                 if (token == null)
                     throw new AppException("Token không được null", HttpStatusCode.BadRequest);
+                account.LoginCount += 1;
+                await _unitOfWork.Accounts.UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
                 return new AuthResponse
                 {
                     Token = token,
@@ -96,10 +100,10 @@ namespace eMototCare.BLL.Services.AuthServices
                 if (account == null)
                     throw new AppException("Tài khoản không tồn tại", HttpStatusCode.NotFound);
 
-                if (account.Password == _configuration["DefaultPassword:password"] && account.LastLogin == null)
+                if (account.Password == _configuration["DefaultPassword:password"] && account.LoginCount == 0)
                 {
                     string token_ = _jwtService.GenerateJwtToken(account);
-                    account.LastLogin = DateTime.Now;
+                    account.LoginCount += 1;
                     await _unitOfWork.Accounts.UpdateAsync(account);
                     await _unitOfWork.SaveAsync();
                     return new AuthResponse
@@ -116,7 +120,7 @@ namespace eMototCare.BLL.Services.AuthServices
                     };
                 }
 
-                if (account.Password == _configuration["DefaultPassword:password"] && account.LastLogin != null)
+                if (account.Password == _configuration["DefaultPassword:password"] && account.LoginCount == 1)
                 {
                     throw new AppException("Tài khoản đã bị khoá, vui lòng liên hệ ADMIN để mở khoá", HttpStatusCode.Locked);
                 }    
@@ -152,7 +156,7 @@ namespace eMototCare.BLL.Services.AuthServices
                     );
                     return null;
                 }
-                account.LastLogin = DateTime.Now;
+                account.LoginCount += 1;
                 await _unitOfWork.Accounts.UpdateAsync(account);
                 await _unitOfWork.SaveAsync();
                 string token = _jwtService.GenerateJwtToken(account);
@@ -250,6 +254,47 @@ namespace eMototCare.BLL.Services.AuthServices
             }
             catch (Exception ex)
             {
+                throw new AppException(ex.Message);
+            }
+        }
+
+        public async Task<bool> ChangePassword(string oldPassword, string newPassword, Guid id)
+        {
+            try
+            {
+
+                var account = await _unitOfWork.Accounts.GetByIdAsync(id);
+                if (account == null) throw new AppException("Không tìm thấy account", HttpStatusCode.NotFound);
+
+                if (account.Password == _configuration["DefaultPassword:password"])
+                {
+                    if (oldPassword == account.Password)
+                    {
+                        account.Password = _passwordHasher.HashPassword(newPassword);
+                        await _unitOfWork.Accounts.UpdateAsync(account);
+                        await _unitOfWork.SaveAsync();
+                        return true;
+                    } else
+                    {
+                        throw new AppException("Mật khẩu không trùng", HttpStatusCode.BadRequest);
+                    }
+                }
+
+                bool checkPassword = _passwordHasher.VerifyPassword(oldPassword, account.Password);
+                if (!checkPassword) throw new AppException("Mật khẩu không trùng", HttpStatusCode.BadRequest);
+                account.Password = _passwordHasher.HashPassword(newPassword);
+                await _unitOfWork.Accounts.UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (AppException ex)
+            {
+                _logger.LogWarning(ex, "AppException occurred: {Message}", ex.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred: {Message}", ex.Message);
                 throw new AppException(ex.Message);
             }
         }

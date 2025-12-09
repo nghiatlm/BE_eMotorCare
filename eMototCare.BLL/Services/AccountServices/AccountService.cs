@@ -197,7 +197,7 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Id = Guid.NewGuid();
                 entity.Phone = phone;
                 entity.Email = email;
-
+                entity.LoginCount = 0;
                 entity.Password = password;
                 entity.RoleName = req.RoleName;
                 entity.Stattus = AccountStatus.IN_ACTIVE;

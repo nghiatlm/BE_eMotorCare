@@ -5,6 +5,7 @@ using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Exceptions;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.FirebaseServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
@@ -77,6 +78,13 @@ namespace BE_eMotoCare.API.Controllers
             var phone = decodedToken.Claims["phone_number"].ToString();
             await _service.ActiveAccount(phone);
             return Ok(ApiResponse<AuthResponse>.SuccessResponse(null, "Xác thực OTP thành công"));
+        }
+
+        [HttpPost("change-password/{id}")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, Guid id)
+        {
+            var result = await _service.ChangePassword(request.OldPassword, request.NewPassword, id);
+            return Ok(ApiResponse<string>.SuccessResponse("Đổi mật khẩu thành công"));
         }
     }
 }
