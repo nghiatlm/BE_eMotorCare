@@ -657,124 +657,310 @@ namespace eMototCare.BLL.Services.AppointmentServices
             await _unitOfWork.Appointments.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
         }
+        private static string? GetStr(IDictionary<string, object> dict, params string[] keys)
+        {
+            foreach (var k in keys)
+                if (dict.TryGetValue(k, out var obj) && obj != null)
+                    return obj.ToString();
+            return null;
+        }
 
-        private async Task<(
-            Customer Customer,
-            Vehicle Vehicle,
-            VehicleStage? VehicleStage
-        )> EnsureVehicleFromVinAsync(string chassisNumber, Guid? accountId)
+        private static DateTime? TryParseDate(IDictionary<string, object> dict, string key)
+        {
+            var s = GetStr(dict, key);
+            return DateTime.TryParse(s, out var dt) ? dt : (DateTime?)null;
+        }
+        private async Task<List<VehicleStage>> SyncVehicleStagesFromOemAsync(Guid vehicleId, string vehicleDocId)
+        {
+            var stageDataList = await _firebase.GetVehicleStagesByVehicleIdAsync(vehicleDocId);
+            var vehicleStages = new List<VehicleStage>();
+
+            foreach (var sd in stageDataList)
+            {
+                Console.WriteLine("[DEBUG] VehicleStage from OEM: " +
+                                  string.Join(", ", sd.Select(kv => $"{kv.Key}={kv.Value}")));
+
+                var msIdStr = GetStr(sd, "maintenanceStageId", "maintenance_stage_id", "maintenancestageId");
+                if (string.IsNullOrWhiteSpace(msIdStr) || !Guid.TryParse(msIdStr, out var msId))
+                {
+                    Console.WriteLine($"[WARN] maintenanceStageId invalid or missing: {msIdStr}");
+                    continue;
+                }
+
+                var msEntity = await _unitOfWork.MaintenanceStages.GetByIdAsync(msId);
+
+                if (msEntity == null)
+                {
+                    var msData = await _firebase.GetMaintenanceStageByIdAsync(msIdStr);
+                    if (msData == null)
+                    {
+                        Console.WriteLine("[WARN] maintenanceStage data not found on OEM, skip.");
+                        continue;
+                    }
+
+                    var mpIdStr = GetStr(msData, "maintenancePlanId", "maintenance_plan_id");
+                    if (string.IsNullOrWhiteSpace(mpIdStr) || !Guid.TryParse(mpIdStr, out var mpId))
+                    {
+                        Console.WriteLine("[WARN] maintenancePlanId not found for MaintenanceStage, skip.");
+                        continue;
+                    }
+
+                    var mpEntity = await _unitOfWork.MaintenancePlans.GetByIdAsync(mpId);
+                    if (mpEntity == null)
+                    {
+                        var mpCode = GetStr(msData, "planCode") ?? $"OEM-{mpId.ToString()[..8]}";
+                        var mpName = GetStr(msData, "planName") ?? "OEM Maintenance Plan";
+                        var mpDesc = GetStr(msData, "description") ?? "";
+                        var unitStr = GetStr(msData, "unit");
+                        var effStr = GetStr(msData, "effectiveDate");
+
+                        var unit = MaintenanceUnit.KILOMETER;
+                        if (!string.IsNullOrWhiteSpace(unitStr)
+                            && Enum.TryParse<MaintenanceUnit>(unitStr, true, out var parsedUnit))
+                            unit = parsedUnit;
+
+                        var effDate = DateTime.UtcNow;
+                        if (!string.IsNullOrWhiteSpace(effStr)
+                            && DateTime.TryParse(effStr, out var effParsed))
+                            effDate = effParsed;
+
+                        mpEntity = new MaintenancePlan
+                        {
+                            Id = mpId,
+                            Code = mpCode,
+                            Name = mpName,
+                            Description = mpDesc,
+                            Status = Status.ACTIVE,
+                            Unit = new[] { unit },
+                            EffectiveDate = effDate,
+                            TotalStages = 0
+                        };
+
+                        await _unitOfWork.MaintenancePlans.CreateAsync(mpEntity);
+                    }
+
+                    var name = GetStr(msData, "name") ?? "";
+                    var desc = GetStr(msData, "description") ?? "";
+                    var mileageStr = GetStr(msData, "mileage") ?? "";
+                    var msStatusStr = GetStr(msData, "status");
+
+                    var msStatus = StatusEnum.ACTIVE;
+                    if (!string.IsNullOrWhiteSpace(msStatusStr)
+                        && Enum.TryParse<StatusEnum>(msStatusStr, true, out var stParsed))
+                        msStatus = stParsed;
+
+                    if (!Enum.TryParse<Mileage>(mileageStr, true, out var parsedMileage))
+                        throw new AppException("Invalid mileage value.", HttpStatusCode.BadRequest);
+
+                    msEntity = new MaintenanceStage
+                    {
+                        Id = msId,
+                        MaintenancePlanId = mpEntity.Id,
+                        Name = name,
+                        Description = desc,
+                        Mileage = parsedMileage,
+                        Status = (Status)msStatus
+                    };
+
+                    await _unitOfWork.MaintenanceStages.CreateAsync(msEntity);
+                }
+
+                if (msEntity == null)
+                {
+                    Console.WriteLine("[WARN] Cannot resolve MaintenanceStage entity, skip VehicleStage.");
+                    continue;
+                }
+                var statusStr = GetStr(sd, "status");
+                var vsStatus = VehicleStageStatus.UPCOMING;
+                if (!string.IsNullOrWhiteSpace(statusStr)
+                    && Enum.TryParse<VehicleStageStatus>(statusStr, true, out var vsParsed))
+                    vsStatus = vsParsed;
+
+                var implDate =
+                    TryParseDate(sd, "expectedImplementationDate")
+                    ?? TryParseDate(sd, "expectedStartDate")
+                    ?? DateTime.UtcNow;
+
+                var vs = new VehicleStage
+                {
+                    Id = Guid.NewGuid(),
+                    VehicleId = vehicleId,
+                    MaintenanceStageId = msEntity.Id,
+                    ActualMaintenanceMileage = 0,
+                    ActualMaintenanceUnit = MaintenanceUnit.KILOMETER,
+                    ExpectedStartDate = TryParseDate(sd, "expectedStartDate") ?? implDate,
+                    ExpectedEndDate = TryParseDate(sd, "expectedEndDate"),
+                    ExpectedImplementationDate = implDate,
+                    ActualImplementationDate = null,
+                    Status = vsStatus
+                };
+
+                await _unitOfWork.VehicleStages.CreateAsync(vs);
+                vehicleStages.Add(vs);
+            }
+
+            return vehicleStages;
+        }
+
+        private async Task<(Customer Customer, Vehicle Vehicle, List<VehicleStage> VehicleStages)>
+            EnsureVehicleFromVinAsync(string chassisNumber, Guid? accountId)
         {
             if (string.IsNullOrWhiteSpace(chassisNumber))
-                throw new AppException(
-                    "ChassisNumber không được để trống",
-                    HttpStatusCode.BadRequest
-                );
+                throw new AppException("ChassisNumber không được để trống", HttpStatusCode.BadRequest);
+
             var localVehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
             if (localVehicle != null)
             {
-                var stages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(localVehicle.Id);
-                var upcoming =
-                    stages
-                        .Where(s => s.Status == VehicleStageStatus.UPCOMING)
-                        .OrderBy(s =>
-                            s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MaxValue
-                        )
-                        .FirstOrDefault()
-                    ?? stages
-                        .OrderByDescending(s =>
-                            s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MinValue
-                        )
-                        .FirstOrDefault();
+                List<VehicleStage> stages;
+
+                if (_firebase.IsFirestoreConfigured())
+                {
+                    var fireVehicleInner = await _firebase.GetVehicleByChassisNumberAsync(chassisNumber);
+
+                    if (fireVehicleInner != null)
+                    {
+                        var vDataRemote = fireVehicleInner.Value.Data;
+                        var vehicleDocId = fireVehicleInner.Value.Id;
+                        localVehicle.Image = GetStr(vDataRemote, "image") ?? localVehicle.Image;
+                        localVehicle.Color = GetStr(vDataRemote, "color") ?? localVehicle.Color;
+                        localVehicle.EngineNumber = GetStr(vDataRemote, "engine_number") ?? localVehicle.EngineNumber;
+                        localVehicle.ManufactureDate = TryParseDate(vDataRemote, "manufacture_date") ?? localVehicle.ManufactureDate;
+                        localVehicle.PurchaseDate = TryParseDate(vDataRemote, "purchase_date") ?? localVehicle.PurchaseDate;
+                        localVehicle.WarrantyExpiry = TryParseDate(vDataRemote, "warranty_expiry") ?? localVehicle.WarrantyExpiry;
+
+                        await _unitOfWork.Vehicles.UpdateAsync(localVehicle);
+
+                        var oldStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(localVehicle.Id);
+                        foreach (var s in oldStages)
+                            await _unitOfWork.VehicleStages.DeleteAsync(s);
+
+                        stages = await SyncVehicleStagesFromOemAsync(localVehicle.Id, vehicleDocId);
+                    }
+                    else
+                    {
+                        stages = (await _unitOfWork.VehicleStages.GetByVehicleIdAsync(localVehicle.Id)).ToList();
+                    }
+                }
+                else
+                {
+                    stages = (await _unitOfWork.VehicleStages.GetByVehicleIdAsync(localVehicle.Id)).ToList();
+                }
+
+                await _unitOfWork.SaveAsync();
 
                 var customer =
                     localVehicle.Customer
-                    ?? (
-                        localVehicle.CustomerId.HasValue
-                            ? await _unitOfWork.Customers.GetByIdAsync(
-                                localVehicle.CustomerId.Value
-                            )
-                            : throw new AppException(
-                                "Customer ID is null",
-                                HttpStatusCode.BadRequest
-                            )
-                    );
+                    ?? (localVehicle.CustomerId.HasValue
+                        ? await _unitOfWork.Customers.GetByIdAsync(localVehicle.CustomerId.Value)
+                        : throw new AppException("Customer ID is null", HttpStatusCode.BadRequest));
 
-                return (customer, localVehicle, upcoming);
+                return (customer, localVehicle, stages);
             }
-
             if (!_firebase.IsFirestoreConfigured())
-                throw new AppException(
-                    "Không thể kết nối OEM (Firestore)",
-                    HttpStatusCode.InternalServerError
-                );
+                throw new AppException("Không thể kết nối OEM (Firestore)", HttpStatusCode.InternalServerError);
 
             var fireVehicle = await _firebase.GetVehicleByChassisNumberAsync(chassisNumber);
             if (fireVehicle is null)
-                throw new AppException(
-                    "Không tìm thấy xe trong hệ thống OEM",
-                    HttpStatusCode.NotFound
-                );
+                throw new AppException("Không tìm thấy xe trong hệ thống OEM", HttpStatusCode.NotFound);
 
             var vData = fireVehicle.Value.Data;
-            var vehicleDocId = fireVehicle.Value.Id;
-
+            var vehicleDocIdNew = fireVehicle.Value.Id;
+            var oemModelId = GetStr(vData, "modelId", "model_id");
             Model? modelEntity = null;
-            string? oemModelId = null;
-
-            if (vData.TryGetValue("modelId", out var mObj) && mObj != null)
-                oemModelId = mObj.ToString();
-            else if (vData.TryGetValue("model_id", out var m2Obj) && m2Obj != null)
-                oemModelId = m2Obj.ToString();
 
             if (!string.IsNullOrWhiteSpace(oemModelId))
             {
                 var modelData = await _firebase.GetModelByIdAsync(oemModelId);
-
                 if (modelData != null)
                 {
-                    string modelName =
-                        modelData.TryGetValue("name", out var nameObj) && nameObj != null
-                            ? nameObj.ToString()!
-                        : modelData.TryGetValue("Name", out var nameObj2) && nameObj2 != null
-                            ? nameObj2.ToString()!
-                        : string.Empty;
-
-                    string modelCode =
-                        modelData.TryGetValue("code", out var codeObj) && codeObj != null
-                            ? codeObj.ToString()!
-                        : modelData.TryGetValue("Code", out var codeObj2) && codeObj2 != null
-                            ? codeObj2.ToString()!
-                        : string.Empty;
-
-                    string? statusStr =
-                        modelData.TryGetValue("status", out var stObj) && stObj != null
-                            ? stObj.ToString()
-                        : modelData.TryGetValue("Status", out var stObj2) && stObj2 != null
-                            ? stObj2.ToString()
-                        : null;
-
+                    var modelName = GetStr(modelData, "name", "Name") ?? "";
+                    var modelCode = GetStr(modelData, "code", "Code") ?? "";
+                    var manufacturer = GetStr(modelData, "manufacturer")?.Trim() ?? "";
+                    var statusStr = GetStr(modelData, "status", "Status");
                     var status = StatusEnum.ACTIVE;
-                    if (
-                        !string.IsNullOrWhiteSpace(statusStr)
-                        && Enum.TryParse<StatusEnum>(statusStr, true, out var parsedStatus)
-                    )
-                    {
+
+                    if (!string.IsNullOrWhiteSpace(statusStr)
+                        && Enum.TryParse<StatusEnum>(statusStr, true, out var parsedStatus))
                         status = parsedStatus;
+
+                    var maintenancePlanIdStr = GetStr(modelData, "maintenancePlanId");
+
+                    if (string.IsNullOrWhiteSpace(modelName))
+                        throw new AppException("Tên model từ OEM không hợp lệ", HttpStatusCode.BadRequest);
+                    if (string.IsNullOrWhiteSpace(manufacturer))
+                        throw new AppException("Hãng sản xuất từ OEM không hợp lệ", HttpStatusCode.BadRequest);
+                    if (!Guid.TryParse(maintenancePlanIdStr, out var maintenancePlanId))
+                        throw new AppException("MaintenancePlanId từ OEM không hợp lệ", HttpStatusCode.BadRequest);
+
+                    var plan = await _unitOfWork.MaintenancePlans.GetByIdAsync(maintenancePlanId);
+                    if (plan == null)
+                    {
+                        var planData = await _firebase.GetMaintenancePlanByIdAsync(maintenancePlanIdStr!);
+                        if (planData == null)
+                            throw new AppException("Không tìm thấy MaintenancePlan trên hệ thống OEM", HttpStatusCode.BadRequest);
+
+                        var planCode = GetStr(planData, "code")?.Trim() ?? "";
+                        var planName = GetStr(planData, "name")?.Trim() ?? "";
+                        var planDescription = GetStr(planData, "description") ?? "";
+                        var planStatusStr = GetStr(planData, "status");
+                        var unitStr = GetStr(planData, "unit")?.Trim();
+                        var totalStagesStr = GetStr(planData, "totalStages");
+                        var effStr = GetStr(planData, "effectiveDate");
+
+                        var planStatus = Status.ACTIVE;
+                        if (!string.IsNullOrWhiteSpace(planStatusStr)
+                            && Enum.TryParse<Status>(planStatusStr, true, out var st))
+                            planStatus = st;
+
+                        if (string.IsNullOrWhiteSpace(unitStr))
+                            unitStr = "KILOMETER";
+
+                        int totalStages = 0;
+                        if (!string.IsNullOrWhiteSpace(totalStagesStr))
+                            int.TryParse(totalStagesStr, out totalStages);
+
+                        DateTime? effectiveDate = null;
+                        if (!string.IsNullOrWhiteSpace(effStr)
+                            && DateTime.TryParse(effStr, out var eff))
+                            effectiveDate = eff;
+
+                        var unitEnum = Enum.TryParse<MaintenanceUnit>(unitStr, true, out var parsedUnit)
+                            ? parsedUnit
+                            : MaintenanceUnit.KILOMETER;
+
+                        plan = new MaintenancePlan
+                        {
+                            Id = maintenancePlanId,
+                            Code = planCode,
+                            Name = planName,
+                            Description = planDescription,
+                            Status = planStatus,
+                            Unit = new[] { unitEnum },
+                            TotalStages = totalStages,
+                            EffectiveDate = effectiveDate ?? DateTime.MinValue,
+                        };
+
+                        await _unitOfWork.MaintenancePlans.CreateAsync(plan);
                     }
 
                     var allModels = await _unitOfWork.Models.FindAllAsync();
                     modelEntity = allModels.FirstOrDefault(m =>
                         (!string.IsNullOrEmpty(modelCode) && m.Code == modelCode)
-                        || (!string.IsNullOrEmpty(modelName) && m.Name == modelName)
-                    );
+                        || (!string.IsNullOrEmpty(modelName) && m.Name == modelName));
 
                     if (modelEntity == null)
                     {
+                        var finalCode = string.IsNullOrWhiteSpace(modelCode)
+                            ? $"MDL-{Guid.NewGuid().ToString("N")[..5].ToUpper()}"
+                            : modelCode;
+
                         modelEntity = new Model
                         {
                             Id = Guid.NewGuid(),
                             Name = modelName,
-                            Code = modelCode,
+                            Code = finalCode,
+                            Manufacturer = manufacturer,
+                            MaintenancePlanId = plan.Id,
                             Status = (Status)status,
                         };
 
@@ -784,62 +970,29 @@ namespace eMototCare.BLL.Services.AppointmentServices
             }
 
             if (modelEntity == null)
-            {
-                throw new AppException(
-                    "Không tìm thấy hoặc sync được Model tương ứng với xe OEM. "
-                        + "Vui lòng kiểm tra lại dữ liệu model trên OEM/DB.",
-                    HttpStatusCode.BadRequest
-                );
-            }
-
+                throw new AppException("Không sync được Model tương ứng với xe OEM", HttpStatusCode.BadRequest);
             if (!vData.TryGetValue("customerId", out var custIdObj) || custIdObj == null)
-                throw new AppException(
-                    "Xe trong OEM không có thông tin khách hàng",
-                    HttpStatusCode.BadRequest
-                );
+                throw new AppException("Xe trong OEM không có thông tin khách hàng", HttpStatusCode.BadRequest);
 
             var custData = await _firebase.GetCustomerByIdAsync(custIdObj.ToString()!);
             if (custData == null)
-                throw new AppException(
-                    "Không sync được khách hàng từ OEM",
-                    HttpStatusCode.BadRequest
-                );
+                throw new AppException("Không sync được khách hàng từ OEM", HttpStatusCode.BadRequest);
 
-            var citizenId = custData.TryGetValue("citizenId", out var ciObj)
-                ? ciObj?.ToString() ?? ""
-                : "";
-            var firstName = custData.TryGetValue("firstName", out var fnObj)
-                ? fnObj?.ToString() ?? ""
-                : "";
-            var lastName = custData.TryGetValue("lastName", out var lnObj)
-                ? lnObj?.ToString() ?? ""
-                : "";
-            var address = custData.TryGetValue("address", out var adObj)
-                ? adObj?.ToString() ?? ""
-                : "";
-            var customerCode = custData.TryGetValue("customerCode", out var ccObj)
-                ? ccObj?.ToString() ?? ""
-                : "";
-            var avatarUrl = custData.TryGetValue("avatarUrl", out var avObj)
-                ? avObj?.ToString() ?? ""
-                : "";
-
-            var phone = custData.TryGetValue("phone", out var phObj) ? phObj?.ToString() ?? "" : "";
-            var emailRaw = custData.TryGetValue("email", out var emObj) ? emObj?.ToString() : null;
-            var email = string.IsNullOrWhiteSpace(emailRaw)
-                ? null
-                : emailRaw.Trim().ToLowerInvariant();
-
-            var genderStr = custData.TryGetValue("gender", out var gObj) ? gObj?.ToString() : null;
-            var dobStr = custData.TryGetValue("dateOfBirth", out var dobObj)
-                ? dobObj?.ToString()
-                : null;
+            var citizenId = GetStr(custData, "citizenId") ?? "";
+            var firstName = GetStr(custData, "firstName") ?? "";
+            var lastName = GetStr(custData, "lastName") ?? "";
+            var address = GetStr(custData, "address") ?? "";
+            var customerCode = GetStr(custData, "customerCode") ?? "";
+            var avatarUrl = GetStr(custData, "avatarUrl") ?? "";
+            var phone = GetStr(custData, "phone") ?? "";
+            var emailRaw = GetStr(custData, "email");
+            var email = string.IsNullOrWhiteSpace(emailRaw) ? null : emailRaw.Trim().ToLowerInvariant();
+            var genderStr = GetStr(custData, "gender");
+            var dobStr = GetStr(custData, "dateOfBirth");
 
             GenderEnum? gender = null;
-            if (
-                !string.IsNullOrWhiteSpace(genderStr)
-                && Enum.TryParse<GenderEnum>(genderStr, true, out var g)
-            )
+            if (!string.IsNullOrWhiteSpace(genderStr)
+                && Enum.TryParse<GenderEnum>(genderStr, true, out var g))
                 gender = g;
 
             DateTime? dob = null;
@@ -849,93 +1002,90 @@ namespace eMototCare.BLL.Services.AppointmentServices
             Guid? linkedAccountId = null;
             Account? accountEntity = null;
 
-            if (accountId.HasValue && accountId.Value != Guid.Empty)
-            {
-                accountEntity = await _unitOfWork.Accounts.GetByIdAsync(accountId.Value);
-            }
-
-            if (accountEntity == null && !string.IsNullOrWhiteSpace(phone))
+            if (!string.IsNullOrWhiteSpace(phone))
             {
                 accountEntity = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
-            }
-
-            if (accountEntity == null && !string.IsNullOrWhiteSpace(phone))
-            {
-                var existingByPhone = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
-                if (existingByPhone != null)
-                {
-                    accountEntity = existingByPhone;
-                }
-                else
+                if (accountEntity == null)
                 {
                     accountEntity = new Account
                     {
                         Id = Guid.NewGuid(),
                         Phone = phone,
                         Email = email,
-                        Password = BCrypt.Net.BCrypt.HashPassword("123456"),
+                        Password = BCrypt.Net.BCrypt.HashPassword("12345678"),
                         RoleName = RoleName.ROLE_CUSTOMER,
                         Stattus = AccountStatus.ACTIVE,
                     };
-
                     await _unitOfWork.Accounts.CreateAsync(accountEntity);
                 }
+            }
+            else if (accountId.HasValue && accountId.Value != Guid.Empty)
+            {
+                accountEntity = await _unitOfWork.Accounts.GetByIdAsync(accountId.Value);
             }
 
             if (accountEntity != null)
                 linkedAccountId = accountEntity.Id;
 
-            var customerEntity = new Customer
+            Customer? customerEntity = null;
+            if (linkedAccountId.HasValue)
             {
-                Id = Guid.NewGuid(),
-                AccountId = linkedAccountId,
-                CitizenId = citizenId,
-                FirstName = firstName,
-                LastName = lastName,
-                Address = address,
-                CustomerCode = customerCode,
-                AvatarUrl = avatarUrl,
-                Gender = gender,
-                DateOfBirth = dob,
-            };
-            await _unitOfWork.Customers.CreateAsync(customerEntity);
+                customerEntity = (await _unitOfWork.Customers.FindAllAsync())
+                    .SingleOrDefault(c => c.AccountId == linkedAccountId.Value);
+            }
 
+            if (customerEntity == null)
+            {
+                customerEntity = new Customer
+                {
+                    Id = Guid.NewGuid(),
+                    AccountId = linkedAccountId,
+                    CitizenId = citizenId,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Address = address,
+                    CustomerCode = customerCode,
+                    AvatarUrl = avatarUrl,
+                    Gender = gender,
+                    DateOfBirth = dob,
+                };
+                await _unitOfWork.Customers.CreateAsync(customerEntity);
+            }
+            else
+            {
+                // luôn override bằng data mới nhất từ OEM
+                customerEntity.CitizenId = citizenId;
+                customerEntity.FirstName = firstName;
+                customerEntity.LastName = lastName;
+                customerEntity.Address = address;
+                customerEntity.CustomerCode = customerCode;
+                customerEntity.AvatarUrl = avatarUrl;
+                customerEntity.Gender = gender;
+                customerEntity.DateOfBirth = dob;
+
+                await _unitOfWork.Customers.UpdateAsync(customerEntity);
+            }
             var vehicle = new Vehicle
             {
                 Id = Guid.NewGuid(),
                 CustomerId = customerEntity.Id,
                 ModelId = modelEntity.Id,
-
-                Image = vData.TryGetValue("image", out var imgObj) ? imgObj?.ToString() ?? "" : "",
-                Color = vData.TryGetValue("color", out var colorObj)
-                    ? colorObj?.ToString() ?? ""
-                    : "",
-                ChassisNumber = vData.TryGetValue("chassis_number", out var chObj)
-                    ? chObj?.ToString() ?? ""
-                    : "",
-                EngineNumber = vData.TryGetValue("engine_number", out var enObj)
-                    ? enObj?.ToString() ?? ""
-                    : "",
+                Image = GetStr(vData, "image") ?? "",
+                Color = GetStr(vData, "color") ?? "",
+                ChassisNumber = GetStr(vData, "chassis_number") ?? "",
+                EngineNumber = GetStr(vData, "engine_number") ?? "",
                 Status = StatusEnum.ACTIVE,
                 ManufactureDate = TryParseDate(vData, "manufacture_date") ?? DateTime.UtcNow,
                 PurchaseDate = TryParseDate(vData, "purchase_date") ?? DateTime.UtcNow,
                 WarrantyExpiry = TryParseDate(vData, "warranty_expiry") ?? DateTime.UtcNow,
             };
             await _unitOfWork.Vehicles.CreateAsync(vehicle);
-            var vehiclePartItemsData = await _firebase.GetVehiclePartItemsByVehicleIdAsync(
-                vehicleDocId
-            );
-
+            var vehiclePartItemsData = await _firebase.GetVehiclePartItemsByVehicleIdAsync(vehicleDocIdNew);
             foreach (var vpiData in vehiclePartItemsData)
             {
-                var partItemIdStr = vpiData.TryGetValue("partItemId", out var piObj)
-                    ? piObj?.ToString()
-                    : null;
-
-                if (string.IsNullOrWhiteSpace(partItemIdStr))
-                    continue;
-
-                if (!Guid.TryParse(partItemIdStr, out Guid partItemGuid))
+                var partItemIdStr = GetStr(vpiData, "partItemId");
+                if (string.IsNullOrWhiteSpace(partItemIdStr)
+                    || !Guid.TryParse(partItemIdStr, out var partItemGuid))
                     continue;
 
                 var createdAt = TryParseDate(vpiData, "createdAt") ?? DateTime.UtcNow;
@@ -954,222 +1104,14 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.VehiclePartItems.CreateAsync(vpiEntity);
             }
-            var stageDataList = await _firebase.GetVehicleStagesByVehicleIdAsync(vehicleDocId);
-            var vehicleStages = new List<VehicleStage>();
 
-            foreach (var sd in stageDataList)
-            {
-                Guid? maintenanceStageId = null;
-
-                if (sd.TryGetValue("maintenancestageId", out var msObj) && msObj != null)
-                {
-                    var msIdStr = msObj.ToString();
-
-                    if (Guid.TryParse(msIdStr, out var msIdParsed))
-                    {
-                        var msEntity = await _unitOfWork.MaintenanceStages.GetByIdAsync(msIdParsed);
-
-                        if (msEntity == null)
-                        {
-                            var msData = await _firebase.GetMaintenanceStageByIdAsync(msIdStr);
-                            if (msData != null)
-                            {
-                                Guid? maintenancePlanId = null;
-                                if (
-                                    msData.TryGetValue("maintenancePlanId", out var mpObj)
-                                    && mpObj != null
-                                    && Guid.TryParse(mpObj.ToString(), out var mpGuid)
-                                )
-                                {
-                                    var mpEntity = await _unitOfWork.MaintenancePlans.GetByIdAsync(
-                                        mpGuid
-                                    );
-                                    if (mpEntity == null)
-                                    {
-                                        var mpCode = msData.TryGetValue("planCode", out var pcObj)
-                                            ? pcObj?.ToString() ?? ""
-                                            : $"OEM-{mpGuid.ToString()[..8]}";
-
-                                        var mpName = msData.TryGetValue("planName", out var pnObj)
-                                            ? pnObj?.ToString() ?? "OEM Maintenance Plan"
-                                            : "OEM Maintenance Plan";
-
-                                        var mpDesc = msData.TryGetValue(
-                                            "description",
-                                            out var mpDescObj
-                                        )
-                                            ? mpDescObj?.ToString() ?? ""
-                                            : "";
-
-                                        var unitStr = msData.TryGetValue("unit", out var uObj)
-                                            ? uObj?.ToString()
-                                            : null;
-                                        var effectiveDateStr = msData.TryGetValue(
-                                            "effectiveDate",
-                                            out var edObj
-                                        )
-                                            ? edObj?.ToString()
-                                            : null;
-
-                                        MaintenanceUnit unit = MaintenanceUnit.KILOMETER;
-                                        if (
-                                            !string.IsNullOrWhiteSpace(unitStr)
-                                            && Enum.TryParse<MaintenanceUnit>(
-                                                unitStr,
-                                                true,
-                                                out var parsedUnit
-                                            )
-                                        )
-                                        {
-                                            unit = parsedUnit;
-                                        }
-
-                                        DateTime effectiveDate = DateTime.UtcNow;
-                                        if (
-                                            !string.IsNullOrWhiteSpace(effectiveDateStr)
-                                            && DateTime.TryParse(effectiveDateStr, out var edParsed)
-                                        )
-                                        {
-                                            effectiveDate = edParsed;
-                                        }
-
-                                        mpEntity = new MaintenancePlan
-                                        {
-                                            Id = mpGuid,
-                                            Code = mpCode,
-                                            Name = mpName,
-                                            Description = mpDesc,
-                                            Status = Status.ACTIVE,
-                                            Unit = new[] { unit },
-                                            EffectiveDate = effectiveDate,
-                                            TotalStages = 0,
-                                        };
-
-                                        await _unitOfWork.MaintenancePlans.CreateAsync(mpEntity);
-                                    }
-
-                                    maintenancePlanId = mpEntity.Id;
-                                }
-
-                                if (!maintenancePlanId.HasValue)
-                                {
-                                    continue;
-                                }
-
-                                var name = msData.TryGetValue("name", out var nObj)
-                                    ? nObj?.ToString() ?? ""
-                                    : "";
-                                var description = msData.TryGetValue("description", out var dObj)
-                                    ? dObj?.ToString() ?? ""
-                                    : "";
-                                var mileage = msData.TryGetValue("mileage", out var mileageObj)
-                                    ? mileageObj?.ToString() ?? ""
-                                    : "";
-                                var msStatusStr = msData.TryGetValue("status", out var sObj)
-                                    ? sObj?.ToString()
-                                    : null;
-
-                                var msStatus = StatusEnum.ACTIVE;
-                                if (
-                                    !string.IsNullOrWhiteSpace(msStatusStr)
-                                    && Enum.TryParse<StatusEnum>(
-                                        msStatusStr,
-                                        true,
-                                        out var stParsed
-                                    )
-                                )
-                                {
-                                    msStatus = stParsed;
-                                }
-
-                                msEntity = new MaintenanceStage
-                                {
-                                    Id = msIdParsed,
-                                    MaintenancePlanId = maintenancePlanId.Value,
-                                    Name = name,
-                                    Description = description,
-                                    Mileage = Enum.TryParse<Mileage>(mileage, out var parsedMileage)
-                                        ? parsedMileage
-                                        : throw new AppException(
-                                            "Invalid mileage value.",
-                                            HttpStatusCode.BadRequest
-                                        ),
-                                    Status = (Status)msStatus,
-                                };
-
-                                await _unitOfWork.MaintenanceStages.CreateAsync(msEntity);
-                            }
-                        }
-
-                        if (msEntity != null)
-                            maintenanceStageId = msEntity.Id;
-                    }
-                }
-
-                if (!maintenanceStageId.HasValue)
-                    continue;
-
-                var statusStr = sd.TryGetValue("status", out var stObj) ? stObj?.ToString() : null;
-                var vsStatus = VehicleStageStatus.UPCOMING;
-                if (
-                    !string.IsNullOrWhiteSpace(statusStr)
-                    && Enum.TryParse<VehicleStageStatus>(statusStr, true, out var sParsed)
-                )
-                {
-                    vsStatus = sParsed;
-                }
-
-                var implDate = TryParseDate(sd, "dateOfImplementation") ?? DateTime.UtcNow;
-
-                var vs = new VehicleStage
-                {
-                    Id = Guid.NewGuid(),
-                    VehicleId = vehicle.Id,
-                    MaintenanceStageId = maintenanceStageId.Value,
-                    ActualMaintenanceMileage = 0,
-                    ActualMaintenanceUnit = MaintenanceUnit.KILOMETER,
-
-                    ExpectedStartDate = implDate,
-                    ExpectedEndDate = null,
-                    ExpectedImplementationDate = implDate,
-                    ActualImplementationDate = null,
-
-                    Status = vsStatus,
-                };
-
-                await _unitOfWork.VehicleStages.CreateAsync(vs);
-                vehicleStages.Add(vs);
-            }
-            VehicleStage? selectedStage =
-                vehicleStages
-                    .Where(s => s.Status == VehicleStageStatus.UPCOMING)
-                    .OrderBy(s =>
-                        s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MaxValue
-                    )
-                    .FirstOrDefault()
-                ?? vehicleStages
-                    .OrderByDescending(s =>
-                        s.ExpectedStartDate ?? s.ExpectedImplementationDate ?? DateTime.MinValue
-                    )
-                    .FirstOrDefault();
-
+            var vehicleStages = await SyncVehicleStagesFromOemAsync(vehicle.Id, vehicleDocIdNew);
             await _unitOfWork.SaveAsync();
 
-            return (customerEntity, vehicle, selectedStage);
+            return (customerEntity, vehicle, vehicleStages);
         }
 
-        private static DateTime? TryParseDate(Dictionary<string, object> dict, string key)
-        {
-            if (!dict.TryGetValue(key, out var obj) || obj == null)
-                return null;
-            if (DateTime.TryParse(obj.ToString(), out var dt))
-                return dt;
-            return null;
-        }
-
-        public async Task<FirstVisitVehicleInfoResponse> EnsureVehicleFromChassisAsync(
-            string chassisNumber
-        )
+        public async Task<FirstVisitVehicleInfoResponse> EnsureVehicleFromChassisAsync(string chassisNumber)
         {
             var httpUser = _httpContextAccessor.HttpContext?.User;
             var accountClaim =
@@ -1181,20 +1123,19 @@ namespace eMototCare.BLL.Services.AppointmentServices
             if (accountClaim != null && Guid.TryParse(accountClaim.Value, out var accId))
                 accountId = accId;
 
-            var (customer, vehicle, vehicleStage) = await EnsureVehicleFromVinAsync(
-                chassisNumber,
-                accountId
-            );
+            var (customer, vehicle, vehicleStages) =
+                await EnsureVehicleFromVinAsync(chassisNumber, accountId);
+
             var vpis = await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(vehicle.Id);
-            var vpiResponses = _mapper.Map<List<VehiclePartItemResponse>>(vpis);
+
             return new FirstVisitVehicleInfoResponse
             {
                 Customer = _mapper.Map<CustomerResponse>(customer),
                 Vehicle = _mapper.Map<VehicleResponse>(vehicle),
-                VehicleStage =
-                    vehicleStage != null ? _mapper.Map<VehicleStageResponse>(vehicleStage) : null,
-                VehiclePartItems = vpiResponses,
+                VehicleStages = _mapper.Map<List<VehicleStageShortResponse>>(vehicleStages),
+                VehiclePartItems = _mapper.Map<List<VehiclePartItemResponse>>(vpis),
             };
         }
+
     }
 }

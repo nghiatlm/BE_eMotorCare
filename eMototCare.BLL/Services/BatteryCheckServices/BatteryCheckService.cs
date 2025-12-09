@@ -608,6 +608,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
 
         public async Task<PageResult<BatteryCheckAnalysisResponse>> GetPagedAsync(
             Guid? evCheckDetailId,
+            Guid? vehicleId,
             DateTime? fromDate,
             DateTime? toDate,
             string? sortBy,
@@ -620,6 +621,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             {
                 var (items, total) = await _unitOfWork.BatteryChecks.GetPagedAsync(
                     evCheckDetailId,
+                    vehicleId,
                     fromDate,
                     toDate,
                     sortBy,

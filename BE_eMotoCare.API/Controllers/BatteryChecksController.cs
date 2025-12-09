@@ -24,6 +24,7 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] Guid? evCheckDetailId,
+            [FromQuery] Guid? vehicleId,
             [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate,
             [FromQuery] string? sortBy,
@@ -34,6 +35,7 @@ namespace BE_eMotoCare.API.Controllers
         {
             var data = await _batteryCheckService.GetPagedAsync(
                 evCheckDetailId,
+                vehicleId,
                 fromDate,
                 toDate,
                 sortBy,
