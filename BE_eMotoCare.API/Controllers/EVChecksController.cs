@@ -87,7 +87,7 @@ namespace BE_eMotoCare.API.Controllers
                 new
                 {
                     Id = id,
-                    Status = request.Status,
+                    Status = request.Status.ToString(),
                     Action = "UPDATED",
                 }
             );
