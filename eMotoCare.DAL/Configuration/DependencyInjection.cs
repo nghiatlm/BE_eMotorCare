@@ -14,6 +14,7 @@ using eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository;
 using eMotoCare.DAL.Repositories.MaintenanceStageRepository;
 using eMotoCare.DAL.Repositories.ModelPartTypeRepository;
 using eMotoCare.DAL.Repositories.ModelRepository;
+using eMotoCare.DAL.Repositories.NotificationRepository;
 using eMotoCare.DAL.Repositories.PartItemRepository;
 using eMotoCare.DAL.Repositories.PartRepository;
 using eMotoCare.DAL.Repositories.PartTypeRepository;
@@ -81,6 +82,7 @@ namespace eMotoCare.DAL.Configuration
             services.AddScoped<IVehicleRepository, VehicleRepository>();
             services.AddScoped<IVehicleStageRepository, VehicleStageRepository>();
             services.AddScoped<IServiceCenterSlotRepository, ServiceCenterSlotRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             return services;
         }

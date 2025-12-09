@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Nodes;
 using eMotoCare.BO.Common;
 using eMotoCare.BO.Enums;
 
@@ -37,5 +38,11 @@ namespace eMotoCare.BO.Entities
 
         [InverseProperty(nameof(Staff.Account))]
         public Staff? Staff { get; set; }
+
+        [Column("fcm_token", TypeName = "json")]
+        public string[]? FcmToken { get; set; }
+
+        public virtual ICollection<Notification>? Notifications { get; set; }
+
     }
 }

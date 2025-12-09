@@ -15,5 +15,6 @@ namespace eMotoCare.BO.DTO.Requests
         public StaffRequest? Staff { get; set; }
 
         public AccountStatus Status { get; set; }
+        public string[]? FcmToken { get; set; }
     }
 }

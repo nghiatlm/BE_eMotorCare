@@ -22,6 +22,7 @@ using eMototCare.BLL.Services.MaintenanceStageServices;
 using eMototCare.BLL.Services.ModelPartServices;
 using eMototCare.BLL.Services.ModelPartTypeServices;
 using eMototCare.BLL.Services.ModelServices;
+using eMototCare.BLL.Services.NotificationServices;
 using eMototCare.BLL.Services.PartItemServices;
 using eMototCare.BLL.Services.PartServices;
 using eMototCare.BLL.Services.PartTypeServices;
@@ -81,7 +82,7 @@ namespace eMototCare.BLL.Configuration
             services.AddScoped<IModelService, ModelService>();
             services.AddScoped<IModelPartService, ModelPartService>();
             services.AddScoped<IExportNoteDetailService, ExportNoteDetailService>();
-
+            services.AddScoped<INotificationService, NotificationService>();
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();
             services.AddHostedService<CampaignBackgroundService>();
