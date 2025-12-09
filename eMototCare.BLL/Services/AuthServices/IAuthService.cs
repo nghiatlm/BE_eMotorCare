@@ -11,6 +11,6 @@ namespace eMototCare.BLL.Services.AuthServices
         Task<AuthResponse> Login(LoginRequest request);
         Task<AuthResponse?> LoginStaff(StaffLoginRequest request);
         Task<bool> Register(RegisterRequest request);
-        Task<bool> VerifyLoginStaffAsync(VerifyLoginRequest request);
+        Task<bool> VerifyEmailAsync(string token);
     }
 }

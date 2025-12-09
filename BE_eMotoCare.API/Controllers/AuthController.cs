@@ -3,6 +3,7 @@ using Azure;
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Exceptions;
 using eMototCare.BLL.Services.AuthServices;
 using eMototCare.BLL.Services.FirebaseServices;
 using Microsoft.AspNetCore.Mvc;
@@ -40,11 +41,27 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<AuthResponse>.SuccessResponse(response, "Đăng nhập thành công"));
         }
 
-        [HttpPost("verify-otp/staff")]
-        public async Task<IActionResult> VerifyLoginStaffAsync([FromBody] VerifyLoginRequest request)
+        [HttpGet("verify/staff")]
+        public async Task<IActionResult> VerifyLoginStaffAsync([FromQuery] string token)
         {
-            var result = await _service.VerifyLoginStaffAsync(request);
-            return Ok(ApiResponse<string>.SuccessResponse("Xác thực thành công"));
+            try
+            {
+                var result = await _service.VerifyEmailAsync(token);
+                if (result)
+                {
+                    // Redirect đến trang thông báo thành công
+                    return Redirect("https://emotocare.vercel.app/verify-success");
+                }
+                else
+                {
+                    // Redirect đến trang thông báo lỗi
+                    return Redirect("https://emotocare.vercel.app/");
+                }
+            }
+            catch (AppException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("register")]

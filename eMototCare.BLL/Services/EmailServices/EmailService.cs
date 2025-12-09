@@ -17,7 +17,7 @@ namespace eMototCare.BLL.Services.EmailServices
             _logger = logger;
         }
 
-        public async Task SendLoginEmailAsync(string to, string subject, string otpCode)
+        public async Task SendLoginEmailAsync(string to, string subject, string verifyUrl)
         {
             var fromName = Environment.GetEnvironmentVariable("MailSettings__FromName")
                       ?? _settings.FromName;
@@ -33,20 +33,41 @@ namespace eMototCare.BLL.Services.EmailServices
                 port = p;
             else
                 port = _settings.Port;
-            string html = $@"
-        <html>
-            <body style='font-family:Arial,sans-serif; color:#333;'>
-                <h2 style='color:#0078D4;'>Xác thực đăng nhập</h2>
-                <p>Xin chào,</p>
-                <p>Bạn vừa yêu cầu đăng nhập vào hệ thống eMotoCare.</p>
-                <p>Mã OTP của bạn là:</p>
-                <h1 style='letter-spacing:3px; color:#0078D4;'>{otpCode}</h1>
-                <p>Mã này có hiệu lực trong 5 phút.</p>
-                <br/>
-                <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
-                <p>Trân trọng,<br/><b>eMotoCare Team</b></p>
-            </body>
-        </html>";
+            string html = "<body " +
+    "style=\"font-family: Arial, sans-serif;" +
+    "background-color: #f4f4f4;" +
+    "margin: 0;" +
+    "padding: 0;" +
+    "-webkit-text-size-adjust: none;" +
+    "-ms-text-size-adjust: none;\">" +
+    "<div style=\"max-width: 600px; margin: auto; background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\">" +
+
+    "<div style=\"text-align: center; padding-bottom: 20px; color: #333333;\">" +
+    "<h1 style=\"font-size: 24px; margin: 0; padding: 0;\">Kích hoạt tài khoản nhân viên</h1>" +
+    "<p style=\"font-size: 16px; line-height: 1.5;\">Chào mừng bạn đến với hệ thống eMotoCare!</p>" +
+    "<p style=\"font-size: 16px; line-height: 1.5;\">Vui lòng nhấn nút bên dưới để xác thực email và kích hoạt tài khoản của bạn.</p>" +
+
+    "<a href=\"" + verifyUrl + "\" " +
+    "style=\"display: inline-block; margin-top: 20px; padding: 15px 25px; font-size: 16px; color: #ffffff; background-color: #f52d56; border-radius: 5px; text-decoration: none;\">" +
+    "Xác nhận tài khoản</a>" +
+
+    "<p style=\"margin-top: 20px; font-size: 14px; color: #555555;\">" +
+    "Nếu nút bên trên không hoạt động, vui lòng truy cập liên kết dưới đây:" +
+    "</p>" +
+
+    "<p style=\"font-size: 14px;\">" +
+    "<a href=\"" + verifyUrl + "\" style=\"color: #1a0dab; text-decoration: underline;\">Xác thực tài khoản</a></p>" +
+
+    "<p style=\"font-size: 14px; color: #777777; margin-top: 20px;\">" +
+    "Nếu bạn không yêu cầu tạo tài khoản, vui lòng bỏ qua email này." +
+    "</p>" +
+
+    "<div style=\"text-align: center; font-size: 14px; color: #777777; margin-top: 30px;\">" +
+    "<strong>Trân trọng,<br/>Đội ngũ eMotoCare</strong>" +
+    "</div>" +
+    "</div>" +
+    "</body>";
+
             var email = new MimeMessage();
             email.From.Add(new MailboxAddress(fromName, fromEmail));
             email.To.Add(MailboxAddress.Parse(to));
