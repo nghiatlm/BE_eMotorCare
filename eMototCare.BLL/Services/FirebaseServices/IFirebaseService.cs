@@ -5,7 +5,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
     public interface IFirebaseService
     {
         Task<FirebaseToken> VerifyIdTokenAsync(string idToken);
-        Task<Dictionary<string, object>?> GetCustomerByCitizenIdAsync(string citizenId);
+        Task<bool> GetCustomerByCitizenIdAsync(string citizenId, Guid accountId);
         bool IsFirestoreConfigured();
         Task<(string Id, Dictionary<string, object> Data)?> GetVehicleByChassisNumberAsync(
             string chassisNumber
@@ -25,5 +25,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
         Task<bool> GetProgramDetailAsync();
         Task<bool> GetVehiclePartitemAsync();
         Task<bool> GetModelAsync();
+        Task<bool> GetVehicleByCustomerId(Guid customerId);
     }
 }

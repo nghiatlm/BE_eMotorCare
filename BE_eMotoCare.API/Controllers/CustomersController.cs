@@ -81,14 +81,6 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá khách hàng thành công"));
         }
 
-        [HttpPost("map-account")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_CUSTOMER")]
-        public async Task<IActionResult> MapAccount([FromQuery] string citizenId, [FromQuery] Guid accountId)
-        {
-            await _customerService.MapAccountIdByCitizenIdAsync(citizenId, accountId);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Đã map AccountId vào Customer thành công"));
-        }
-
         [HttpGet("rma/{rmaId}")]
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN")]
         public async Task<IActionResult> GetCustomerByRmaId(Guid rmaId)
