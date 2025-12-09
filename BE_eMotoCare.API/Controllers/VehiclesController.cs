@@ -98,16 +98,14 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost("sync-vehicles")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN,ROLE_TECHNICIAN")]
-        public async Task<IActionResult> Sync([FromBody] SyncVehicleRequest request)
+        public async Task<IActionResult> Sync()
         {
-            var vehicle = await _vehicleService.SyncVehicleAsync(request);
-            return Ok(
-                ApiResponse<VehicleResponse>.SuccessResponse(
-                    vehicle,
-                    "Đồng bộ vehicle từ OEM thành công"
-                )
-            );
+            var list = await _vehicleService.SyncVehicleAsync();
+            return Ok(ApiResponse<object>.SuccessResponse(
+                list,
+                "Đồng bộ tất cả vehicle từ OEM thành công"
+            ));
         }
+
     }
 }

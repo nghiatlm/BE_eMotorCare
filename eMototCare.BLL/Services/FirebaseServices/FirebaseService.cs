@@ -277,6 +277,22 @@ namespace eMototCare.BLL.Services.FirebaseServices
             var doc = snapshot.Documents[0];
             return (doc.Id, doc.ToDictionary());
         }
+        public async Task<List<(string Id, Dictionary<string, object> Data)>> GetAllVehiclesAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            var col = _firestoreDb.Collection("vehicles");
+            var snapshot = await col.GetSnapshotAsync();
+
+            var result = new List<(string, Dictionary<string, object>)>();
+            foreach (var doc in snapshot.Documents)
+            {
+                result.Add((doc.Id, doc.ToDictionary()));
+            }
+
+            return result;
+        }
 
         public async Task<List<Dictionary<string, object>>> GetVehicleStagesByVehicleIdAsync(
     string vehicleId
@@ -296,7 +312,15 @@ namespace eMototCare.BLL.Services.FirebaseServices
             var list = new List<Dictionary<string, object>>();
             foreach (var doc in snapshot.Documents)
             {
-                list.Add(doc.ToDictionary());
+                var data = doc.ToDictionary();
+
+                // Sanitize the maintenanceStageName to remove newline characters
+                if (data.ContainsKey("maintenanceStageName"))
+                {
+                    data["maintenanceStageName"] = data["maintenanceStageName"]?.ToString()?.Replace("\n", "").Trim();
+                }
+
+                list.Add(data);
             }
             return list;
         }

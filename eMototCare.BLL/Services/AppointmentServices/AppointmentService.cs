@@ -698,7 +698,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         continue;
                     }
 
-                    var mpIdStr = GetStr(msData, "maintenancePlanId", "maintenance_plan_id");
+                    var mpIdStr = GetStr(msData, "maintenancePlanId", "maintenance_plan_id", "maintenance_plan_id ");
                     if (string.IsNullOrWhiteSpace(mpIdStr) || !Guid.TryParse(mpIdStr, out var mpId))
                     {
                         Console.WriteLine("[WARN] maintenancePlanId not found for MaintenanceStage, skip.");
@@ -739,16 +739,30 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         await _unitOfWork.MaintenancePlans.CreateAsync(mpEntity);
                     }
 
-                    var name = GetStr(msData, "name") ?? "";
+                    var name = (GetStr(msData, "name") ?? "").Trim();
                     var desc = GetStr(msData, "description") ?? "";
                     var mileageStr = GetStr(msData, "mileage") ?? "";
                     var msStatusStr = GetStr(msData, "status");
-
+                    var durationStr = GetStr(msData, "duration_month");   
+                    var estTimeStr = GetStr(msData, "estimated_time");
                     var msStatus = StatusEnum.ACTIVE;
                     if (!string.IsNullOrWhiteSpace(msStatusStr)
                         && Enum.TryParse<StatusEnum>(msStatusStr, true, out var stParsed))
                         msStatus = stParsed;
+                    DurationMonth durationMonth = DurationMonth.MONTH_3;
+                    if (!string.IsNullOrWhiteSpace(durationStr)
+                        && Enum.TryParse<DurationMonth>(durationStr, true, out var dmParsed))
+                    {
+                        durationMonth = dmParsed;
+                    }
 
+                    // parse EstimatedTime (nếu cần)
+                    int? estimatedTime = null;
+                    if (!string.IsNullOrWhiteSpace(estTimeStr)
+                        && int.TryParse(estTimeStr, out var et))
+                    {
+                        estimatedTime = et;
+                    }
                     if (!Enum.TryParse<Mileage>(mileageStr, true, out var parsedMileage))
                         throw new AppException("Invalid mileage value.", HttpStatusCode.BadRequest);
 
@@ -759,7 +773,9 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         Name = name,
                         Description = desc,
                         Mileage = parsedMileage,
-                        Status = (Status)msStatus
+                        Status = (Status)msStatus,
+                        DurationMonth = durationMonth,     
+                        EstimatedTime = estimatedTime,
                     };
 
                     await _unitOfWork.MaintenanceStages.CreateAsync(msEntity);
