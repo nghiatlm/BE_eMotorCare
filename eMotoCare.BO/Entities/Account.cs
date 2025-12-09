@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 using System.Text.Json.Nodes;
 using eMotoCare.BO.Common;
 using eMotoCare.BO.Enums;
@@ -41,7 +42,8 @@ namespace eMotoCare.BO.Entities
 
         [Column("fcm_token", TypeName = "json")]
         public string[]? FcmToken { get; set; }
-
+        [Column("last_login")]
+        public DateTime? LastLogin { get; set; }
         public virtual ICollection<Notification>? Notifications { get; set; }
 
     }

@@ -4,5 +4,6 @@
     {
         Task NotifyUpdateAsync(string entity, object data);
         Task NotifyDeleteAsync(string entity, object data);
+        Task NotifyCreateAsync(string entity, object data);
     }
 }

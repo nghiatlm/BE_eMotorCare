@@ -1,4 +1,3 @@
-using System.Net;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
@@ -10,7 +9,9 @@ using eMototCare.BLL.HashPasswords;
 using eMototCare.BLL.JwtServices;
 using eMototCare.BLL.Services.EmailServices;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace eMototCare.BLL.Services.AuthServices
 {
@@ -22,6 +23,7 @@ namespace eMototCare.BLL.Services.AuthServices
         private readonly IJwtService _jwtService;
         private readonly IMemoryCache _cache;
         private readonly IEmailService _mailService;
+        private readonly IConfiguration _configuration;
 
         public AuthService(
             IUnitOfWork unitOfWork,
@@ -30,7 +32,8 @@ namespace eMototCare.BLL.Services.AuthServices
             IPasswordHasher passwordHasher,
             IJwtService jwtService,
             IMemoryCache cache,
-            IEmailService mailService
+            IEmailService mailService,
+            IConfiguration configuration
         )
         {
             _logger = logger;
@@ -39,6 +42,7 @@ namespace eMototCare.BLL.Services.AuthServices
             _jwtService = jwtService;
             _cache = cache;
             _mailService = mailService;
+            _configuration = configuration;
         }
 
         public async Task<AuthResponse> Login(LoginRequest request)
@@ -88,6 +92,32 @@ namespace eMototCare.BLL.Services.AuthServices
                 var account = await _unitOfWork.Accounts.FindByEmail(request.Email);
                 if (account == null)
                     throw new AppException("Tài khoản không tồn tại", HttpStatusCode.NotFound);
+
+                if (account.Password == _configuration["DefaultPassword:password"] && account.LastLogin == null)
+                {
+                    string token_ = _jwtService.GenerateJwtToken(account);
+                    account.LastLogin = DateTime.Now;
+                    await _unitOfWork.Accounts.UpdateAsync(account);
+                    await _unitOfWork.SaveAsync();
+                    return new AuthResponse
+                    {
+                        Token = token_,
+                        AccountResponse = new AccountResponse
+                        {
+                            Id = account.Id,
+                            Email = account.Email,
+                            Phone = account.Phone,
+                            RoleName = account.RoleName,
+                            Stattus = account.Stattus,
+                        },
+                    };
+                }
+
+                if (account.Password == _configuration["DefaultPassword:password"] && account.LastLogin != null)
+                {
+                    throw new AppException("Tài khoản đã bị khoá, vui lòng liên hệ ADMIN để mở khoá", HttpStatusCode.Locked);
+                }    
+
                 bool checkPasswo5rd = _passwordHasher.VerifyPassword(
                     request.Password,
                     account.Password
@@ -118,7 +148,9 @@ namespace eMototCare.BLL.Services.AuthServices
                     );
                     return null;
                 }
-
+                account.LastLogin = DateTime.Now;
+                await _unitOfWork.Accounts.UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
                 string token = _jwtService.GenerateJwtToken(account);
                 return new AuthResponse
                 {

@@ -147,7 +147,7 @@ namespace eMototCare.BLL.Services.AccountServices
                     throw new AppException("Request không được null", HttpStatusCode.BadRequest);
                 var phone = (req.Phone ?? string.Empty).Trim();
                 var email = req.Email?.Trim().ToLowerInvariant();
-
+                var password = "12345678";
                 if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
                     throw new AppException(
                         "Cần ít nhất Phone hoặc Email",
@@ -173,11 +173,6 @@ namespace eMototCare.BLL.Services.AccountServices
                 )
                     throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
 
-                if (string.IsNullOrWhiteSpace(req.Password))
-                    throw new AppException(
-                        "Mật khẩu không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
                 if (
                     req.RoleName == RoleName.ROLE_STAFF
                     || req.RoleName == RoleName.ROLE_MANAGER
@@ -198,8 +193,7 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Phone = phone;
                 entity.Email = email;
 
-                entity.Password = BCrypt.Net.BCrypt.HashPassword(req.Password);
-
+                entity.Password = password;
                 entity.RoleName = req.RoleName;
                 entity.Stattus = AccountStatus.IN_ACTIVE;
 
@@ -276,11 +270,8 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Email = newEmail;
                 entity.RoleName = req.RoleName;
                 entity.Stattus = req.Status;
+                
 
-                if (!string.IsNullOrWhiteSpace(req.Password))
-                {
-                    entity.Password = BCrypt.Net.BCrypt.HashPassword(req.Password);
-                }
 
                 await _unitOfWork.Accounts.UpdateAsync(entity);
                 if (req.Staff != null)

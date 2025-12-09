@@ -15,7 +15,7 @@ namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
         }
 
         public Task<MaintenancePlan?> GetByIdAsync(Guid id) =>
-            _context.MaintenancePlans.FirstOrDefaultAsync(x => x.Id == id);
+            _context.MaintenancePlans.Include(x => x.MaintenanceStages).FirstOrDefaultAsync(x => x.Id == id);
 
 
         public Task<bool> ExistsCodeAsync(string code) =>
@@ -39,6 +39,7 @@ namespace eMotoCare.DAL.Repositories.MaintenancePlanRepository
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             var q = _context.MaintenancePlans
+                .Include(x => x.MaintenanceStages)
                 .AsNoTracking()
                 .AsQueryable();
 
