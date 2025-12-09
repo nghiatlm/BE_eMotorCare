@@ -339,57 +339,46 @@ namespace eMototCare.BLL.Services.CustomerServices
                 }
 
                 var customerExist = await _unitOfWork.Customers.GetByCitizenId(citizenId);
-
                 if (customerExist != null)
                 {
                     customerExist.AccountId = accountId;
 
                     _unitOfWork.Customers.Update(customerExist);
+                    var syncPlan = await _firebase.GetMaintenancePlanAsync();
+                    if (!syncPlan) throw new AppException("Sync plan thất bại");
+                    var syncStage = await _firebase.GetMaintenanceStageAsync();
+                    if (!syncStage) throw new AppException("syncStage thất bại");
+                    var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
+                    if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
+                    var syncModel = await _firebase.GetModelAsync();
+                    if (!syncModel) throw new AppException("Sync model thất bại");
+                    var syncVehicle = await _firebase.GetVehicleByCustomerId(customerExist.Id);
+                    if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
                     await _unitOfWork.SaveAsync();
 
-                    return true;
-                }
-
-                
-
-                var data = await _firebase.GetCustomerByCitizenIdAsync(citizenId);
-                if (data == null)
-                    throw new AppException(
-                        "Không tìm thấy khách hàng trong hệ thống",
-                        HttpStatusCode.NotFound
-                    );
-                var customer = new Customer
+                } else
                 {
-                    Id = Guid.NewGuid(),
-                    AccountId = accountId,
-                    CitizenId = data.ContainsKey("citizenId")
-                        ? data["citizenId"].ToString() ?? ""
-                        : "",
-                    FirstName = data.ContainsKey("firstName")
-                        ? data["firstName"].ToString() ?? ""
-                        : "",
-                    LastName = data.ContainsKey("lastName")
-                        ? data["lastName"].ToString() ?? ""
-                        : "",
-                    DateOfBirth =
-                        data.ContainsKey("dateOfBirth")
-                        && DateTime.TryParse(data["dateOfBirth"]?.ToString(), out var dob)
-                            ? dob
-                            : null,
-                    CustomerCode = data.ContainsKey("customerCode")
-                        ? data["customerCode"].ToString() ?? ""
-                        : "",
-                    Address = data.ContainsKey("address") ? data["address"].ToString() ?? "" : "",
-                    Gender =
-                        data.ContainsKey("gender")
-                        && Enum.TryParse<GenderEnum>(data["gender"]?.ToString(), out var gender)
-                            ? gender
-                            : null,
-                    AvatarUrl = data.ContainsKey("avatarUrl")
-                        ? data["avatarUrl"].ToString() ?? ""
-                        : "",
-                };
-                await _unitOfWork.Customers.CreateAsync(customer);
+                    var resultCustomer = await _firebase.GetCustomerByCitizenIdAsync(citizenId, accountId);
+                    if (resultCustomer == false)
+                        throw new AppException(
+                            "Không tìm thấy khách hàng trong hệ thống",
+                            HttpStatusCode.NotFound
+                        );
+                    var syncPlan = await _firebase.GetMaintenancePlanAsync();
+                    if (!syncPlan) throw new AppException("Sync plan thất bại");
+                    var syncStage = await _firebase.GetMaintenanceStageAsync();
+                    if (!syncStage) throw new AppException("syncStage thất bại");
+                    var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
+                    if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
+                    var syncModel = await _firebase.GetModelAsync();
+                    if (!syncModel) throw new AppException("Sync model thất bại");                   
+                    var syncVehicle = await _firebase.GetVehicleByCustomerId(customerExist.Id);
+                    if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
+                    
+                }
+     
+                
+                
                 var result = await _unitOfWork.SaveAsync();
                 return result > 0 ? true : false;
             }
