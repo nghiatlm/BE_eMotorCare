@@ -102,28 +102,5 @@ namespace BE_eMotoCare.API.Controllers
             );
         }
 
-        [HttpPost("import")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Import([FromForm] MaintenanceStageDetailImport request)
-        {
-            if (request.File == null || request.File.Length == 0)
-                return BadRequest("File không hợp lệ.");
-
-            await using var stream = request.File.OpenReadStream();
-            int imported;
-
-            if (string.Equals(request.Format, "json", StringComparison.OrdinalIgnoreCase))
-                imported = await _maintenanceStageDetailService.ImportFromJsonAsync(stream);
-            else
-                imported = await _maintenanceStageDetailService.ImportFromCsvAsync(stream);
-
-            return Ok(
-                ApiResponse<object>.SuccessResponse(
-                    new { imported },
-                    "Import Maintenance Stage Detail thành công"
-                )
-            );
-        }
     }
 }

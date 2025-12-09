@@ -15,6 +15,8 @@ namespace eMototCare.BLL.Mappers
             CreateMap<VehicleStage, VehicleStageResponse>()
                 .ForMember(d => d.MaintenanceStage, o => o.MapFrom(s => s.MaintenanceStage))
                 .ForMember(d => d.Vehicle, o => o.MapFrom(s => s.Vehicle));
+
+            CreateMap<VehicleStage, VehicleStageShortResponse>();
         }
     }
 }

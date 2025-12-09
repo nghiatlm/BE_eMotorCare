@@ -21,7 +21,5 @@ namespace eMototCare.BLL.Services.MaintenanceStageServices
             int pageSize
         );
         Task UpdateAsync(Guid id, MaintenanceStageUpdateRequest req);
-        Task<int> ImportFromCsvAsync(Stream csvStream);
-        Task<int> ImportFromJsonAsync(Stream jsonStream);
     }
 }
