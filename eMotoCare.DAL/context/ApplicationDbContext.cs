@@ -43,6 +43,7 @@ namespace eMotoCare.DAL.context
         public DbSet<ServiceCenterSlot> ServiceCenterSlots { get; set; }
         public DbSet<ExportNoteDetail> ExportNoteDetails { get; set; }
         public DbSet<ImportNoteDetail> ImportNoteDetails { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         private static readonly TimeZoneInfo _vnZone = TimeZoneInfo.FindSystemTimeZoneById(
             "SE Asia Standard Time"
         );

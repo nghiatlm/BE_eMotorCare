@@ -14,6 +14,7 @@ using eMotoCare.DAL.Repositories.MaintenanceStageDetailRepository;
 using eMotoCare.DAL.Repositories.MaintenanceStageRepository;
 using eMotoCare.DAL.Repositories.ModelPartTypeRepository;
 using eMotoCare.DAL.Repositories.ModelRepository;
+using eMotoCare.DAL.Repositories.NotificationRepository;
 using eMotoCare.DAL.Repositories.PartItemRepository;
 using eMotoCare.DAL.Repositories.PartRepository;
 using eMotoCare.DAL.Repositories.PartTypeRepository;
@@ -74,6 +75,10 @@ namespace eMotoCare.DAL
         private IVehicleStageRepository? _vehicleStageRepository;
         private IServiceCenterSlotRepository _serviceCenterSlotRepository;
         private IExportNoteDetailRepository? _exportNoteDetailRepository;
+        private INotificationRepository? _notificationRepository;
+
+        public INotificationRepository Notifications =>
+            _notificationRepository ??= new NotificationRepository(_unitOfWorkContext);
 
         public IExportNoteDetailRepository ExportNoteDetails =>
             _exportNoteDetailRepository ??= new ExportNoteDetailRepository(_unitOfWorkContext);

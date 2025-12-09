@@ -114,7 +114,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             Id = Guid.NewGuid(),
                             EVCheckId = entity.Id,
                             MaintenanceStageDetailId = detail.Id,
-                            Remedies = Remedies.LUBRICATE,
+                            Remedies = Remedies.CHECK,
                             PartItemId = matchedVehiclePartItem.PartItemId,
                             Status = EVCheckDetailStatus.IN_PROGRESS,
                         };
