@@ -26,6 +26,7 @@ namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
 
         public async Task<(IReadOnlyList<BatteryCheck> Items, long Total)> GetPagedAsync(
             Guid? evCheckDetailId,
+            Guid? vehicleId,
             DateTime? fromDate,
             DateTime? toDate,
             string? sortBy,
@@ -41,7 +42,8 @@ namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
 
             if (evCheckDetailId.HasValue && evCheckDetailId.Value != Guid.Empty)
                 q = q.Where(b => b.EVCheckDetailId == evCheckDetailId.Value);
-
+            if (vehicleId.HasValue && vehicleId.Value != Guid.Empty)
+                q = q.Where(b => b.EVCheckDetail!.EVCheck!.Appointment!.Vehicle!.Id == vehicleId.Value);
             if (fromDate.HasValue)
                 q = q.Where(b => b.CreatedAt >= fromDate.Value);
 

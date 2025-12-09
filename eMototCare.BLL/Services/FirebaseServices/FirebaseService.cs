@@ -279,8 +279,8 @@ namespace eMototCare.BLL.Services.FirebaseServices
         }
 
         public async Task<List<Dictionary<string, object>>> GetVehicleStagesByVehicleIdAsync(
-            string vehicleId
-        )
+    string vehicleId
+)
         {
             if (_firestoreDb == null)
                 throw new AppException("Firestore chưa được cấu hình");
@@ -289,7 +289,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
             var query = col.WhereEqualTo("vehicleId", vehicleId);
             var snapshot = await query.GetSnapshotAsync();
 
-            // debug nếu cần
             Console.WriteLine(
                 $"[Firestore] GetVehicleStagesByVehicleId vehicleId={vehicleId}, count={snapshot.Count}"
             );
@@ -301,6 +300,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
             }
             return list;
         }
+
 
         public async Task<Dictionary<string, object>?> GetMaintenanceStageByIdAsync(
             string maintenanceStageId
@@ -755,18 +755,43 @@ namespace eMototCare.BLL.Services.FirebaseServices
                                 throw new AppException("Không tìm thấy MaintenancePlan trên Firebase");
 
                             var planData = planDoc.ToDictionary();
+                            var unitStr = planData.ContainsKey("unit")
+                                ? planData["unit"]?.ToString()?.Trim()
+                                : null;
 
+                            if (string.IsNullOrWhiteSpace(unitStr))
+                                unitStr = "KILOMETER"; 
+
+                            if (!Enum.TryParse<MaintenanceUnit>(unitStr, true, out var unitEnum))
+                                unitEnum = MaintenanceUnit.KILOMETER;
+                            int totalStages = 0;
+                            if (planData.ContainsKey("totalStages"))
+                            {
+                                var tsStr = planData["totalStages"]?.ToString();
+                                if (!string.IsNullOrWhiteSpace(tsStr))
+                                    int.TryParse(tsStr, out totalStages);
+                            }
+                            DateTime effectiveDate = DateTime.UtcNow;
+                            if (planData.ContainsKey("effectiveDate") &&
+                                DateTime.TryParse(planData["effectiveDate"]?.ToString(), out var eff))
+                            {
+                                effectiveDate = eff;
+                            }
                             plan = new MaintenancePlan
                             {
-                                Id = maintenancePlanId,                        
+                                Id = maintenancePlanId,
                                 Code = planData["code"]?.ToString(),
                                 Name = planData["name"]?.ToString(),
                                 Description = planData["description"]?.ToString(),
                                 Status = Status.ACTIVE,
+                                Unit = new[] { unitEnum },         
+                                TotalStages = totalStages,
+                                EffectiveDate = effectiveDate,
                             };
 
                             await _unitOfWork.MaintenancePlans.CreateAsync(plan);
                         }
+
 
                         // 2. Tạo Model
                         var model = new Model

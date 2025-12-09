@@ -9,6 +9,7 @@ namespace eMotoCare.DAL.Repositories.BatteryCheckRepository
         Task<BatteryCheck?> GetByIdAsync(Guid id);
         Task<(IReadOnlyList<BatteryCheck> Items, long Total)> GetPagedAsync(
             Guid? evCheckDetailId,
+            Guid? vehicleId,
             DateTime? fromDate,
             DateTime? toDate,
             string? sortBy,

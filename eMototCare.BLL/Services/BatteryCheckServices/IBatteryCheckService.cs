@@ -18,6 +18,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
         Task<BatteryCheckAnalysisResponse> GetByIdAsync(Guid id);
         Task<PageResult<BatteryCheckAnalysisResponse>> GetPagedAsync(
             Guid? evCheckDetailId,
+            Guid? vehicleId,
             DateTime? fromDate,
             DateTime? toDate,
             string? sortBy,

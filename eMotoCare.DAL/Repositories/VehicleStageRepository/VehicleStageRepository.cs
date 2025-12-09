@@ -13,7 +13,7 @@ namespace eMotoCare.DAL.Repositories.VehicleStageRepository
 
         public Task<List<VehicleStage>> GetByVehicleIdAsync(Guid vehicleId)
         {
-            return _context.VehicleStages.Where(vs => vs.VehicleId == vehicleId).ToListAsync();
+            return _context.VehicleStages.Include(x => x.MaintenanceStage).Where(vs => vs.VehicleId == vehicleId).ToListAsync();
         }
 
         public Task<VehicleStage?> GetByIdAsync(Guid id) =>
