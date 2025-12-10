@@ -187,7 +187,7 @@ namespace eMototCare.BLL.Services.AccountServices
                     string verifyToken = _jwtService.GenerateEmailVerificationToken(email);
                     string url = $"https://bemodernestate.site/api/v1/auths/verify/staff?token={verifyToken}";
                     //string url = $"https://localhost:7134/api/v1/auths/verify/staff?token={verifyToken}";
-                    await _mailService.SendLoginEmailAsync(
+                    await _mailService.SendAccountInfo(
                         email,
                         "Xác minh tài khoản nhân viên",
                         url
