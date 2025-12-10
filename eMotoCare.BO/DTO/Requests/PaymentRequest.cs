@@ -21,11 +21,11 @@ namespace eMotoCare.BO.DTO.Requests
         public Guid AppointmentId { get; set; }
 
         [Required]
-        [Url]
+        // [Url]
         public string? ReturnUrl { get; set; }
 
         [Required]
-        [Url]
+        // [Url]
         public string? CallbackUrl { get; set; }
     }
 }
