@@ -6,6 +6,7 @@
         REPLACE,
         TUNE,
         CLEAN,
+        WARRANTY,
         NONE,
     }
 }
