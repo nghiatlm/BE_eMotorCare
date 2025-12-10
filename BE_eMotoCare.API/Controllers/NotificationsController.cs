@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMototCare.BLL.Services.NotificationServices;
@@ -13,16 +14,19 @@ namespace BE_eMotoCare.API.Controllers
     public class NotificationsController : ControllerBase
     {
         private readonly INotificationService _service;
+        private readonly INotifierService _notifier;
 
-        public NotificationsController(INotificationService service)
+        public NotificationsController(INotificationService service, INotifierService notifier)
         {
             _service = service;
+            _notifier = notifier;
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] NotificationRequest request)
         {
             var id = await _service.CreateAsync(request);
+            await _notifier.NotifyCreateAsync("Notifier created", new {request.Title});
             return Ok(ApiResponse<object>.SuccessResponse(new { id }, "Tạo Notification thành công"));
         }
 

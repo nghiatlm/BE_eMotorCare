@@ -15,5 +15,6 @@ namespace eMotoCare.BO.DTO.Requests
         public DateTime WarrantyExpiry { get; set; }
         public Guid ModelId { get; set; }
         public Guid? CustomerId { get; set; }
+        public bool? IsPrimary { get; set; }
     }
 }

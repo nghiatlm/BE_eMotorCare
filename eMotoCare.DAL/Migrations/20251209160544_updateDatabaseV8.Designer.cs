@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using eMotoCare.DAL.context;
 
@@ -11,9 +12,11 @@ using eMotoCare.DAL.context;
 namespace eMotoCare.DAL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209160544_updateDatabaseV8")]
+    partial class updateDatabaseV8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,9 +44,9 @@ namespace eMotoCare.DAL.Migrations
                         .HasColumnType("json")
                         .HasColumnName("fcm_token");
 
-                    b.Property<int>("LoginCount")
-                        .HasColumnType("int")
-                        .HasColumnName("login_count");
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("datetime(6)")
+                        .HasColumnName("last_login");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -1706,10 +1709,6 @@ namespace eMotoCare.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("longtext")
                         .HasColumnName("image");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("tinyint(1)")
-                        .HasColumnName("is_primary");
 
                     b.Property<DateTime>("ManufactureDate")
                         .HasColumnType("datetime(6)")

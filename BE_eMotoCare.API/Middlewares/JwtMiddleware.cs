@@ -21,6 +21,7 @@ namespace BE_eMotoCare.API.Middlewares
         {
             "/api/v1/auths/login",
             "/api/v1/auths/register",
+            "/api/v1/auths/change-password",
             "/api/v1/public",
             "/api/v1/auths/verify-sms-otp",
             "/api/v1/auths/verify/staff",

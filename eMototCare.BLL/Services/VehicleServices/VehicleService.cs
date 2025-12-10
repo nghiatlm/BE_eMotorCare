@@ -186,7 +186,25 @@ namespace eMototCare.BLL.Services.VehicleServices
                 }
                 var entity = _mapper.Map<Vehicle>(req);
                 entity.Id = Guid.NewGuid();
+                entity.Image = image;
+                entity.Color = color;
+                entity.ChassisNumber = chassis;
+                entity.EngineNumber = engine;
 
+                if (entity.CustomerId.HasValue && req.IsPrimary == true)
+                {
+                    var others = await _unitOfWork.Vehicles.GetByCustomerIdAsync(entity.CustomerId.Value);
+                    foreach (var v in others.Where(x => x.IsPrimary))
+                    {
+                        v.IsPrimary = false;
+                        await _unitOfWork.Vehicles.UpdateAsync(v);
+                    }
+                    entity.IsPrimary = true;
+                }
+                else
+                {
+                    entity.IsPrimary = false;
+                }
                 await _unitOfWork.Vehicles.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -204,71 +222,106 @@ namespace eMototCare.BLL.Services.VehicleServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, VehicleRequest req)
+        public async Task UpdateAsync(Guid id, VehicleUpdateRequest req)
         {
             try
             {
                 var entity =
                     await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
-                var image = (req.Image ?? string.Empty).Trim();
-                var color = (req.Color ?? string.Empty).Trim();
-                var chassis = (req.ChassisNumber ?? string.Empty).Trim();
-                var engine = (req.EngineNumber ?? string.Empty).Trim();
-                if (string.IsNullOrWhiteSpace(image))
+                var newImage = (req.Image ?? entity.Image ?? string.Empty).Trim();      
+                var newColor = (req.Color ?? entity.Color ?? string.Empty).Trim();      
+                var newStatus = req.Status ?? entity.Status;                            
+                var newModelId = req.ModelId ?? entity.ModelId;                         
+                var newPurchaseDate = req.PurchaseDate ?? entity.PurchaseDate;         
+                var newWarrantyExpiry = req.WarrantyExpiry ?? entity.WarrantyExpiry;   
+                var newCustomerId = req.CustomerId ?? entity.CustomerId;              
+                var newIsPrimary = req.IsPrimary ?? entity.IsPrimary;
+                if (string.IsNullOrWhiteSpace(newImage))
                     throw new AppException("Image không được để trống", HttpStatusCode.BadRequest);
 
-                if (string.IsNullOrWhiteSpace(color))
+                if (string.IsNullOrWhiteSpace(newColor))
                     throw new AppException("Màu xe không được để trống", HttpStatusCode.BadRequest);
 
-                if (string.IsNullOrWhiteSpace(chassis))
-                    throw new AppException(
-                        "Số khung (ChassisNumber) không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (string.IsNullOrWhiteSpace(engine))
-                    throw new AppException(
-                        "Số máy (EngineNumber) không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
+                if (!Enum.IsDefined(typeof(StatusEnum), newStatus))
                     throw new AppException("Trạng thái xe không hợp lệ", HttpStatusCode.BadRequest);
 
-                if (req.ModelId == Guid.Empty)
+                if (newModelId == Guid.Empty)
                     throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
 
-                if (req.ManufactureDate == default)
-                    throw new AppException(
-                        "ManufactureDate không hợp lệ",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (req.PurchaseDate == default)
+                if (newPurchaseDate == default)
                     throw new AppException("PurchaseDate không hợp lệ", HttpStatusCode.BadRequest);
 
-                if (req.WarrantyExpiry == default)
+                if (newWarrantyExpiry == default)
                     throw new AppException(
                         "WarrantyExpiry không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.ManufactureDate > req.PurchaseDate)
+                if (entity.ManufactureDate > newPurchaseDate)
                     throw new AppException(
                         "Ngày sản xuất không được lớn hơn ngày mua",
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.PurchaseDate > req.WarrantyExpiry)
+                if (newPurchaseDate > newWarrantyExpiry)
                     throw new AppException(
                         "Ngày mua không được lớn hơn ngày hết bảo hành",
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.CustomerId.HasValue && req.CustomerId.Value == Guid.Empty)
+                if (newCustomerId.HasValue && newCustomerId.Value == Guid.Empty)
                     throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
-                _mapper.Map(req, entity);
+                if (entity.CustomerId.HasValue)
+                {
+                    var oldCustomerId = entity.CustomerId.Value;
+                    var isCurrentlyPrimary = entity.IsPrimary;
+                    var willBelongToOldCustomer =
+                        newCustomerId.HasValue && newCustomerId.Value == oldCustomerId;
+                    var willBePrimaryForOldCustomer = willBelongToOldCustomer && newIsPrimary; 
+
+                    var removingPrimaryFromOld = isCurrentlyPrimary && !willBePrimaryForOldCustomer; 
+
+                    if (removingPrimaryFromOld)
+                    {
+                        var vehiclesOfCustomer = await _unitOfWork.Vehicles.GetByCustomerIdAsync(oldCustomerId);
+                        var hasOtherPrimary = vehiclesOfCustomer
+                            .Any(v => v.Id != entity.Id && v.IsPrimary);                                      
+
+                        if (!hasOtherPrimary)
+                        {
+                            throw new AppException(
+                                "Khách hàng phải chọn 1 xe làm xe chính",
+                                HttpStatusCode.BadRequest
+                            );                                                                                 
+                        }
+                    }
+                }
+                entity.Image = newImage;                                             
+                entity.Color = newColor;                                             
+                entity.Status = newStatus;                                            
+                entity.PurchaseDate = newPurchaseDate;                               
+                entity.WarrantyExpiry = newWarrantyExpiry;                           
+                entity.ModelId = newModelId;
+                entity.CustomerId = newCustomerId;
+                if (entity.CustomerId.HasValue && newIsPrimary)
+                {
+                    var others = await _unitOfWork.Vehicles.GetByCustomerIdAsync(entity.CustomerId.Value);
+                    foreach (var v in others.Where(x => x.Id != entity.Id && x.IsPrimary))
+                    {
+                        v.IsPrimary = false;
+                        await _unitOfWork.Vehicles.UpdateAsync(v);
+                    }
+                    entity.IsPrimary = true;
+                }
+                else if (!entity.CustomerId.HasValue)
+                {
+                    entity.IsPrimary = false;
+                }
+                else
+                {
+                    entity.IsPrimary = newIsPrimary;
+                }
                 await _unitOfWork.Vehicles.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -356,108 +409,92 @@ namespace eMototCare.BLL.Services.VehicleServices
             return response;
         }
 
-        public async Task<VehicleResponse> SyncVehicleAsync(SyncVehicleRequest request)
+        public async Task<List<VehicleResponse>> SyncVehicleAsync()
         {
             try
             {
-                if (request == null)
-                    throw new AppException("Request không được null", HttpStatusCode.BadRequest);
-
-                var chassisNumber = request.ChassisNumber?.Trim();
-                if (string.IsNullOrWhiteSpace(chassisNumber))
-                    throw new AppException(
-                        "ChassisNumber không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
-
                 if (!_firebase.IsFirestoreConfigured())
                     throw new AppException(
                         "Hệ thống chưa được cấu hình Firestore",
                         HttpStatusCode.ServiceUnavailable
                     );
 
-                // 1. Kiểm tra trong DB trước
-                var existed = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
-                if (existed != null)
-                    return _mapper.Map<VehicleResponse>(existed);
+                var firebaseVehicles = await _firebase.GetAllVehiclesAsync();
+                var result = new List<VehicleResponse>();
 
-                // 2. Không có trong DB -> lấy từ Firestore theo chassisNumber
-                var vehicleTuple = await _firebase.GetVehicleByChassisNumberAsync(chassisNumber);
-                if (vehicleTuple == null)
-                    throw new AppException(
-                        "Không tìm thấy vehicle trong hệ thống OEM",
-                        HttpStatusCode.NotFound
-                    );
-
-                var firebaseVehicleId = vehicleTuple.Value.Id;
-                var data = vehicleTuple.Value.Data;
-
-                // 3. Đọc dữ liệu từ Firestore
-                var fsChassis = data.ContainsKey("chassis_number")
-                    ? data["chassis_number"]?.ToString()?.Trim() ?? ""
-                    : "";
-
-                var engineNumber = data.ContainsKey("engine_number")
-                    ? data["engine_number"]?.ToString()?.Trim() ?? ""
-                    : "";
-
-                var color = data.ContainsKey("color")
-                    ? data["color"]?.ToString()?.Trim() ?? ""
-                    : "";
-
-                var image = data.ContainsKey("image")
-                    ? data["image"]?.ToString()?.Trim() ?? ""
-                    : "";
-
-                var modelIdStr = data.ContainsKey("modelId") ? data["modelId"]?.ToString() : null;
-
-                if (string.IsNullOrWhiteSpace(fsChassis))
-                    throw new AppException(
-                        "Dữ liệu OEM thiếu chassis_number",
-                        HttpStatusCode.BadRequest
-                    );
-
-                // nếu OEM trả chassis khác thì vẫn ưu tiên theo request
-                var finalChassis = chassisNumber;
-
-                // 4. Đảm bảo Model tồn tại (tái sử dụng SyncModelAsync)
-                if (string.IsNullOrWhiteSpace(modelIdStr))
-                    throw new AppException(
-                        "Dữ liệu OEM không có modelId",
-                        HttpStatusCode.BadRequest
-                    );
-
-                var modelResp = await _modelService.SyncModelAsync(
-                    new SyncModelRequest { modelIdOrName = modelIdStr }
-                );
-                var modelId = modelResp.Id;
-
-                // 5. (tuỳ bạn) hiện tại chưa map CustomerId -> để null
-                Guid? customerId = null;
-
-                // 6. Tạo Vehicle mới trong DB (map đủ engine_number, color, image)
-                var vehicle = new Vehicle
+                foreach (var (firebaseVehicleId, data) in firebaseVehicles)
                 {
-                    Id = Guid.NewGuid(),
-                    ChassisNumber = finalChassis,
-                    EngineNumber = engineNumber, // đổi tên property cho khớp entity nếu khác
-                    Color = color,
-                    Image = image, // hoặc ImageUrl, Avatar, ...
-                    ModelId = modelId,
-                    CustomerId = customerId,
-                    // nếu có Status / CreatedAt / UpdatedAt thì set thêm:
-                    // Status = VehicleStatus.ACTIVE,
-                    // CreatedAt = DateTime.UtcNow,
-                };
+                    var chassisNumber = data.ContainsKey("chassis_number")
+                        ? data["chassis_number"]?.ToString()?.Trim() ?? ""
+                        : "";
 
-                await _unitOfWork.Vehicles.CreateAsync(vehicle);
+                    if (string.IsNullOrWhiteSpace(chassisNumber))
+                        continue; // skip bản ghi lỗi
+
+                    // tìm trong DB
+                    var existed = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
+
+                    var engineNumber = data.ContainsKey("engine_number")
+                        ? data["engine_number"]?.ToString()?.Trim() ?? ""
+                        : "";
+
+                    var color = data.ContainsKey("color")
+                        ? data["color"]?.ToString()?.Trim() ?? ""
+                        : "";
+
+                    var image = data.ContainsKey("image")
+                        ? data["image"]?.ToString()?.Trim() ?? ""
+                        : "";
+
+                    var modelIdStr = data.ContainsKey("modelId")
+                        ? data["modelId"]?.ToString()
+                        : null;
+
+                    if (string.IsNullOrWhiteSpace(modelIdStr))
+                        continue; // dữ liệu OEM lỗi, bỏ qua
+
+                    // đảm bảo Model tồn tại (dùng lại SyncModelAsync)
+                    var modelResp = await _modelService.SyncModelAsync(
+                        new SyncModelRequest { modelIdOrName = modelIdStr }
+                    );
+                    var modelId = modelResp.Id;
+
+                    if (existed == null)
+                    {
+                        // tạo mới
+                        var vehicle = new Vehicle
+                        {
+                            Id = Guid.NewGuid(),
+                            ChassisNumber = chassisNumber,
+                            EngineNumber = engineNumber,
+                            Color = color,
+                            Image = image,
+                            ModelId = modelId,
+                            CustomerId = null,
+                            Status = StatusEnum.ACTIVE,
+                            ManufactureDate = DateTime.UtcNow,
+                            PurchaseDate = DateTime.UtcNow,
+                            WarrantyExpiry = DateTime.UtcNow,
+                        };
+
+                        await _unitOfWork.Vehicles.CreateAsync(vehicle);
+                        result.Add(_mapper.Map<VehicleResponse>(vehicle));
+                    }
+                    else
+                    {
+                        // update theo dữ liệu mới nhất từ OEM
+                        existed.EngineNumber = engineNumber;
+                        existed.Color = color;
+                        existed.Image = image;
+                        existed.ModelId = modelId;
+
+                        await _unitOfWork.Vehicles.UpdateAsync(existed);
+                        result.Add(_mapper.Map<VehicleResponse>(existed));
+                    }
+                }
+
                 await _unitOfWork.SaveAsync();
-
-                // 7. (optional) đồng bộ luôn VehicleStage nếu cần – để sau cũng được
-                // var stagesData = await _firebase.GetVehicleStagesByVehicleIdAsync(firebaseVehicleId);
-                // ...
-
-                return _mapper.Map<VehicleResponse>(vehicle);
+                return result;
             }
             catch (AppException)
             {

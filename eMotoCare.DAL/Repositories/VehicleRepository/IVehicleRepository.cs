@@ -16,10 +16,9 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
             int page,
             int pageSize
         );
-
         Task<Vehicle?> GetByIdAsync(Guid id);
-
         Task<Model?> GetModelByIdAsync(Guid modelId);
         Task<Vehicle?> GetByChassisNumberAsync(string chassisNumber);
+        Task<List<Vehicle>> GetByCustomerIdAsync(Guid customerId);
     }
 }

@@ -14,7 +14,7 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
 
         public Task<Vehicle?> GetByIdAsync(Guid id) =>
             _context
-                .Vehicles.AsNoTracking()
+                .Vehicles
                 .Include(x => x.Model)
                 .ThenInclude(m => m.MaintenancePlan)
                 .Include(x => x.Model)
@@ -83,12 +83,20 @@ namespace eMotoCare.DAL.Repositories.VehicleRepository
                 .FirstOrDefaultAsync(m => m.Id == modelId);
         }
 
-        public Task<Vehicle?> GetByChassisNumberAsync(string chassisNumber) =>
-            _context
-                .Vehicles.Include(v => v.Model)
-                .Include(v => v.Customer)
-                .ThenInclude(c => c.Account)
-                .Include(v => v.VehicleStages)
-                .FirstOrDefaultAsync(v => v.ChassisNumber == chassisNumber);
+        public async Task<Vehicle?> GetByChassisNumberAsync(string chassisNumber)
+        {
+            return await _context
+                 .Vehicles.Include(v => v.Model)
+                 .Include(v => v.Customer)
+                 .ThenInclude(c => c.Account)
+                 .Include(v => v.VehicleStages)
+                 .FirstOrDefaultAsync(v => v.ChassisNumber == chassisNumber);
+        }
+        public async Task<List<Vehicle>> GetByCustomerIdAsync(Guid customerId)
+        {
+            return await _context.Vehicles
+                 .Where(v => v.CustomerId == customerId)
+                 .ToListAsync();
+        }
     }
 }

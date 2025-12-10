@@ -14,5 +14,6 @@ namespace eMotoCare.BO.DTO.Responses
         public int TotalStages { get; set; }
         public DateTime EffectiveDate { get; set; }
         public Status Status { get; set; }
+        public ICollection<MaintenanceStageResponse> MaintenanceStage { get; set; }
     }
 }
