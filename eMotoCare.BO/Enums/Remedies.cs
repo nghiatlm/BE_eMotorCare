@@ -4,8 +4,8 @@
     {
         REPAIR,
         REPLACE,
-        CHECK,
-        LUBRICATE,
+        TUNE,
+        CLEAN,
         NONE,
     }
 }
