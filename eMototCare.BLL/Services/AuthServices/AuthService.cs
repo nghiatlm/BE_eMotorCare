@@ -25,7 +25,6 @@ namespace eMototCare.BLL.Services.AuthServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtService _jwtService;
-        private readonly IMemoryCache _cache;
         private readonly IEmailService _mailService;
         private readonly IConfiguration _configuration;
 
@@ -35,7 +34,6 @@ namespace eMototCare.BLL.Services.AuthServices
             IAccountRepository repository,
             IPasswordHasher passwordHasher,
             IJwtService jwtService,
-            IMemoryCache cache,
             IEmailService mailService,
             IConfiguration configuration
         )
@@ -44,7 +42,6 @@ namespace eMototCare.BLL.Services.AuthServices
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _jwtService = jwtService;
-            _cache = cache;
             _mailService = mailService;
             _configuration = configuration;
         }
@@ -102,6 +99,18 @@ namespace eMototCare.BLL.Services.AuthServices
 
                 if (account.Password == _configuration["DefaultPassword:password"] && account.LoginCount == 0)
                 {
+                    if (account.Stattus == AccountStatus.IN_ACTIVE)
+                    {
+                        string verifyToken = _jwtService.GenerateEmailVerificationToken(account.Email);
+                        string url = $"https://bemodernestate.site/api/v1/auths/verify/staff?token={verifyToken}";
+                        //string url = $"https://localhost:7134/api/v1/auths/verify/staff?token={verifyToken}";
+                        await _mailService.SendLoginEmailAsync(
+                            account.Email,
+                            "Xác minh tài khoản nhân viên",
+                            url
+                        );
+                        return null;
+                    }
                     string token_ = _jwtService.GenerateJwtToken(account);
                     account.LoginCount += 1;
                     await _unitOfWork.Accounts.UpdateAsync(account);
@@ -123,7 +132,7 @@ namespace eMototCare.BLL.Services.AuthServices
                 if (account.Password == _configuration["DefaultPassword:password"] && account.LoginCount == 1)
                 {
                     throw new AppException("Tài khoản đã bị khoá, vui lòng liên hệ ADMIN để mở khoá", HttpStatusCode.Locked);
-                }    
+                }
 
                 bool checkPasswo5rd = _passwordHasher.VerifyPassword(
                     request.Password,
@@ -245,6 +254,7 @@ namespace eMototCare.BLL.Services.AuthServices
                     throw new AppException("Tài khoản đã kích hoạt rồi");
 
                 account.Stattus = AccountStatus.ACTIVE;
+                await _unitOfWork.Accounts.UpdateAsync(account);
                 await _unitOfWork.SaveAsync();
                 return true;
             }
