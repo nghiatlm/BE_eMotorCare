@@ -186,7 +186,25 @@ namespace eMototCare.BLL.Services.VehicleServices
                 }
                 var entity = _mapper.Map<Vehicle>(req);
                 entity.Id = Guid.NewGuid();
+                entity.Image = image;
+                entity.Color = color;
+                entity.ChassisNumber = chassis;
+                entity.EngineNumber = engine;
 
+                if (entity.CustomerId.HasValue && req.IsPrimary == true)
+                {
+                    var others = await _unitOfWork.Vehicles.GetByCustomerIdAsync(entity.CustomerId.Value);
+                    foreach (var v in others.Where(x => x.IsPrimary))
+                    {
+                        v.IsPrimary = false;
+                        await _unitOfWork.Vehicles.UpdateAsync(v);
+                    }
+                    entity.IsPrimary = true;
+                }
+                else
+                {
+                    entity.IsPrimary = false;
+                }
                 await _unitOfWork.Vehicles.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
 
@@ -204,71 +222,106 @@ namespace eMototCare.BLL.Services.VehicleServices
             }
         }
 
-        public async Task UpdateAsync(Guid id, VehicleRequest req)
+        public async Task UpdateAsync(Guid id, VehicleUpdateRequest req)
         {
             try
             {
                 var entity =
                     await _unitOfWork.Vehicles.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy xe", HttpStatusCode.NotFound);
-                var image = (req.Image ?? string.Empty).Trim();
-                var color = (req.Color ?? string.Empty).Trim();
-                var chassis = (req.ChassisNumber ?? string.Empty).Trim();
-                var engine = (req.EngineNumber ?? string.Empty).Trim();
-                if (string.IsNullOrWhiteSpace(image))
+                var newImage = (req.Image ?? entity.Image ?? string.Empty).Trim();      
+                var newColor = (req.Color ?? entity.Color ?? string.Empty).Trim();      
+                var newStatus = req.Status ?? entity.Status;                            
+                var newModelId = req.ModelId ?? entity.ModelId;                         
+                var newPurchaseDate = req.PurchaseDate ?? entity.PurchaseDate;         
+                var newWarrantyExpiry = req.WarrantyExpiry ?? entity.WarrantyExpiry;   
+                var newCustomerId = req.CustomerId ?? entity.CustomerId;              
+                var newIsPrimary = req.IsPrimary ?? entity.IsPrimary;
+                if (string.IsNullOrWhiteSpace(newImage))
                     throw new AppException("Image không được để trống", HttpStatusCode.BadRequest);
 
-                if (string.IsNullOrWhiteSpace(color))
+                if (string.IsNullOrWhiteSpace(newColor))
                     throw new AppException("Màu xe không được để trống", HttpStatusCode.BadRequest);
 
-                if (string.IsNullOrWhiteSpace(chassis))
-                    throw new AppException(
-                        "Số khung (ChassisNumber) không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (string.IsNullOrWhiteSpace(engine))
-                    throw new AppException(
-                        "Số máy (EngineNumber) không được để trống",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (!Enum.IsDefined(typeof(StatusEnum), req.Status))
+                if (!Enum.IsDefined(typeof(StatusEnum), newStatus))
                     throw new AppException("Trạng thái xe không hợp lệ", HttpStatusCode.BadRequest);
 
-                if (req.ModelId == Guid.Empty)
+                if (newModelId == Guid.Empty)
                     throw new AppException("ModelId không hợp lệ", HttpStatusCode.BadRequest);
 
-                if (req.ManufactureDate == default)
-                    throw new AppException(
-                        "ManufactureDate không hợp lệ",
-                        HttpStatusCode.BadRequest
-                    );
-
-                if (req.PurchaseDate == default)
+                if (newPurchaseDate == default)
                     throw new AppException("PurchaseDate không hợp lệ", HttpStatusCode.BadRequest);
 
-                if (req.WarrantyExpiry == default)
+                if (newWarrantyExpiry == default)
                     throw new AppException(
                         "WarrantyExpiry không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.ManufactureDate > req.PurchaseDate)
+                if (entity.ManufactureDate > newPurchaseDate)
                     throw new AppException(
                         "Ngày sản xuất không được lớn hơn ngày mua",
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.PurchaseDate > req.WarrantyExpiry)
+                if (newPurchaseDate > newWarrantyExpiry)
                     throw new AppException(
                         "Ngày mua không được lớn hơn ngày hết bảo hành",
                         HttpStatusCode.BadRequest
                     );
 
-                if (req.CustomerId.HasValue && req.CustomerId.Value == Guid.Empty)
+                if (newCustomerId.HasValue && newCustomerId.Value == Guid.Empty)
                     throw new AppException("CustomerId không hợp lệ", HttpStatusCode.BadRequest);
-                _mapper.Map(req, entity);
+                if (entity.CustomerId.HasValue)
+                {
+                    var oldCustomerId = entity.CustomerId.Value;
+                    var isCurrentlyPrimary = entity.IsPrimary;
+                    var willBelongToOldCustomer =
+                        newCustomerId.HasValue && newCustomerId.Value == oldCustomerId;
+                    var willBePrimaryForOldCustomer = willBelongToOldCustomer && newIsPrimary; 
+
+                    var removingPrimaryFromOld = isCurrentlyPrimary && !willBePrimaryForOldCustomer; 
+
+                    if (removingPrimaryFromOld)
+                    {
+                        var vehiclesOfCustomer = await _unitOfWork.Vehicles.GetByCustomerIdAsync(oldCustomerId);
+                        var hasOtherPrimary = vehiclesOfCustomer
+                            .Any(v => v.Id != entity.Id && v.IsPrimary);                                      
+
+                        if (!hasOtherPrimary)
+                        {
+                            throw new AppException(
+                                "Khách hàng phải chọn 1 xe làm xe chính",
+                                HttpStatusCode.BadRequest
+                            );                                                                                 
+                        }
+                    }
+                }
+                entity.Image = newImage;                                             
+                entity.Color = newColor;                                             
+                entity.Status = newStatus;                                            
+                entity.PurchaseDate = newPurchaseDate;                               
+                entity.WarrantyExpiry = newWarrantyExpiry;                           
+                entity.ModelId = newModelId;
+                entity.CustomerId = newCustomerId;
+                if (entity.CustomerId.HasValue && newIsPrimary)
+                {
+                    var others = await _unitOfWork.Vehicles.GetByCustomerIdAsync(entity.CustomerId.Value);
+                    foreach (var v in others.Where(x => x.Id != entity.Id && x.IsPrimary))
+                    {
+                        v.IsPrimary = false;
+                        await _unitOfWork.Vehicles.UpdateAsync(v);
+                    }
+                    entity.IsPrimary = true;
+                }
+                else if (!entity.CustomerId.HasValue)
+                {
+                    entity.IsPrimary = false;
+                }
+                else
+                {
+                    entity.IsPrimary = newIsPrimary;
+                }
                 await _unitOfWork.Vehicles.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 

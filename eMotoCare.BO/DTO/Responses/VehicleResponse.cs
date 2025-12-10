@@ -16,6 +16,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid ModelId { get; set; }
         public string? ModelName { get; set; }
         public Guid? CustomerId { get; set; }
+        public bool IsPrimary { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }

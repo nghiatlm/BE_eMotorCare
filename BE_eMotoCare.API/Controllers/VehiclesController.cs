@@ -69,7 +69,7 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "ROLE_STAFF, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_TECHNICIAN, ROLE_MANAGER")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] VehicleRequest request)
+        public async Task<IActionResult> Update(Guid id, [FromBody] VehicleUpdateRequest request)
         {
             await _vehicleService.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật xe thành công"));

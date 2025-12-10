@@ -124,10 +124,10 @@ namespace eMototCare.BLL.Services.PayosServices
 
                         var returnUrl =
                             section["ReturnUrl"]
-                            ?? "https://modernestate.vercel.app/payment-success";
+                            ?? "https://emotocare.vercel.app/payment-success";
                         var cancelUrl =
                             section["CancelUrl"]
-                            ?? "https://modernestate.vercel.app/payment-failure";
+                            ?? "https://emotocare.vercel.app/payment-failed";
 
                         var item = new ItemData(
                             $"Appointment - {appointment.Id}",
@@ -170,12 +170,12 @@ namespace eMototCare.BLL.Services.PayosServices
                                 ? _config.GetSection("PayOS:Center")
                                 : _config.GetSection("PayOS:App");
 
-                        var returnUrl =
+                        var returnUrl = request.SuccessUrl ??
                             section["ReturnUrl"]
-                            ?? "https://modernestate.vercel.app/payment-success";
-                        var cancelUrl =
+                            ?? "https://emotocare.vercel.app/payment-success";
+                        var cancelUrl = request.CancelUrl ??
                             section["CancelUrl"]
-                            ?? "https://modernestate.vercel.app/payment-failure";
+                            ?? "https://emotocare.vercel.app/payment-failed";
 
                         var item = new ItemData(
                             $"Appointment - {appointment.Id}",
