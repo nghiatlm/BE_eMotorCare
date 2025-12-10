@@ -58,7 +58,9 @@ namespace eMotoCare.BO.Entities
 
         [ForeignKey(nameof(CustomerId))]
         public Customer? Customer { get; set; }
-
+        [Required]
+        [Column("is_primary")]
+        public bool IsPrimary { get; set; } = false;
         public virtual ICollection<VehicleStage>? VehicleStages { get; set; }
         public virtual ICollection<VehiclePartItem>? VehiclePartItems { get; set; }
     }

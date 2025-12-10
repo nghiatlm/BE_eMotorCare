@@ -17,6 +17,11 @@ namespace eMototCare.BLL.Mappers
                     d => d.ModelName,
                     opt => opt.MapFrom(s => s.Model != null ? s.Model.Name : null)
                 );
+            CreateMap<VehicleUpdateRequest, Vehicle>()
+                .ForMember(d => d.Id, opt => opt.Ignore())
+                .ForMember(d => d.ChassisNumber, opt => opt.Ignore())
+                .ForMember(d => d.EngineNumber, opt => opt.Ignore())
+                .ForMember(d => d.ManufactureDate, opt => opt.Ignore());
         }
     }
 }
