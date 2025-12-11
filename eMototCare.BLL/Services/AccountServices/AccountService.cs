@@ -7,6 +7,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using eMototCare.BLL.HashPasswords;
 using eMototCare.BLL.JwtServices;
 using eMototCare.BLL.Services.AccountService;
 using eMototCare.BLL.Services.EmailServices;
@@ -23,15 +24,9 @@ namespace eMototCare.BLL.Services.AccountServices
         private readonly IMemoryCache _cache;
         private readonly IEmailService _mailService;
         private readonly IJwtService _jwtService;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AccountService(
-            IUnitOfWork unitOfWork,
-            IMapper mapper,
-            ILogger<AccountService> logger,
-            IMemoryCache cache,
-            IEmailService mailService,
-            IJwtService jwtService
-        )
+        public AccountService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<AccountService> logger, IMemoryCache cache, IEmailService mailService, IJwtService jwtService, IPasswordHasher passwordHasher)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -39,6 +34,7 @@ namespace eMototCare.BLL.Services.AccountServices
             _cache = cache;
             _mailService = mailService;
             _jwtService = jwtService;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<PageResult<AccountResponse>> GetPagedAsync(
@@ -95,6 +91,7 @@ namespace eMototCare.BLL.Services.AccountServices
                         case RoleName.ROLE_TECHNICIAN:
                         case RoleName.ROLE_MANAGER:
                         case RoleName.ROLE_STAFF:
+                        case RoleName.ROLE_STOREKEEPER:
                             if (staffByAcc.TryGetValue(acc.Id, out var st))
                                 dto.Staff = _mapper.Map<StaffResponse>(st);
                             break;
@@ -151,7 +148,7 @@ namespace eMototCare.BLL.Services.AccountServices
                     throw new AppException("Request không được null", HttpStatusCode.BadRequest);
                 var phone = (req.Phone ?? string.Empty).Trim();
                 var email = req.Email?.Trim().ToLowerInvariant();
-                var password = "12345678";
+                var password = _passwordHasher.HashPassword("12345678");
                 if (string.IsNullOrWhiteSpace(phone) && string.IsNullOrWhiteSpace(email))
                     throw new AppException(
                         "Cần ít nhất Phone hoặc Email",
@@ -164,6 +161,9 @@ namespace eMototCare.BLL.Services.AccountServices
                         "Trạng thái tài khoản không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
+
+                if (req.RoleName == RoleName.ROLE_ADMIN)
+                    throw new AppException("Không được tạo tài khoản với ROLE_ADMIN", HttpStatusCode.Forbidden);
 
                 if (
                     !string.IsNullOrWhiteSpace(phone)
@@ -199,7 +199,7 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Email = email;
                 entity.LoginCount = 0;
                 entity.Password = password;
-                entity.RoleName = req.RoleName;
+                entity.RoleName = req.RoleName ?? entity.RoleName;
                 entity.Stattus = AccountStatus.IN_ACTIVE;
 
                 await _unitOfWork.Accounts.CreateAsync(entity);
@@ -208,6 +208,7 @@ namespace eMototCare.BLL.Services.AccountServices
                     var staffEntity = _mapper.Map<Staff>(req.Staff);
                     staffEntity.Id = Guid.NewGuid();
                     staffEntity.AccountId = entity.Id;
+                    staffEntity.StaffCode = await GenerateStaffCodeAsync("ST");
                     staffEntity.CreatedAt = DateTime.UtcNow;
 
                     await _unitOfWork.Staffs.CreateAsync(staffEntity);
@@ -232,7 +233,20 @@ namespace eMototCare.BLL.Services.AccountServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+        private async Task<string> GenerateStaffCodeAsync(string prefix)
+        {
+            var rnd = new Random();
+            string code;
+            bool exists;
 
+            do
+            {
+                code = $"{prefix}{rnd.Next(100000, 999999)}";
+                exists = await _unitOfWork.Staffs.ExistsCodeAsync(code);
+            } while (exists);
+
+            return code;
+        }
         public async Task UpdateAsync(Guid id, AccountRequest req)
         {
             try
@@ -249,13 +263,15 @@ namespace eMototCare.BLL.Services.AccountServices
                 var newPhone = (req.Phone ?? string.Empty).Trim();
                 var newEmail = req.Email?.Trim().ToLowerInvariant();
 
-                if (!Enum.IsDefined(typeof(RoleName), req.RoleName))
+                if (req.RoleName.HasValue && !Enum.IsDefined(typeof(RoleName), req.RoleName.Value))
                     throw new AppException("Role không hợp lệ", HttpStatusCode.BadRequest);
-                if (!Enum.IsDefined(typeof(AccountStatus), req.Status))
+                if (req.Status.HasValue && !Enum.IsDefined(typeof(AccountStatus), req.Status.Value))
                     throw new AppException(
                         "Trạng thái tài khoản không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
+                if (req.RoleName.HasValue && req.RoleName.Value == RoleName.ROLE_ADMIN)
+                    throw new AppException("Không được cập nhật tài khoản với ROLE_ADMIN", HttpStatusCode.Forbidden);
                 if (
                     !string.IsNullOrWhiteSpace(newPhone)
                     && !string.Equals(entity.Phone, newPhone, StringComparison.OrdinalIgnoreCase)
@@ -270,12 +286,10 @@ namespace eMototCare.BLL.Services.AccountServices
                 )
                     throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
 
-                _mapper.Map(req, entity);
-                entity.Phone = newPhone;
-                entity.Email = newEmail;
-                entity.RoleName = req.RoleName;
-                entity.Stattus = req.Status;
-                
+                entity.RoleName = req.RoleName ?? entity.RoleName;
+                entity.Stattus = req.Status ?? entity.Stattus;
+                entity.Phone = string.IsNullOrWhiteSpace(newPhone) ? entity.Phone : newPhone;
+                entity.Email = string.IsNullOrWhiteSpace(newEmail) ? entity.Email : newEmail;
 
 
                 await _unitOfWork.Accounts.UpdateAsync(entity);

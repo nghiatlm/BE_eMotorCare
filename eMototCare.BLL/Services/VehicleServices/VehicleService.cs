@@ -451,14 +451,35 @@ namespace eMototCare.BLL.Services.VehicleServices
                         : null;
 
                     if (string.IsNullOrWhiteSpace(modelIdStr))
-                        continue; // dữ liệu OEM lỗi, bỏ qua
-
+                        continue; 
                     // đảm bảo Model tồn tại (dùng lại SyncModelAsync)
                     var modelResp = await _modelService.SyncModelAsync(
                         new SyncModelRequest { modelIdOrName = modelIdStr }
                     );
                     var modelId = modelResp.Id;
+                    Guid? customerId = null;
+                    if (data.ContainsKey("customerId") &&
+                        Guid.TryParse(data["customerId"]?.ToString(), out var parsedCustomerId))
+                    {
+                        customerId = parsedCustomerId;
+                    }
 
+                    bool isPrimary = false;
+
+                    if (customerId.HasValue)
+                    {
+                        var customerVehicles =
+                            await _unitOfWork.Vehicles.GetByCustomerIdAsync(customerId.Value);
+
+                        if (!customerVehicles.Any())
+                        {
+                            isPrimary = true;
+                        }
+                        else if (!customerVehicles.Any(v => v.IsPrimary))
+                        {
+                            isPrimary = true;
+                        }
+                    }
                     if (existed == null)
                     {
                         // tạo mới
@@ -471,6 +492,7 @@ namespace eMototCare.BLL.Services.VehicleServices
                             Image = image,
                             ModelId = modelId,
                             CustomerId = null,
+                            IsPrimary = isPrimary,
                             Status = StatusEnum.ACTIVE,
                             ManufactureDate = DateTime.UtcNow,
                             PurchaseDate = DateTime.UtcNow,

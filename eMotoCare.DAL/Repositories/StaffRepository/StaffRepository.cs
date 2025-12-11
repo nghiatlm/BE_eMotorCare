@@ -75,12 +75,6 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Staff entity)
-        {
-            _context.Staffs.Remove(entity);
-            await _context.SaveChangesAsync();
-        }
-
         public Task<List<Staff>> GetByAccountIdsAsync(IEnumerable<Guid> accountIds) =>
             _context
                 .Staffs.AsNoTracking()

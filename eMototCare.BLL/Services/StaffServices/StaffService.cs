@@ -68,18 +68,13 @@ namespace eMototCare.BLL.Services.StaffServices
         {
             try
             {
-                var code = req.StaffCode.Trim();
                 var citizen = req.CitizenId.Trim();
-
-                if (await _unitOfWork.Staffs.ExistsCodeAsync(code))
-                    throw new AppException("Mã nhân viên đã tồn tại", HttpStatusCode.Conflict);
-
                 if (await _unitOfWork.Staffs.ExistsCitizenAsync(citizen))
                     throw new AppException("CCCD đã tồn tại", HttpStatusCode.Conflict);
 
                 var entity = _mapper.Map<Staff>(req);
                 entity.Id = Guid.NewGuid();
-                entity.StaffCode = code;
+                entity.StaffCode = await GenerateStaffCodeAsync();
                 entity.CitizenId = citizen;
                 entity.ServiceCenterId = (Guid)req.ServiceCenterId;
                 await _unitOfWork.Staffs.CreateAsync(entity);
@@ -106,15 +101,7 @@ namespace eMototCare.BLL.Services.StaffServices
                 var entity =
                     await _unitOfWork.Staffs.GetByIdAsync(id)
                     ?? throw new AppException("Không tìm thấy nhân viên", HttpStatusCode.NotFound);
-
-                var newCode = req.StaffCode.Trim();
                 var newCitizen = req.CitizenId.Trim();
-
-                if (
-                    !string.Equals(entity.StaffCode, newCode, StringComparison.OrdinalIgnoreCase)
-                    && await _unitOfWork.Staffs.ExistsCodeAsync(newCode)
-                )
-                    throw new AppException("Mã nhân viên đã tồn tại", HttpStatusCode.Conflict);
 
                 if (
                     !string.Equals(entity.CitizenId, newCitizen, StringComparison.OrdinalIgnoreCase)
@@ -123,7 +110,6 @@ namespace eMototCare.BLL.Services.StaffServices
                     throw new AppException("CCCD đã tồn tại", HttpStatusCode.Conflict);
 
                 _mapper.Map(req, entity);
-                entity.StaffCode = newCode;
                 entity.CitizenId = newCitizen;
 
                 await _unitOfWork.Staffs.UpdateAsync(entity);
@@ -141,29 +127,19 @@ namespace eMototCare.BLL.Services.StaffServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
-
-        public async Task DeleteAsync(Guid id)
+        private async Task<string> GenerateStaffCodeAsync()
         {
-            try
-            {
-                var entity =
-                    await _unitOfWork.Staffs.GetByIdAsync(id)
-                    ?? throw new AppException("Không tìm thấy nhân viên", HttpStatusCode.NotFound);
+            var rnd = new Random();
+            string code;
+            bool exists;
 
-                await _unitOfWork.Staffs.DeleteAsync(entity);
-                await _unitOfWork.SaveAsync();
+            do
+            {
+                code = $"ST{rnd.Next(100000, 999999)}"; 
+                exists = await _unitOfWork.Staffs.ExistsCodeAsync(code);
+            } while (exists);
 
-                _logger.LogInformation("Deleted Staff {Id}", id);
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Delete Staff failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
-            }
+            return code;
         }
     }
 }

@@ -12,6 +12,7 @@ namespace eMototCare.BLL.Mappers
             CreateMap<StaffRequest, Staff>()
                 .ForMember(d => d.Id, opt => opt.Ignore())
                 .ForMember(d => d.AccountId, opt => opt.Ignore())
+                .ForMember(d => d.StaffCode, opt => opt.Ignore())
                 .ForMember(d => d.CreatedAt, opt => opt.Ignore())
                 .ForMember(d => d.UpdatedAt, opt => opt.Ignore())
                 .ForMember(d => d.Account, opt => opt.Ignore())
