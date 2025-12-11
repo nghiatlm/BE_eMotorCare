@@ -20,7 +20,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<EVCheckService> _logger;
-        private readonly Utils _utils;
 
         public EVCheckService(
             IUnitOfWork unitOfWork,
@@ -32,7 +31,6 @@ namespace eMototCare.BLL.Services.EVCheckServices
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
-            _utils = utils;
         }
 
         public async Task<PageResult<EVCheckResponse>> GetPagedAsync(

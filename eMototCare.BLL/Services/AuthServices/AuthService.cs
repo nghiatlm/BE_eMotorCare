@@ -131,6 +131,9 @@ namespace eMototCare.BLL.Services.AuthServices
 
                 if (account.Password == _configuration["DefaultPassword:password"] && account.LoginCount == 1)
                 {
+                    account.Stattus = AccountStatus.IN_ACTIVE;
+                    await _unitOfWork.Accounts.UpdateAsync(account);
+                    await _unitOfWork.SaveAsync();
                     throw new AppException("Tài khoản đã bị khoá, vui lòng liên hệ ADMIN để mở khoá", HttpStatusCode.Locked);
                 }
 

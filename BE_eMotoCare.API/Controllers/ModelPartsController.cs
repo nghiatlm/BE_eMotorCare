@@ -22,7 +22,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_ADMIN")]
         public async Task<IActionResult> GetPaged(
             [FromQuery] string? search,
             [FromQuery] Guid? id,
