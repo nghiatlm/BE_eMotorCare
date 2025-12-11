@@ -19,7 +19,6 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
         Task<bool> ExistsCodeAsync(string code);
         Task<bool> ExistsCitizenAsync(string citizenId);
         Task<Staff?> GetByIdAsync(Guid id);
-        Task DeleteAsync(Staff entity);
         Task UpdateAsync(Staff entity);
         Task CreateAsync(Staff entity);
         Task<Staff?> GetByAccountIdAsync(Guid accountId);

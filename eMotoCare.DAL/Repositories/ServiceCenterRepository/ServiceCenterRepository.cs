@@ -49,7 +49,8 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
 
             var total = await q.LongCountAsync();
 
-            var items = await q.OrderByDescending(x => x.CreatedAt)
+            var items = await q
+                .OrderByDescending(x => x.Id) // Default sorting
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
