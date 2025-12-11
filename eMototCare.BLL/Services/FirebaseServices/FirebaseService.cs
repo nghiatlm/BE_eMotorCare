@@ -535,7 +535,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 var snapshot = await collectionRef.GetSnapshotAsync();
 
 
-                if (snapshot.Count == 0)
+                if (snapshot.Count == 0)    
                     throw new AppException("Data nguồn của Maintenance Stage Detail đang trống hoặc không tìm thấy");
                 var dbPlans = await _unitOfWork.MaintenanceStageDetails.FindAllAsync();
                 var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
