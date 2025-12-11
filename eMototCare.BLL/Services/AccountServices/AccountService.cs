@@ -162,6 +162,9 @@ namespace eMototCare.BLL.Services.AccountServices
                         HttpStatusCode.BadRequest
                     );
 
+                if (req.RoleName == RoleName.ROLE_ADMIN)
+                    throw new AppException("Không được tạo tài khoản với ROLE_ADMIN", HttpStatusCode.Forbidden);
+
                 if (
                     !string.IsNullOrWhiteSpace(phone)
                     && await _unitOfWork.Accounts.ExistsPhoneAsync(phone)
@@ -196,7 +199,7 @@ namespace eMototCare.BLL.Services.AccountServices
                 entity.Email = email;
                 entity.LoginCount = 0;
                 entity.Password = password;
-                entity.RoleName = req.RoleName;
+                entity.RoleName = req.RoleName ?? entity.RoleName;
                 entity.Stattus = AccountStatus.IN_ACTIVE;
 
                 await _unitOfWork.Accounts.CreateAsync(entity);
@@ -260,13 +263,15 @@ namespace eMototCare.BLL.Services.AccountServices
                 var newPhone = (req.Phone ?? string.Empty).Trim();
                 var newEmail = req.Email?.Trim().ToLowerInvariant();
 
-                if (!Enum.IsDefined(typeof(RoleName), req.RoleName))
+                if (req.RoleName.HasValue && !Enum.IsDefined(typeof(RoleName), req.RoleName.Value))
                     throw new AppException("Role không hợp lệ", HttpStatusCode.BadRequest);
-                if (!Enum.IsDefined(typeof(AccountStatus), req.Status))
+                if (req.Status.HasValue && !Enum.IsDefined(typeof(AccountStatus), req.Status.Value))
                     throw new AppException(
                         "Trạng thái tài khoản không hợp lệ",
                         HttpStatusCode.BadRequest
                     );
+                if (req.RoleName.HasValue && req.RoleName.Value == RoleName.ROLE_ADMIN)
+                    throw new AppException("Không được cập nhật tài khoản với ROLE_ADMIN", HttpStatusCode.Forbidden);
                 if (
                     !string.IsNullOrWhiteSpace(newPhone)
                     && !string.Equals(entity.Phone, newPhone, StringComparison.OrdinalIgnoreCase)
@@ -281,12 +286,10 @@ namespace eMototCare.BLL.Services.AccountServices
                 )
                     throw new AppException("Email đã tồn tại", HttpStatusCode.Conflict);
 
-                _mapper.Map(req, entity);
-                entity.Phone = newPhone;
-                entity.Email = newEmail;
-                entity.RoleName = req.RoleName;
-                entity.Stattus = req.Status;
-                
+                entity.RoleName = req.RoleName ?? entity.RoleName;
+                entity.Stattus = req.Status ?? entity.Stattus;
+                entity.Phone = string.IsNullOrWhiteSpace(newPhone) ? entity.Phone : newPhone;
+                entity.Email = string.IsNullOrWhiteSpace(newEmail) ? entity.Email : newEmail;
 
 
                 await _unitOfWork.Accounts.UpdateAsync(entity);

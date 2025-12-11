@@ -156,7 +156,8 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     entity.EVCheckDetailId
                 );
 
-                return analysis;
+                return BuildSummaryFromEntity(entity);
+
             }
             catch (AppException)
             {
@@ -174,7 +175,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
         }
 
         //phân tích
-        private async Task<BatteryCheckAnalysisResponse> BuildAnalysisAsync(
+        private async Task<BatteryConclusionResponse> BuildAnalysisAsync(
             BatteryCheck entity,
             CancellationToken ct
         )
@@ -314,34 +315,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             await _unitOfWork.BatteryChecks.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
 
-            return new BatteryCheckAnalysisResponse
-            {
-                Id = entity.Id,
-                EVCheckDetailId = entity.EVCheckDetailId,
-                SampleCount = n,
-
-                MinVoltage = minVoltage,
-                MaxVoltage = maxVoltage,
-                AvgVoltage = avgVoltage,
-
-                MinCurrent = minCurrent,
-                MaxCurrent = maxCurrent,
-                AvgCurrent = avgCurrent,
-
-                MinTemp = minTemp,
-                MaxTemp = maxTemp,
-                AvgTemp = avgTemp,
-
-                MinSOC = minSoc,
-                MaxSOC = maxSoc,
-                AvgSOC = avgSoc,
-
-                MinSOH = minSoh,
-                MaxSOH = maxSoh,
-                AvgSOH = avgSoh,
-
-                Conclusion = conclusionObj,
-            };
+            return conclusionObj;
         }
 
         //dự phòng khi AI lỗi
@@ -697,28 +671,6 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
 
         private BatteryCheckAnalysisResponse BuildSummaryFromEntity(BatteryCheck entity)
         {
-            int n = entity.Time.Length;
-
-            float minVoltage = entity.Voltage.Min();
-            float maxVoltage = entity.Voltage.Max();
-            float avgVoltage = entity.Voltage.Average();
-
-            float minCurrent = entity.current.Min();
-            float maxCurrent = entity.current.Max();
-            float avgCurrent = entity.current.Average();
-
-            float minTemp = entity.Temp.Min();
-            float maxTemp = entity.Temp.Max();
-            float avgTemp = entity.Temp.Average();
-
-            float minSoc = entity.SOC.Min();
-            float maxSoc = entity.SOC.Max();
-            float avgSoc = entity.SOC.Average();
-
-            float minSoh = entity.SOH.Min();
-            float maxSoh = entity.SOH.Max();
-            float avgSoh = entity.SOH.Average();
-
             var vehicleEntity = entity.EVCheckDetail?.EVCheck?.Appointment?.Vehicle;
             var vehicleDto = vehicleEntity != null
                 ? _mapper.Map<VehicleResponse>(vehicleEntity)
@@ -728,27 +680,16 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
             {
                 Id = entity.Id,
                 EVCheckDetailId = entity.EVCheckDetailId,
-                SampleCount = n,
-
-                MinVoltage = minVoltage,
-                MaxVoltage = maxVoltage,
-                AvgVoltage = avgVoltage,
-
-                MinCurrent = minCurrent,
-                MaxCurrent = maxCurrent,
-                AvgCurrent = avgCurrent,
-
-                MinTemp = minTemp,
-                MaxTemp = maxTemp,
-                AvgTemp = avgTemp,
-
-                MinSOC = minSoc,
-                MaxSOC = maxSoc,
-                AvgSOC = avgSoc,
-
-                MinSOH = minSoh,
-                MaxSOH = maxSoh,
-                AvgSOH = avgSoh,
+                Time = entity.Time,
+                Voltage = entity.Voltage,
+                Current = entity.current,
+                Power = entity.Power,
+                Capacity = entity.Capacity,
+                Energy = entity.Energy,
+                Temp = entity.Temp,
+                SOC = entity.SOC,
+                SOH = entity.SOH,
+                SampleCount = entity.Time.Length,
 
                 Conclusion = new BatteryConclusionResponse
                 {
@@ -759,6 +700,7 @@ namespace eMototCare.BLL.Services.BatteryCheckServices
                     safety = NormalizeText(entity.Safety),
                     solution = entity.Solution ?? string.Empty,
                 },
+
                 Vehicle = vehicleDto,
             };
         }

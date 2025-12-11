@@ -843,6 +843,12 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         localVehicle.ManufactureDate = TryParseDate(vDataRemote, "manufacture_date") ?? localVehicle.ManufactureDate;
                         localVehicle.PurchaseDate = TryParseDate(vDataRemote, "purchase_date") ?? localVehicle.PurchaseDate;
                         localVehicle.WarrantyExpiry = TryParseDate(vDataRemote, "warranty_expiry") ?? localVehicle.WarrantyExpiry;
+                        var isPrimaryStrRemote = GetStr(vDataRemote, "is_primary");
+                        if (!string.IsNullOrWhiteSpace(isPrimaryStrRemote)
+                            && bool.TryParse(isPrimaryStrRemote, out var isPrimaryRemote))
+                        {
+                            localVehicle.IsPrimary = isPrimaryRemote;
+                        }
 
                         await _unitOfWork.Vehicles.UpdateAsync(localVehicle);
 
@@ -1081,6 +1087,20 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                 await _unitOfWork.Customers.UpdateAsync(customerEntity);
             }
+            // 1. đọc is_primary từ OEM (nếu có)
+            var isPrimaryStr = GetStr(vData, "is_primary");
+            bool isPrimaryFromOem = !string.IsNullOrWhiteSpace(isPrimaryStr)
+                && bool.TryParse(isPrimaryStr, out var isPrimaryParsed)
+                && isPrimaryParsed;
+
+            // 2. kiểm tra số xe hiện có của customer
+            var existedVehicles = await _unitOfWork.Vehicles.GetByCustomerIdAsync(customerEntity.Id);
+            var existedList = existedVehicles.ToList();
+            bool isPrimary =
+                isPrimaryFromOem
+                || !existedList.Any()
+                || !existedList.Any(v => v.IsPrimary);
+
             var vehicle = new Vehicle
             {
                 Id = Guid.NewGuid(),
@@ -1094,6 +1114,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 ManufactureDate = TryParseDate(vData, "manufacture_date") ?? DateTime.UtcNow,
                 PurchaseDate = TryParseDate(vData, "purchase_date") ?? DateTime.UtcNow,
                 WarrantyExpiry = TryParseDate(vData, "warranty_expiry") ?? DateTime.UtcNow,
+                IsPrimary = isPrimary,
             };
             await _unitOfWork.Vehicles.CreateAsync(vehicle);
             var vehiclePartItemsData = await _firebase.GetVehiclePartItemsByVehicleIdAsync(vehicleDocIdNew);

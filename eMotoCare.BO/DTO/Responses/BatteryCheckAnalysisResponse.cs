@@ -10,22 +10,16 @@ namespace eMotoCare.BO.DTO.Responses
     {
         public Guid Id { get; set; }
         public Guid EVCheckDetailId { get; set; }
+        public int[] Time { get; set; } = Array.Empty<int>();
+        public float[] Voltage { get; set; } = Array.Empty<float>();
+        public float[] Current { get; set; } = Array.Empty<float>();
+        public float[] Power { get; set; } = Array.Empty<float>();
+        public float[] Capacity { get; set; } = Array.Empty<float>();
+        public float[] Energy { get; set; } = Array.Empty<float>();
+        public float[] Temp { get; set; } = Array.Empty<float>();
+        public float[] SOC { get; set; } = Array.Empty<float>();
+        public float[] SOH { get; set; } = Array.Empty<float>();
         public int SampleCount { get; set; }
-        public float MinVoltage { get; set; }
-        public float MaxVoltage { get; set; }
-        public float AvgVoltage { get; set; }
-        public float MinCurrent { get; set; }
-        public float MaxCurrent { get; set; }
-        public float AvgCurrent { get; set; }
-        public float MinTemp { get; set; }
-        public float MaxTemp { get; set; }
-        public float AvgTemp { get; set; }
-        public float MinSOC { get; set; }
-        public float MaxSOC { get; set; }
-        public float AvgSOC { get; set; }
-        public float MinSOH { get; set; }
-        public float MaxSOH { get; set; }
-        public float AvgSOH { get; set; }
         public BatteryConclusionResponse? Conclusion { get; set; }
         public VehicleResponse? Vehicle { get; set; }
     }
