@@ -77,13 +77,5 @@ namespace BE_eMotoCare.API.Controllers
             await _staffService.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật nhân viên thành công"));
         }
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "ROLE_ADMIN")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await _staffService.DeleteAsync(id);
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá nhân viên thành công"));
-        }
     }
 }

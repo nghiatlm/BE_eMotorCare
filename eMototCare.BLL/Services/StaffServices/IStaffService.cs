@@ -19,6 +19,5 @@ namespace eMototCare.BLL.Services.StaffServices
         Task<StaffResponse?> GetByIdAsync(Guid id);
         Task<Guid> CreateAsync(StaffRequest req);
         Task UpdateAsync(Guid id, StaffRequest req);
-        Task DeleteAsync(Guid id);
     }
 }
