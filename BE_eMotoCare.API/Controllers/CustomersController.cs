@@ -93,7 +93,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPost("sync-data")]
-        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_ADMIN")]
         public async Task<IActionResult> SyncCustomerData([FromBody] CustomerSyncRequest request)
         {
             var result = await _customerService.SyncCustomerAsync(request.AccountId, request.CitizenId);

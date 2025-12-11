@@ -852,8 +852,8 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
             try
             {
-                var collection = _firestoreDb.Collection("vehicle");
-                var query = collection.WhereEqualTo("customerId", customerId);
+                var collection = _firestoreDb.Collection("vehicles");
+                var query = collection.WhereEqualTo("customerId", customerId.ToString());
                 var snapshot = await query.GetSnapshotAsync();
 
                 if (snapshot.Count == 0)
@@ -880,6 +880,10 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             WarrantyExpiry = data.ContainsKey("warranty_expiry") ? Convert.ToDateTime(data["warranty_expiry"]) : throw new AppException("warranty_expiry không tồn tại trong Firebase"),
                             ModelId = data.ContainsKey("modelId") ? Guid.Parse(data["modelId"].ToString() ?? throw new AppException("modelId trong firebase đang trống")) : throw new AppException("modelId không tồn tại trong Firebase"),
                             CustomerId = customerId,
+                            IsPrimary = data.ContainsKey("is_primary")
+                                        && bool.TryParse(data["is_primary"]?.ToString(), out var v)
+                                        ? v
+                                        : false,
                         };
                         await _unitOfWork.Vehicles.CreateAsync(vehicle);
                     }
