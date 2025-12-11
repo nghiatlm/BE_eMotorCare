@@ -53,7 +53,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF")]
+        [Authorize(Roles = "ROLE_TECHNICIAN,ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var data = await _batteryCheckService.GetByIdAsync(id);
