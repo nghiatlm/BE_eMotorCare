@@ -12,5 +12,6 @@
         MONTH_12,
         MONTH_30,
         MONTH_42,
+        MONTH_15
     }
 }
