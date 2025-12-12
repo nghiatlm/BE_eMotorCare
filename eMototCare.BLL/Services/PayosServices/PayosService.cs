@@ -170,12 +170,12 @@ namespace eMototCare.BLL.Services.PayosServices
                                 ? _config.GetSection("PayOS:Center")
                                 : _config.GetSection("PayOS:App");
 
-                        var returnUrl = request.SuccessUrl ??
+                        var returnUrl = request.CancelUrl ??
                             section["ReturnUrl"]
-                            ?? "https://emotocare.vercel.app/payment-success";
-                        var cancelUrl = request.CancelUrl ??
-                            section["CancelUrl"]
                             ?? "https://emotocare.vercel.app/payment-failed";
+                        var cancelUrl = request.SuccessUrl ??
+                            section["CancelUrl"]
+                            ?? "https://emotocare.vercel.app/payment-success";
 
                         var item = new ItemData(
                             $"Appointment - {appointment.Id}",

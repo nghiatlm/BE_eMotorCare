@@ -454,7 +454,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
                     }
                 }
-                await _unitOfWork.SaveAsync();
                 return true;
             }
             catch (Grpc.Core.RpcException ex)
@@ -490,7 +489,11 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     if (!dbIds.Contains(docId))
                     {
                         var data = doc.ToDictionary();
-
+                        var maintenancePlanId = data.ContainsKey("maintenance_plan_id") ? Guid.Parse(data["maintenance_plan_id"].ToString() ?? throw new AppException("maintenance_plan_id trong firebase đang trống")) : throw new AppException("maintenance_plan_id không tồn tại trong Firebase");
+                        var maintenancePlan = _unitOfWork.MaintenancePlans.GetByIdAsync(maintenancePlanId);
+                        if (maintenancePlan == null)
+                            throw new AppException("Maintenance Plan chưa tồn tại trong hệ thống");
+                        
                         var newStage = new MaintenanceStage
                         {
                             Id = Guid.Parse(docId),
@@ -509,7 +512,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
                     }
                 }
-                await _unitOfWork.SaveAsync();
                 return true;
             }
             catch (Grpc.Core.RpcException ex)
@@ -533,7 +535,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 var snapshot = await collectionRef.GetSnapshotAsync();
 
 
-                if (snapshot.Count == 0)
+                if (snapshot.Count == 0)    
                     throw new AppException("Data nguồn của Maintenance Stage Detail đang trống hoặc không tìm thấy");
                 var dbPlans = await _unitOfWork.MaintenanceStageDetails.FindAllAsync();
                 var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
@@ -544,7 +546,16 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     if (!dbIds.Contains(docId))
                     {
                         var data = doc.ToDictionary();
+                        var maintenanceStageId = data.ContainsKey("maintenance_stage_id") ? Guid.Parse(data["maintenance_stage_id"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase");
+                        var maintenanceStage = await _unitOfWork.MaintenanceStages.GetByIdAsync(maintenanceStageId);
+                        if (maintenanceStage == null)
+                            throw new AppException("Maintenance Stage chưa tồn tại trong database");
 
+                        var partId = data.ContainsKey("part_id") ? Guid.Parse(data["part_id"].ToString() ?? throw new AppException("part_id trong firebase đang trống")) : throw new AppException("part_id không tồn tại trong Firebase");
+                        var part = await _unitOfWork.Parts.GetByIdAsync(partId);
+                        if (part == null)
+                                throw new AppException("Part Id không tồn tại trong database");
+                        
                         var newStageDetail = new MaintenanceStageDetail
                         {
                             Id = Guid.Parse(docId),
@@ -563,7 +574,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
                     }
                 }
-                await _unitOfWork.SaveAsync();
                 return true;
             }
             catch (Grpc.Core.RpcException ex)
@@ -595,7 +605,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 foreach (var doc in snapshot.Documents)
                 {
                     string docId = doc.Id;
-
                     if (!dbIds.Contains(docId))
                     {
                         var data = doc.ToDictionary();
@@ -656,7 +665,15 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     if (!dbIds.Contains(docId))
                     {
                         var data = doc.ToDictionary();
-
+                        var partId = data.ContainsKey("part_id") ? (Guid?)Guid.Parse(data["part_id"].ToString() ?? null) : null;
+                        if (partId.HasValue)
+                        {
+                            var part = await _unitOfWork.Parts.GetByIdAsync(partId.Value);
+                            if (part == null)
+                                throw new AppException("Part Id không tồn tại trong database");
+                        }
+                        
+                        
                         var programDetail = new ProgramDetail
                         {
                             Id = Guid.Parse(docId),
