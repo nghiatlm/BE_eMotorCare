@@ -554,7 +554,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var partId = data.ContainsKey("part_id") ? Guid.Parse(data["part_id"].ToString() ?? throw new AppException("part_id trong firebase đang trống")) : throw new AppException("part_id không tồn tại trong Firebase");
                         var part = await _unitOfWork.Parts.GetByIdAsync(partId);
                         if (part == null)
-                                throw new AppException("Part Id không tồn tại trong database" + docId);
+                                throw new AppException("Part Id không tồn tại trong database: " + docId);
                         
                         var newStageDetail = new MaintenanceStageDetail
                         {
