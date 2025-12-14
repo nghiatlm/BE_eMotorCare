@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.Entities;
+﻿using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
@@ -133,7 +134,6 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
 
                 if (booked < s.Capacity)
                 {
-                    // Ánh xạ SlotTime -> string hiển thị (không dùng extension)
                     var text = s.SlotTime switch
                     {
                         SlotTime.H07_08 => "07:00-08:00",
@@ -198,6 +198,46 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             );
             double totalRevenue = (double)totalRevenueDecimal;
             return (totalAppointment, totalRevenue);
+        }
+        public async Task<List<AppointmentDashboardMonthItem>> GetAppointmentDashboardByMonthAsync(
+        Guid? serviceCenterId,
+        int year
+)
+        {
+            var q = _context.Appointments.AsNoTracking()
+                .Where(a => a.AppointmentDate.Year == year);
+
+            if (serviceCenterId.HasValue)
+                q = q.Where(a => a.ServiceCenterId == serviceCenterId.Value);
+
+            var grouped = await q
+                .GroupBy(a => a.AppointmentDate.Month)
+                .Select(g => new AppointmentDashboardMonthItem
+                {
+                    Month = g.Key,
+                    Total = g.Count(),
+                    CheckedIn = g.Count(x => x.Status == AppointmentStatus.CHECKED_IN),
+                    Completed = g.Count(x => x.Status == AppointmentStatus.COMPLETED),
+                    WaitingForPayment = g.Count(x => x.Status == AppointmentStatus.WAITING_FOR_PAYMENT),
+                    Maintenance = g.Count(x => x.Type == ServiceType.MAINTENANCE_TYPE),
+                    Repair = g.Count(x => x.Type == ServiceType.REPAIR_TYPE),
+                    Warranty = g.Count(x => x.Type == ServiceType.WARRANTY_TYPE),
+                    Campaign = g.Count(x => x.Type == ServiceType.CAMPAIGN_TYPE),
+                    Recall = g.Count(x => x.Type == ServiceType.RECALL_TYPE),
+                })
+                .ToListAsync();
+            var dict = grouped.ToDictionary(x => x.Month, x => x);
+            var result = new List<AppointmentDashboardMonthItem>();
+
+            for (int m = 1; m <= 12; m++)
+            {
+                if (dict.TryGetValue(m, out var item))
+                    result.Add(item);
+                else
+                    result.Add(new AppointmentDashboardMonthItem { Month = m });
+            }
+
+            return result;
         }
     }
 }

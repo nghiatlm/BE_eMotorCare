@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.Entities;
+﻿using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Entities;
 using eMotoCare.BO.Enum;
 using eMotoCare.DAL.Base;
 
@@ -16,6 +17,11 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
             DateTime? toDate,
             int page,
             int pageSize
+        );
+
+        Task<List<AppointmentDashboardMonthItem>> GetAppointmentDashboardByMonthAsync(
+            Guid? serviceCenterId,
+            int year
         );
         Task<Appointment?> GetByCodeAsync(string code);
         Task<Appointment?> GetByIdAsync(Guid id);

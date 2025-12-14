@@ -507,7 +507,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     "Lịch hẹn chưa có QR check-in được lưu.",
                                     HttpStatusCode.Conflict
                                 );
-
+                            entity.CheckedInAt = DateTime.UtcNow.AddHours(7);
                             if (
                                 !string.Equals(
                                     req.CheckinQRCode.Trim(),
@@ -542,6 +542,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     HttpStatusCode.Conflict
                                 );
                             }
+                            
                             break;
 
                         case AppointmentStatus.COMPLETED:
