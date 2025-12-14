@@ -22,10 +22,9 @@ namespace eMotoCare.BO.DTO.Responses
         public ServiceType Type { get; set; }
         public decimal? EstimatedCost { get; set; }
         public decimal? ActualCost { get; set; }
-
+        public DateTime? CheckedInAt { get; set; }   
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-
         public string? CheckinCode { get; set; }
         public ServiceCenterResponse? ServiceCenter { get; set; }
         public CustomerResponse? Customer { get; set; }

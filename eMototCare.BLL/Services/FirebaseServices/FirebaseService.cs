@@ -490,7 +490,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     {
                         var data = doc.ToDictionary();
                         var maintenancePlanId = data.ContainsKey("maintenance_plan_id") ? Guid.Parse(data["maintenance_plan_id"].ToString() ?? throw new AppException("maintenance_plan_id trong firebase đang trống")) : throw new AppException("maintenance_plan_id không tồn tại trong Firebase");
-                        var maintenancePlan = _unitOfWork.MaintenancePlans.GetByIdAsync(maintenancePlanId);
+                        var maintenancePlan = await _unitOfWork.MaintenancePlans.GetByIdAsync(maintenancePlanId);
                         if (maintenancePlan == null)
                             throw new AppException("Maintenance Plan chưa tồn tại trong hệ thống");
                         
@@ -554,7 +554,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var partId = data.ContainsKey("part_id") ? Guid.Parse(data["part_id"].ToString() ?? throw new AppException("part_id trong firebase đang trống")) : throw new AppException("part_id không tồn tại trong Firebase");
                         var part = await _unitOfWork.Parts.GetByIdAsync(partId);
                         if (part == null)
-                                throw new AppException("Part Id không tồn tại trong database");
+                                throw new AppException("Part Id không tồn tại trong database: " + docId);
                         
                         var newStageDetail = new MaintenanceStageDetail
                         {

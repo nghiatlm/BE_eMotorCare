@@ -2,6 +2,7 @@
 
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Dashboard;
+using eMotoCare.BO.DTO.Responses;
 using eMototCare.BLL.Services.DashboardServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,10 +24,11 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpGet("overview")]
         [Authorize(Roles = "ROLE_ADMIN, ROLE_MANAGER")]
-        public async Task<IActionResult> GetOverviewAsync([FromQuery] Guid? serviceCenterId)
+        public async Task<IActionResult> GetAppointmentDashboard([FromQuery] Guid? serviceCenterId, [FromQuery] int? year)
         {
-            var overview = await _dashboardService.GetOverviewAsync(serviceCenterId);
-            return overview != null ? Ok(ApiResponse<Overview>.SuccessResponse(overview, "Lấy data thành công")) : NotFound(ApiResponse<Overview>.BadRequest("Overview not found"));
+            var data = await _dashboardService.GetAppointmentDashboardAsync(serviceCenterId, year);
+            return data != null? Ok(ApiResponse<AppointmentDashboardResponse>.SuccessResponse(data,"Lấy data thành công")): NotFound(ApiResponse<AppointmentDashboardResponse>.BadRequest("Appointment dashboard not found")
+        );
         }
     }
 }

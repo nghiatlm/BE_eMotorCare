@@ -89,6 +89,9 @@ namespace eMotoCare.BO.Entities
         [Column("note", TypeName = "varchar(500)")]
         public string? Note { get; set; }
 
+        [Column("checked_in_at")]
+        public DateTime? CheckedInAt { get; set; }   
+
         public virtual ICollection<Payment>? Payments { get; set; }
     }
 }

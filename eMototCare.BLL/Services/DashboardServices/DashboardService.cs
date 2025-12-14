@@ -1,6 +1,7 @@
 
 using System.Net;
 using eMotoCare.BO.DTO.Dashboard;
+using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
@@ -17,28 +18,22 @@ namespace eMototCare.BLL.Services.DashboardServices
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
-
-        public async Task<Overview?> GetOverviewAsync(Guid? serviceCenterId)
+        public async Task<AppointmentDashboardResponse> GetAppointmentDashboardAsync(
+        Guid? serviceCenterId,
+         int? year)
         {
             try
             {
-                // var campaigns = await _unitOfWork.Campaigns.FindAllAsync();
-                // var TotalCampaign = campaigns?.Count ?? 0;
-                var totalEvCheck = await _unitOfWork.EVChecks.CountEVChecksInProgressAsync();
-                var appointments = await _unitOfWork.Appointments.TotalAppoinmentAndRevenue(serviceCenterId);
-                var rmas = await _unitOfWork.RMAs.TotalRMA(serviceCenterId);
+                var y = year ?? DateTime.UtcNow.AddHours(7).Year;
 
-                var overview = new Overview
+                var items = await _unitOfWork.Appointments
+                    .GetAppointmentDashboardByMonthAsync(serviceCenterId, y);
+
+                return new AppointmentDashboardResponse
                 {
-                    TotalCampaign = 0,
-                    TotalRecall = 0,
-                    totalEVCheckInProgress = totalEvCheck,
-                    totalAppointment = appointments.totalAppointment,
-                    TotalRevenue = appointments.totalRevenue,
-                    TotalRMA = rmas ?? 0
+                    Year = y,
+                    Data = items
                 };
-
-                return overview;
             }
             catch (AppException)
             {
@@ -46,7 +41,7 @@ namespace eMototCare.BLL.Services.DashboardServices
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Update Account failed: {Message}", ex.Message);
+                _logger.LogError(ex, "GetAppointmentDashboardAsync failed: {Message}", ex.Message);
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
