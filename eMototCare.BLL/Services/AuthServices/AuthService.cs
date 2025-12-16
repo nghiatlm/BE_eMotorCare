@@ -196,7 +196,7 @@ namespace eMototCare.BLL.Services.AuthServices
             }
         }
 
-        
+
 
         public async Task<bool> Register(RegisterRequest request)
         {
@@ -233,10 +233,19 @@ namespace eMototCare.BLL.Services.AuthServices
 
         public async Task ActiveAccount(string phone)
         {
-            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phone);
+            var phoneFormat = NormalizePhone(phone);
+            var account = await _unitOfWork.Accounts.GetByPhoneAsync(phoneFormat);
             account.Stattus = AccountStatus.ACTIVE;
             await _unitOfWork.Accounts.UpdateAsync(account);
             await _unitOfWork.SaveAsync();
+        }
+
+        private string NormalizePhone(string phone)
+        {
+            if (string.IsNullOrWhiteSpace(phone)) return phone;
+            return phone.StartsWith("+84")
+                ? "0" + phone.Substring(3)
+                : phone;
         }
 
         public async Task<bool> VerifyEmailAsync(string token)
@@ -287,7 +296,8 @@ namespace eMototCare.BLL.Services.AuthServices
                         await _unitOfWork.Accounts.UpdateAsync(account);
                         await _unitOfWork.SaveAsync();
                         return true;
-                    } else
+                    }
+                    else
                     {
                         throw new AppException("Mật khẩu không trùng", HttpStatusCode.BadRequest);
                     }
