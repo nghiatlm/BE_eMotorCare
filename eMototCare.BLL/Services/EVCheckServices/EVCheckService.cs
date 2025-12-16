@@ -367,6 +367,13 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     var totalBeforeTax = evCheckDetails.Sum(d => d.TotalAmount ?? 0);
                     entity.VAT = totalBeforeTax * 0.08m;
                     entity.TotalAmout = totalBeforeTax + entity.VAT;
+
+                    foreach (var detail in evCheckDetails)
+                    {
+                        if (detail.Remedies == Remedies.WARRANTY)
+                            detail.Status = EVCheckDetailStatus.COMPLETED;
+                        _unitOfWork.EVCheckDetails.Update(detail);
+                    }
                 }
 
                 if (req.Status == EVCheckStatus.REPAIR_COMPLETED)

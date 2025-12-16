@@ -302,7 +302,17 @@ namespace eMototCare.BLL.Services.CustomerServices
 
                 if (string.IsNullOrWhiteSpace(citizenId))
                     throw new AppException("CitizenId không hợp lệ", HttpStatusCode.BadRequest);
-                if (!_firebase.IsFirestoreConfigured())
+
+                var customerInfo = await _unitOfWork.Customers.GetByAccountIdAsync(accountId);
+                 if (customerInfo != null)
+                {
+                    throw new AppException(
+                        "Tài khoản đã có hồ sơ khách hàng",
+                        HttpStatusCode.Conflict
+                    );
+                }
+
+                    if (!_firebase.IsFirestoreConfigured())
                 {
                     _logger.LogWarning(
                         "Firestore not configured - cannot sync customer data for citizenId={CitizenId}",

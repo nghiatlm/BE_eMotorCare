@@ -66,6 +66,11 @@ namespace eMotoCare.DAL.Repositories.CustomerRepository
                 .ToListAsync()
                 .ContinueWith(task => (IReadOnlyList<Customer>)task.Result);
 
+        public Task<Customer>? GetByAccountIdAsync(Guid accountId)
+        {
+            return _context.Customers.FirstOrDefaultAsync(x => x.AccountId == accountId);
+        }
+
         public Task<Customer?> GetAccountIdAsync(Guid id)
         {
             return _context.Customers.AsNoTracking().FirstOrDefaultAsync(x => x.AccountId == id);
