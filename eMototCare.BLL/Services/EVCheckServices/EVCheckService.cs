@@ -82,44 +82,44 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(req.AppointmentId);
                 if (appointment == null)
                     throw new AppException("Appointment not found", HttpStatusCode.NotFound);
-                if (appointment.Type == ServiceType.MAINTENANCE_TYPE)
-                {
-                    var vehicleStages = appointment.VehicleStage;
-                    var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(
-                        vehicleStages.VehicleId
-                    );
-                    var allVehiclePartItems =
-                        await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(
-                            vehicleDetail.Id
-                        );
-                    var latestVehiclePartItems = allVehiclePartItems
-                        .GroupBy(vpi => vpi.PartItem.PartId)
-                        .Select(g => g.OrderByDescending(x => x.InstallDate).First())
-                        .ToList();
-                    var maintenanceStageDetails =
-                        await _unitOfWork.MaintenanceStageDetails.GetByMaintenanceStageIdAsync(
-                            vehicleStages.MaintenanceStageId
-                        );
-                    foreach (var detail in maintenanceStageDetails)
-                    {
-                        // Tìm VehiclePartItem tương thích với PartId trong MaintenanceStageDetail
-                        var matchedVehiclePartItem = latestVehiclePartItems.FirstOrDefault(vpi =>
-                            vpi.PartItem.PartId == detail.PartId
-                        );
+                //if (appointment.Type == ServiceType.MAINTENANCE_TYPE)
+                //{
+                //    var vehicleStages = appointment.VehicleStage;
+                //    var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(
+                //        vehicleStages.VehicleId
+                //    );
+                //    var allVehiclePartItems =
+                //        await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(
+                //            vehicleDetail.Id
+                //        );
+                //    var latestVehiclePartItems = allVehiclePartItems
+                //        .GroupBy(vpi => vpi.PartItem.PartId)
+                //        .Select(g => g.OrderByDescending(x => x.InstallDate).First())
+                //        .ToList();
+                //    var maintenanceStageDetails =
+                //        await _unitOfWork.MaintenanceStageDetails.GetByMaintenanceStageIdAsync(
+                //            vehicleStages.MaintenanceStageId
+                //        );
+                //    foreach (var detail in maintenanceStageDetails)
+                //    {
+                //        // Tìm VehiclePartItem tương thích với PartId trong MaintenanceStageDetail
+                //        var matchedVehiclePartItem = latestVehiclePartItems.FirstOrDefault(vpi =>
+                //            vpi.PartItem.PartId == detail.PartId
+                //        );
 
-                        var evCheckDetail = new EVCheckDetail
-                        {
-                            Id = Guid.NewGuid(),
-                            EVCheckId = entity.Id,
-                            MaintenanceStageDetailId = detail.Id,
-                            Remedies = Remedies.NONE,
-                            PartItemId = matchedVehiclePartItem.PartItemId,
-                            Status = EVCheckDetailStatus.IN_PROGRESS,
-                        };
+                //        var evCheckDetail = new EVCheckDetail
+                //        {
+                //            Id = Guid.NewGuid(),
+                //            EVCheckId = entity.Id,
+                //            MaintenanceStageDetailId = detail.Id,
+                //            Remedies = Remedies.NONE,
+                //            PartItemId = matchedVehiclePartItem.PartItemId,
+                //            Status = EVCheckDetailStatus.IN_PROGRESS,
+                //        };
 
-                        await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
-                    }
-                }
+                //        await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                //    }
+                //}
 
                 if (appointment.Note.Contains("RMA-"))
                 {
@@ -314,10 +314,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     if (!allVehicleStages.Any())
                         throw new AppException("No vehicle stages found", HttpStatusCode.NotFound);
 
-                    var matchedStage = maintenanceStages
-                        .Where(vs => (int)vs.Mileage <= entity.Odometer)
-                        .OrderByDescending(vs => (int)vs.Mileage)
-                        .FirstOrDefault();
+                    
 
                     var nextStage = maintenanceStages
                         .Where(vs => (int)vs.Mileage > entity.Odometer)
@@ -325,12 +322,13 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         .FirstOrDefault();
                     var closestStage = maintenanceStages
                         .Where(ms => (int)ms.Mileage <= entity.Odometer)
-                        .OrderByDescending(ms => ms.Mileage)
+                        .OrderByDescending(ms => (int)ms.Mileage)
                         .FirstOrDefault();
+
                     foreach (var vs in allVehicleStages)
                     {
-                        if (matchedStage == null)
-                            continue;
+                        if (closestStage == null)
+                            break;
                         var stage = maintenanceStages.FirstOrDefault(ms =>
                             ms.Id == vs.MaintenanceStageId
                         );
@@ -356,6 +354,68 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             continue;
 
                         _unitOfWork.VehicleStages.Update(vs);
+                    }
+
+                    if (appointment.Type == ServiceType.MAINTENANCE_TYPE)
+                    {
+                        var vehicleStages = appointment.VehicleStage;
+                        var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(
+                            vehicleStages.VehicleId
+                        );
+                        var allVehiclePartItems =
+                            await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(
+                                vehicleDetail.Id
+                            );
+                        var latestVehiclePartItems = allVehiclePartItems
+                            .GroupBy(vpi => vpi.PartItem.PartId)
+                            .Select(g => g.OrderByDescending(x => x.InstallDate).First())
+                            .ToList();
+                        Guid maintenanceStageId;
+                        if (closestStage != null)
+                        {
+                            var diff = entity.Odometer - (int)closestStage.Mileage;
+                            if (diff > 5000)
+                            {
+                                maintenanceStageId = closestStage.Id;
+                            } else
+                            {
+                                maintenanceStageId = nextStage.Id;
+                            }
+                        } else
+                        {
+                            if (nextStage == null)
+                            {
+                                maintenanceStageId = closestStage.Id;
+                            } else
+                            {
+                                maintenanceStageId = nextStage.Id;
+                            }    
+                        }
+
+
+                        var maintenanceStageDetails =
+                                await _unitOfWork.MaintenanceStageDetails.GetByMaintenanceStageIdAsync(
+                                    maintenanceStageId
+                                );
+                        foreach (var detail in maintenanceStageDetails)
+                        {
+                            // Tìm VehiclePartItem tương thích với PartId trong MaintenanceStageDetail
+                            var matchedVehiclePartItem = latestVehiclePartItems.FirstOrDefault(vpi =>
+                                vpi.PartItem.PartId == detail.PartId
+                            );
+
+                            var evCheckDetail = new EVCheckDetail
+                            {
+                                Id = Guid.NewGuid(),
+                                EVCheckId = entity.Id,
+                                MaintenanceStageDetailId = detail.Id,
+                                Remedies = Remedies.NONE,
+                                PartItemId = matchedVehiclePartItem.PartItemId,
+                                Status = EVCheckDetailStatus.IN_PROGRESS,
+                            };
+
+                            await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                        }
                     }
                 }
                 if (req.Status == EVCheckStatus.WAITING_FOR_QUOTE)
