@@ -372,6 +372,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     {
                         if (detail.Remedies == Remedies.WARRANTY)
                             detail.Status = EVCheckDetailStatus.COMPLETED;
+                        if (detail.Remedies == Remedies.NONE)
+                            detail.Status = EVCheckDetailStatus.COMPLETED;
                         _unitOfWork.EVCheckDetails.Update(detail);
                     }
                 }
