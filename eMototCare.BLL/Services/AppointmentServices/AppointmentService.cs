@@ -854,10 +854,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         await _unitOfWork.Vehicles.UpdateAsync(localVehicle);
 
                         var oldStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(localVehicle.Id);
-                        foreach (var s in oldStages)
-                            await _unitOfWork.VehicleStages.DeleteAsync(s);
-
                         stages = await SyncVehicleStagesFromOemAsync(localVehicle.Id, vehicleDocId);
+                        if (!stages.Any() && _firebase.IsFirestoreConfigured())
+                        {
+                            stages = await SyncVehicleStagesFromOemAsync(localVehicle.Id, vehicleDocId);
+                        }
                     }
                     else
                     {

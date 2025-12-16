@@ -74,7 +74,7 @@ namespace eMototCare.BLL.Services.AuthServices
                         Email = account.Email,
                         Phone = account.Phone,
                         RoleName = account.RoleName,
-                        Stattus = account.Stattus,
+                        Status = account.Stattus,
                     },
                 };
             }
@@ -124,7 +124,7 @@ namespace eMototCare.BLL.Services.AuthServices
                             Email = account.Email,
                             Phone = account.Phone,
                             RoleName = account.RoleName,
-                            Stattus = account.Stattus,
+                            Status = account.Stattus,
                         },
                     };
                 }
@@ -181,7 +181,7 @@ namespace eMototCare.BLL.Services.AuthServices
                         Email = account.Email,
                         Phone = account.Phone,
                         RoleName = account.RoleName,
-                        Stattus = account.Stattus,
+                        Status = account.Stattus,
                     },
                 };
             }

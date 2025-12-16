@@ -13,6 +13,7 @@ namespace eMotoCare.BO.DTO.Requests
         public string Address { get; set; } = string.Empty;
         public string? Latitude { get; set; }
         public string? Longitude { get; set; }
+        public ServiceCenterInventoryRequest? ServiceCenterInventory { get; set; }
         public StatusEnum? Status { get; set; }
     }
 }
