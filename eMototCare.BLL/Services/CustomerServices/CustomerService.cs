@@ -234,33 +234,6 @@ namespace eMototCare.BLL.Services.CustomerServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            try
-            {
-                if (id == Guid.Empty)
-                    throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
-                var entity =
-                    await _unitOfWork.Customers.GetByIdAsync(id)
-                    ?? throw new AppException("Không tìm thấy khách hàng", HttpStatusCode.NotFound);
-
-                await _unitOfWork.Customers.DeleteAsync(entity);
-                await _unitOfWork.SaveAsync();
-
-                _logger.LogInformation("Deleted Customer {Id}", id);
-            }
-            catch (AppException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Delete Customer failed: {Message}", ex.Message);
-                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
-            }
-        }
-
         public async Task<CustomerResponse?> GetAccountIdAsync(Guid id)
         {
             try

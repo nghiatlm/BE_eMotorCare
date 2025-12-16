@@ -35,12 +35,18 @@ namespace eMototCare.BLL.Services.ServiceCenterSlotServices
         {
             if (serviceCenterId == Guid.Empty)
                 throw new AppException("ServiceCenterId không hợp lệ", HttpStatusCode.BadRequest);
+
             var center =
                 await _unitOfWork.ServiceCenterSlot.GetByServiceCenterAsync(serviceCenterId)
                 ?? throw new AppException("Không tìm thấy ServiceCenter", HttpStatusCode.NotFound);
 
             var items = await _serviceCenterSlotRepository.GetByServiceCenterAsync(serviceCenterId);
-            return _mapper.Map<List<ServiceCenterSlotResponse>>(items);
+            var sortedItems = items
+                .OrderBy(slot => slot.Date)
+                .ThenBy(slot => slot.SlotTime)
+                .ToList();
+
+            return _mapper.Map<List<ServiceCenterSlotResponse>>(sortedItems);
         }
 
         public async Task<Guid> CreateAsync(Guid serviceCenterId, ServiceCenterSlotRequest req)
