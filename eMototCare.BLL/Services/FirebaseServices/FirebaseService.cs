@@ -454,6 +454,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
                     }
                 }
+                await _unitOfWork.SaveAsync();
                 return true;
             }
             catch (Grpc.Core.RpcException ex)
@@ -512,6 +513,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
                     }
                 }
+                await _unitOfWork.SaveAsync();
                 return true;
             }
             catch (Grpc.Core.RpcException ex)
@@ -571,9 +573,10 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         };
 
                         await _unitOfWork.MaintenanceStageDetails.CreateAsync(newStageDetail);
-
+                        
                     }
                 }
+                await _unitOfWork.SaveAsync();
                 return true;
             }
             catch (Grpc.Core.RpcException ex)
