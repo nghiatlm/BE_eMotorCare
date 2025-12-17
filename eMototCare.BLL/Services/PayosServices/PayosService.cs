@@ -116,17 +116,10 @@ namespace eMototCare.BLL.Services.PayosServices
 
                             await _unitOfWork.Payments.CreateAsync(payment);
                             await _unitOfWork.SaveAsync();
-
-                            var section =
-                                request.PaymentMethod == PaymentMethod.PAY_OS_CENTER
-                                    ? _config.GetSection("PayOS:Center")
-                                    : _config.GetSection("PayOS:App");
-
-                            var returnUrl =
-                                section["ReturnUrl"]
+                            var returnUrl = request.SuccessUrl
                                 ?? "https://emotocare.vercel.app/payment-success";
                             var cancelUrl =
-                                section["CancelUrl"]
+                            request.CancelUrl
                                 ?? "https://emotocare.vercel.app/payment-failed";
 
                             var item = new ItemData(
@@ -164,18 +157,10 @@ namespace eMototCare.BLL.Services.PayosServices
 
                             await _unitOfWork.Payments.CreateAsync(payment);
                             await _unitOfWork.SaveAsync();
-
-                            var section =
-                                request.PaymentMethod == PaymentMethod.PAY_OS_APP
-                                    ? _config.GetSection("PayOS:Center")
-                                    : _config.GetSection("PayOS:App");
-
-                            var returnUrl = request.CancelUrl ??
-                                section["CancelUrl"]
+                            var returnUrl = request.SuccessUrl
+                                ?? "https://emotocare.vercel.app/payment-success";
+                            var cancelUrl = request.CancelUrl
                                 ?? "https://emotocare.vercel.app/payment-failed";
-                            var cancelUrl = request.SuccessUrl ??
-                                section["ReturnUrl"]
-                                ?? "https://emotocare.vercel.app/payment-success"; 
 
                             var item = new ItemData(
                                 $"Appointment - {appointment.Id}",
@@ -195,6 +180,20 @@ namespace eMototCare.BLL.Services.PayosServices
                             );
 
                             var createPayment = await _payOS.createPaymentLink(paymentData);
+
+                            // Update appointment status for PAY_OS_APP
+                            if (appointment.EVCheck == null)
+                                throw new AppException(
+                                    "EVCheck không được null.",
+                                    HttpStatusCode.BadRequest
+                                );
+
+                            appointment.EVCheck.Status = EVCheckStatus.PENDING;
+                            appointment.Status = AppointmentStatus.PENDING;
+
+                            await _unitOfWork.Appointments.UpdateAsync(appointment);
+                            await _unitOfWork.SaveAsync();
+
                             return new PayOSCreatePaymentResponse
                             {
                                 CheckoutUrl = createPayment.checkoutUrl,
@@ -253,13 +252,18 @@ namespace eMototCare.BLL.Services.PayosServices
                 // Prefer the Appointment instance that came with the payment query (if present)
                 // to avoid loading a second instance with the same key into the DbContext.
                 var appointment = payment.Appointment;
-                var vehicleStage = new VehicleStage();
+                VehicleStage vehicleStage = null;
                 if (appointment == null && payment.AppointmentId != Guid.Empty)
                 {
                     appointment = await _unitOfWork.Appointments.GetByIdAsync(
                         payment.AppointmentId
                     );
-                    vehicleStage = appointment?.VehicleStage ?? new VehicleStage();
+                }
+
+                // Load vehicleStage only if appointment exists and has a valid stage
+                if (appointment != null)
+                {
+                    vehicleStage = appointment.VehicleStage;
                 }
 
                 if (data.code == "00")
@@ -272,7 +276,11 @@ namespace eMototCare.BLL.Services.PayosServices
                         {
                             appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
                         }
-                        vehicleStage.Status = VehicleStageStatus.COMPLETED;
+                        // Only update vehicleStage if it was successfully loaded
+                        if (vehicleStage != null && vehicleStage.Id != Guid.Empty)
+                        {
+                            vehicleStage.Status = VehicleStageStatus.COMPLETED;
+                        }
                     }
                 }
                 else
@@ -294,7 +302,12 @@ namespace eMototCare.BLL.Services.PayosServices
                     payment.Appointment = null;
                 }
 
-                await _unitOfWork.VehicleStages.UpdateAsync(vehicleStage); await _unitOfWork.Payments.UpdateAsync(payment);
+                // Only update vehicleStage if it was successfully loaded and has valid ID
+                if (vehicleStage != null && vehicleStage.Id != Guid.Empty)
+                {
+                    await _unitOfWork.VehicleStages.UpdateAsync(vehicleStage);
+                }
+                await _unitOfWork.Payments.UpdateAsync(payment);
                 if (appointment != null)
                     await _unitOfWork.Appointments.UpdateAsync(appointment);
 
