@@ -12,7 +12,7 @@ namespace eMototCare.BLL.Services.BackgroundServices
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<TimeoutService> _logger;
-        private static readonly TimeSpan Period = TimeSpan.FromHours(1);
+        private static readonly TimeSpan Period = TimeSpan.FromDays(1);
         private const string TimeZoneId = "SE Asia Standard Time";
 
         public TimeoutService(IServiceScopeFactory scopeFactory, ILogger<TimeoutService> logger)
