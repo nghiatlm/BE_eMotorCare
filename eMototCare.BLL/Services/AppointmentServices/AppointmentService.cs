@@ -557,6 +557,9 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     relatedStage.ActualImplementationDate = DateTime.UtcNow;
                                 }
 
+                                await _unitOfWork.VehicleStages.UpdateAsync(relatedStage); 
+                                await _unitOfWork.SaveAsync(); 
+
                                 _logger.LogInformation(
                                     "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
                                     relatedStage.Id,
