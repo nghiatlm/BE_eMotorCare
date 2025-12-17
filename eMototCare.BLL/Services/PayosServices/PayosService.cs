@@ -77,130 +77,130 @@ namespace eMototCare.BLL.Services.PayosServices
                 switch (request.PaymentMethod)
                 {
                     case PaymentMethod.CASH:
-                    {
-                        // Tạo payment & chốt SUCCESS ngay
-                        var payment = _mapper.Map<Payment>(request);
-                        payment.Amount = amount;
-                        payment.Status = StatusPayment.SUCCESS;
-                        payment.TransactionCode =
-                            $"CASH-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+                        {
+                            // Tạo payment & chốt SUCCESS ngay
+                            var payment = _mapper.Map<Payment>(request);
+                            payment.Amount = amount;
+                            payment.Status = StatusPayment.SUCCESS;
+                            payment.TransactionCode =
+                                $"CASH-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
 
-                        await _unitOfWork.Payments.CreateAsync(payment);
+                            await _unitOfWork.Payments.CreateAsync(payment);
 
-                        // Cập nhật trạng thái nghiệp vụ
-                        if (appointment.EVCheck == null)
-                            throw new AppException(
-                                "EVCheck không được null.",
-                                HttpStatusCode.BadRequest
-                            );
+                            // Cập nhật trạng thái nghiệp vụ
+                            if (appointment.EVCheck == null)
+                                throw new AppException(
+                                    "EVCheck không được null.",
+                                    HttpStatusCode.BadRequest
+                                );
 
-                        appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
-                        appointment.Status = AppointmentStatus.COMPLETED;
+                            appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
+                            appointment.Status = AppointmentStatus.COMPLETED;
 
-                        await _unitOfWork.Appointments.UpdateAsync(appointment);
-                        await _unitOfWork.SaveAsync();
+                            await _unitOfWork.Appointments.UpdateAsync(appointment);
+                            await _unitOfWork.SaveAsync();
 
-                        // CASH không có checkoutUrl
-                        return null;
-                    }
+                            // CASH không có checkoutUrl
+                            return null;
+                        }
 
                     case PaymentMethod.PAY_OS_CENTER:
-                    {
-                        // Tạo payment pending
-                        var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-                        var payment = _mapper.Map<Payment>(request);
-                        payment.Amount = amount;
-                        payment.Status = StatusPayment.PENDING;
-                        payment.TransactionCode = orderCode.ToString();
-
-                        await _unitOfWork.Payments.CreateAsync(payment);
-                        await _unitOfWork.SaveAsync();
-
-                        var section =
-                            request.PaymentMethod == PaymentMethod.PAY_OS_CENTER
-                                ? _config.GetSection("PayOS:Center")
-                                : _config.GetSection("PayOS:App");
-
-                        var returnUrl =
-                            section["ReturnUrl"]
-                            ?? "https://emotocare.vercel.app/payment-success";
-                        var cancelUrl =
-                            section["CancelUrl"]
-                            ?? "https://emotocare.vercel.app/payment-failed";
-
-                        var item = new ItemData(
-                            $"Appointment - {appointment.Id}",
-                            1,
-                            (int)Math.Round(amount)
-                        );
-
-                        var items = new List<ItemData> { item };
-
-                        var paymentData = new PaymentData(
-                            orderCode,
-                            (int)Math.Round(amount),
-                            "Thanh toán bảo dưỡng xe",
-                            items,
-                            cancelUrl,
-                            returnUrl
-                        );
-
-                        var createPayment = await _payOS.createPaymentLink(paymentData);
-                        return new PayOSCreatePaymentResponse
                         {
-                            CheckoutUrl = createPayment.checkoutUrl,
-                            TransactionCode = orderCode.ToString(),
-                        };
-                    }
+                            // Tạo payment pending
+                            var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                            var payment = _mapper.Map<Payment>(request);
+                            payment.Amount = amount;
+                            payment.Status = StatusPayment.PENDING;
+                            payment.TransactionCode = orderCode.ToString();
+
+                            await _unitOfWork.Payments.CreateAsync(payment);
+                            await _unitOfWork.SaveAsync();
+
+                            var section =
+                                request.PaymentMethod == PaymentMethod.PAY_OS_CENTER
+                                    ? _config.GetSection("PayOS:Center")
+                                    : _config.GetSection("PayOS:App");
+
+                            var returnUrl =
+                                section["ReturnUrl"]
+                                ?? "https://emotocare.vercel.app/payment-success";
+                            var cancelUrl =
+                                section["CancelUrl"]
+                                ?? "https://emotocare.vercel.app/payment-failed";
+
+                            var item = new ItemData(
+                                $"Appointment - {appointment.Id}",
+                                1,
+                                (int)Math.Round(amount)
+                            );
+
+                            var items = new List<ItemData> { item };
+
+                            var paymentData = new PaymentData(
+                                orderCode,
+                                (int)Math.Round(amount),
+                                "Thanh toán bảo dưỡng xe",
+                                items,
+                                cancelUrl,
+                                returnUrl
+                            );
+
+                            var createPayment = await _payOS.createPaymentLink(paymentData);
+                            return new PayOSCreatePaymentResponse
+                            {
+                                CheckoutUrl = createPayment.checkoutUrl,
+                                TransactionCode = orderCode.ToString(),
+                            };
+                        }
                     case PaymentMethod.PAY_OS_APP:
-                    {
-                        var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-                        var payment = _mapper.Map<Payment>(request);
-                        payment.Amount = amount;
-                        payment.Status = StatusPayment.PENDING;
-                        payment.TransactionCode = orderCode.ToString();
-
-                        await _unitOfWork.Payments.CreateAsync(payment);
-                        await _unitOfWork.SaveAsync();
-
-                        var section =
-                            request.PaymentMethod == PaymentMethod.PAY_OS_APP
-                                ? _config.GetSection("PayOS:Center")
-                                : _config.GetSection("PayOS:App");
-
-                        var returnUrl = request.CancelUrl ??
-                            section["ReturnUrl"]
-                            ?? "https://emotocare.vercel.app/payment-failed";
-                        var cancelUrl = request.SuccessUrl ??
-                            section["CancelUrl"]
-                            ?? "https://emotocare.vercel.app/payment-success";
-
-                        var item = new ItemData(
-                            $"Appointment - {appointment.Id}",
-                            1,
-                            (int)Math.Round(amount)
-                        );
-
-                        var items = new List<ItemData> { item };
-
-                        var paymentData = new PaymentData(
-                            orderCode,
-                            (int)Math.Round(amount),
-                            "Thanh toán bảo dưỡng xe",
-                            items,
-                            cancelUrl,
-                            returnUrl
-                        );
-
-                        var createPayment = await _payOS.createPaymentLink(paymentData);
-                        return new PayOSCreatePaymentResponse
                         {
-                            CheckoutUrl = createPayment.checkoutUrl,
-                            TransactionCode = orderCode.ToString(),
-                        };
-                    }
+                            var orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                            var payment = _mapper.Map<Payment>(request);
+                            payment.Amount = amount;
+                            payment.Status = StatusPayment.PENDING;
+                            payment.TransactionCode = orderCode.ToString();
+
+                            await _unitOfWork.Payments.CreateAsync(payment);
+                            await _unitOfWork.SaveAsync();
+
+                            var section =
+                                request.PaymentMethod == PaymentMethod.PAY_OS_APP
+                                    ? _config.GetSection("PayOS:Center")
+                                    : _config.GetSection("PayOS:App");
+
+                            var returnUrl = request.CancelUrl ??
+                                section["ReturnUrl"]
+                                ?? "https://emotocare.vercel.app/payment-failed";
+                            var cancelUrl = request.SuccessUrl ??
+                                section["CancelUrl"]
+                                ?? "https://emotocare.vercel.app/payment-success";
+
+                            var item = new ItemData(
+                                $"Appointment - {appointment.Id}",
+                                1,
+                                (int)Math.Round(amount)
+                            );
+
+                            var items = new List<ItemData> { item };
+
+                            var paymentData = new PaymentData(
+                                orderCode,
+                                (int)Math.Round(amount),
+                                "Thanh toán bảo dưỡng xe",
+                                items,
+                                cancelUrl,
+                                returnUrl
+                            );
+
+                            var createPayment = await _payOS.createPaymentLink(paymentData);
+                            return new PayOSCreatePaymentResponse
+                            {
+                                CheckoutUrl = createPayment.checkoutUrl,
+                                TransactionCode = orderCode.ToString(),
+                            };
+                        }
 
                     default:
                         throw new AppException(
@@ -253,11 +253,13 @@ namespace eMototCare.BLL.Services.PayosServices
                 // Prefer the Appointment instance that came with the payment query (if present)
                 // to avoid loading a second instance with the same key into the DbContext.
                 var appointment = payment.Appointment;
+                var vehicleStage = new VehicleStage();
                 if (appointment == null && payment.AppointmentId != Guid.Empty)
                 {
-                    appointment = await _unitOfWork.Appointments.FindByIdAsync(
+                    appointment = await _unitOfWork.Appointments.GetByIdAsync(
                         payment.AppointmentId
                     );
+                    vehicleStage = appointment?.VehicleStage ?? new VehicleStage();
                 }
 
                 if (data.code == "00")
@@ -270,6 +272,7 @@ namespace eMototCare.BLL.Services.PayosServices
                         {
                             appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
                         }
+                        vehicleStage.Status = VehicleStageStatus.COMPLETED;
                     }
                 }
                 else
@@ -291,7 +294,7 @@ namespace eMototCare.BLL.Services.PayosServices
                     payment.Appointment = null;
                 }
 
-                await _unitOfWork.Payments.UpdateAsync(payment);
+                await _unitOfWork.VehicleStages.UpdateAsync(vehicleStage); await _unitOfWork.Payments.UpdateAsync(payment);
                 if (appointment != null)
                     await _unitOfWork.Appointments.UpdateAsync(appointment);
 
