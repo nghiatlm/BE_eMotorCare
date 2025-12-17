@@ -732,12 +732,12 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var vehiclePartItem = new VehiclePartItem
                         {
                             Id = Guid.Parse(docId),
-                            InstallDate = data.ContainsKey("installDate") ? Convert.ToDateTime(data["install_date"]) : throw new AppException("Install Date đang trống"),
-                            VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicle_id"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
-                            PartItemId = data.ContainsKey("partItemId") ? Guid.Parse(data["part_item_id"].ToString() ?? throw new AppException("part_item_id trong firebase đang trống")) : throw new AppException("part_item_id không tồn tại trong Firebase"),
-                            ReplaceForId = data.ContainsKey("replaceForId") ? (Guid?)Guid.Parse(data["replace_for_id"].ToString() ?? null) : null,
-                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
-                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                            InstallDate = data.ContainsKey("installDate") ? Convert.ToDateTime(data["installDate"]) : throw new AppException("Install Date đang trống"),
+                            VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
+                            PartItemId = data.ContainsKey("partItemId") ? Guid.Parse(data["partItemId"].ToString() ?? throw new AppException("part_item_id trong firebase đang trống")) : throw new AppException("part_item_id không tồn tại trong Firebase"),
+                            ReplaceForId = data.ContainsKey("replaceForId") ? (Guid?)Guid.Parse(data["replaceForId"].ToString() ?? null) : null,
+                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
                         };
 
                         await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
@@ -950,14 +950,20 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Quantity = data.ContainsKey("quantity") ? int.Parse(data["quantity"].ToString() ?? throw new AppException("Quantity đang null")) : throw new AppException("Quantity đang null"),
                             PartId = data.ContainsKey("part_id") ? Guid.Parse(data["part_id"].ToString() ?? throw new AppException("part_id trong firebase đang trống")) : throw new AppException("part_id không tồn tại trong Firebase"),
                             SerialNumber = data.ContainsKey("serial_number") ? (data["serial_number"].ToString() ?? throw new AppException("serial_number trong firebase đang trống")) : throw new AppException("serial_number không tồn tại trong Firebase"),
-                            Price = data.ContainsKey("price") ? Decimal.Parse(data["replace_for_id"].ToString() ?? "0") : 0,
+                            Price = data.ContainsKey("price") ? Decimal.Parse(data["price"].ToString() ?? "0") : 0,
                             Status = data.ContainsKey("status") ? Enum.Parse<PartItemStatus>(data["status"].ToString() ?? "ACTIVE") : PartItemStatus.INSTALLED,
                             WarrantyPeriod = data.ContainsKey("warranty_period") ? int.Parse(data["warranty_period"].ToString() ?? null) : null,
                             WarantyStartDate = data.ContainsKey("waranty_start_date") ? (DateTime?)Convert.ToDateTime(data["waranty_start_date"]) : null,
                             WarantyEndDate = data.ContainsKey("waranty_end_date") ? (DateTime?)Convert.ToDateTime(data["waranty_end_date"]) : null,
                             ServiceCenterInventoryId = data.ContainsKey("service_center_inventory_id") ? Guid.Parse(data["service_center_inventory_id"].ToString() ?? throw new AppException("service_center_inventory_id trong firebase đang trống")) : throw new AppException("service_center_inventory_id không tồn tại trong Firebase"),
-                            IsManufacturerWarranty = data.ContainsKey("is_manufacturer_warranty") ? Convert.ToBoolean(data["is_manufacturer_warranty"]) : false,
-
+                            IsManufacturerWarranty = data.TryGetValue("is_manufacturer_warranty", out var v)
+                                                    && v?.ToString() switch
+                                                    {
+                                                        "1" => true,
+                                                        "0" => false,
+                                                        var s when bool.TryParse(s, out var b) => b,
+                                                        _ => false
+                                                    },
                         };
 
                         await _unitOfWork.PartItems.CreateAsync(partItem);
