@@ -251,14 +251,16 @@ namespace eMototCare.BLL.Services.PayosServices
 
                 // Prefer the Appointment instance that came with the payment query (if present)
                 // to avoid loading a second instance with the same key into the DbContext.
-                var appointment = payment.Appointment;
+                var appointmentId = payment.AppointmentId;
                 VehicleStage vehicleStage = null;
-                if (appointment == null && payment.AppointmentId != Guid.Empty)
-                {
-                    appointment = await _unitOfWork.Appointments.GetByIdAsync(
-                        payment.AppointmentId
-                    );
-                }
+                // if (appointment == null && payment.AppointmentId != Guid.Empty)
+                // {
+                //     appointment = await _unitOfWork.Appointments.GetByIdAsync(
+                //         payment.AppointmentId
+                //     );
+                // }
+                if (appointmentId == null) throw new AppException("Payment không có AppointmentId.", HttpStatusCode.BadRequest);
+                var appointment = await _unitOfWork.Appointments.GetByIdAsync(appointmentId);
 
                 // Load vehicleStage only if appointment exists and has a valid stage
                 if (appointment != null)
