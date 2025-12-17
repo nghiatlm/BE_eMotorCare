@@ -347,6 +347,7 @@ namespace eMototCare.BLL.Services.CustomerServices
                             "Không tìm thấy khách hàng trong hệ thống",
                             HttpStatusCode.NotFound
                         );
+                    var customer = await _unitOfWork.Customers.GetByCitizenId(citizenId);
                     var syncPlan = await _firebase.GetMaintenancePlanAsync();
                     if (!syncPlan) throw new AppException("Sync plan thất bại");
                     var syncStage = await _firebase.GetMaintenanceStageAsync();
@@ -355,15 +356,21 @@ namespace eMototCare.BLL.Services.CustomerServices
                     if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
                     var syncModel = await _firebase.GetModelAsync();
                     if (!syncModel) throw new AppException("Sync model thất bại");                   
-                    var syncVehicle = await _firebase.GetVehicleByCustomerId(customerExist.Id);
+                    var syncVehicle = await _firebase.GetVehicleByCustomerId(customer.Id);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
-                    
+                    var syncPartItem = await _firebase.GetPartItemAsync();
+                    if (!syncPartItem) throw new AppException("Sync part item thất bại");
+                    var syncVehiclePartItem = await _firebase.GetVehiclePartitemAsync();
+                    if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
+                    var syncVehicleStage = await _firebase.GetVehicleStageAsync();
+                    if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
+
                 }
      
                 
                 
-                var result = await _unitOfWork.SaveAsync();
-                return result > 0 ? true : false;
+                await _unitOfWork.SaveAsync();
+                return true;
             }
             catch (AppException)
             {

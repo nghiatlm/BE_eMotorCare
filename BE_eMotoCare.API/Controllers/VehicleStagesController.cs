@@ -3,6 +3,7 @@ using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
+using eMototCare.BLL.Services.FirebaseServices;
 using eMototCare.BLL.Services.VehicleStageServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,10 +16,12 @@ namespace BE_eMotoCare.API.Controllers
     public class VehicleStagesController : ControllerBase
     {
         private readonly IVehicleStageService _vehicleStageService;
+        private readonly IFirebaseService _firebaseService;
 
-        public VehicleStagesController(IVehicleStageService vehicleStageService)
+        public VehicleStagesController(IVehicleStageService vehicleStageService, IFirebaseService firebaseService)
         {
             _vehicleStageService = vehicleStageService;
+            _firebaseService = firebaseService;
         }
 
         [HttpGet]
@@ -89,6 +92,16 @@ namespace BE_eMotoCare.API.Controllers
         {
             await _vehicleStageService.DeleteAsync(id);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Xoá mốc bảo dưỡng thành công"));
+        }
+
+        [HttpPost("sync-data")]
+        [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_ADMIN")]
+        public async Task<IActionResult> SyncVehicleStageData()
+        {
+            var result = await _firebaseService.GetVehicleStageAsync();
+            if (!result)
+                return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu thất bại."));
+            return Ok(ApiResponse<string>.SuccessResponse(null, "Đồng bộ dữ liệu thành công."));
         }
     }
 }
