@@ -739,6 +739,9 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
                             UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
                         };
+                        var vehicleId = Guid.Parse(data["vehicleId"].ToString()!);
+                        var vehicle = await _unitOfWork.Vehicles.GetByIdAsync(vehicleId);
+                        if (vehicle == null) continue; 
 
                         await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
 
@@ -986,59 +989,55 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
         public async Task<bool> GetVehicleStageAsync()
         {
-            if (_firestoreDb == null)
-                throw new AppException("Firestore chưa được cấu hình");
+            if (_firestoreDb == null) throw new AppException("Firestore chưa được cấu hình");
 
-            try
+            var snapshot = await _firestoreDb.Collection("vehiclestage").GetSnapshotAsync();
+
+            var dbIds = (await _unitOfWork.VehicleStages.FindAllAsync())
+                .Select(x => x.Id.ToString()).ToHashSet();
+
+            foreach (var doc in snapshot.Documents)
             {
-                var collectionRef = _firestoreDb.Collection("vehiclestage");
-                var snapshot = await collectionRef.GetSnapshotAsync();
+                if (dbIds.Contains(doc.Id)) continue;
+                var data = doc.ToDictionary();
+                if (!data.TryGetValue("vehicleId", out var vObj) || !Guid.TryParse(vObj?.ToString(), out var vehicleId))
+                    continue;
 
+                if (!data.TryGetValue("maintenancestageId", out var sObj) || !Guid.TryParse(sObj?.ToString(), out var stageId))
+                    continue;
+                if (await _unitOfWork.Vehicles.GetByIdAsync(vehicleId) == null) continue;
+                if (await _unitOfWork.MaintenanceStages.GetByIdAsync(stageId) == null) continue;
+                int actualMileage = 0;
+                if (data.TryGetValue("actualMaintenanceMileage", out var mObj))
+                    int.TryParse(mObj?.ToString(), out actualMileage);
+                var actualUnit = MaintenanceUnit.KILOMETER;
+                if (data.TryGetValue("actualMaintenanceUnit", out var uObj)
+                    && Enum.TryParse<MaintenanceUnit>(uObj?.ToString(), true, out var u))
+                    actualUnit = u;
 
-                if (snapshot.Count == 0)
-                    throw new AppException("Data nguồn của vehiclestage đang trống hoặc không tìm thấy");
-                var dbPlans = await _unitOfWork.VehicleStages.FindAllAsync();
-                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
-                foreach (var doc in snapshot.Documents)
+                var entity = new VehicleStage
                 {
-                    string docId = doc.Id;
+                    Id = Guid.Parse(doc.Id),
+                    VehicleId = vehicleId,
+                    MaintenanceStageId = stageId,
+                    ActualMaintenanceMileage = actualMileage,
+                    ActualMaintenanceUnit = actualUnit,
+                    Status = data.ContainsKey("status")
+                        ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START")
+                        : VehicleStageStatus.NO_START,
+                    CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
+                    UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
+                    ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) : null,
+                    ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) : null,
+                    ActualImplementationDate = data.ContainsKey("actualImplementationDate") ? (DateTime?)Convert.ToDateTime(data["actualImplementationDate"]) : null,
+                };
 
-                    if (!dbIds.Contains(docId))
-                    {
-                        var data = doc.ToDictionary();
-
-                        var vehicleStage = new VehicleStage
-                        {
-                            Id = Guid.Parse(docId),
-                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? throw new AppException("actual_maintenance_mileage đang null")) : throw new AppException("actual_maintenance_mileage đang null"),
-                            MaintenanceStageId = data.ContainsKey("maintenancestageId") ? Guid.Parse(data["maintenancestageId"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase"),
-                            ActualMaintenanceUnit = data.ContainsKey("actualMaintenanceUnit") ? Enum.Parse<MaintenanceUnit>(data["actualMaintenanceUnit"].ToString() ?? throw new AppException("actual_maintenance_unit trong firebase đang trống")) : throw new AppException("actual_maintenance_unit không tồn tại trong Firebase"),
-                            Status = data.ContainsKey("status") ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START") : VehicleStageStatus.NO_START,
-                            VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
-                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
-                            ActualImplementationDate = data.ContainsKey("actualImplementationDate") ? (DateTime?)Convert.ToDateTime(data["actualImplementationDate"]) : null,
-                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
-                            ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) : null,
-                            ExpectedImplementationDate = data.ContainsKey("expectedImplementationDate") ? (DateTime?)Convert.ToDateTime(data["expectedImplementationDate"]) : null,
-                            ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) : null,
-                        };
-
-                        await _unitOfWork.VehicleStages.CreateAsync(vehicleStage);
-
-                    }
-                }
-                await _unitOfWork.SaveAsync();
-                return true;
+                await _unitOfWork.VehicleStages.CreateAsync(entity);
             }
-            catch (Grpc.Core.RpcException ex)
-            {
-                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
-                throw new AppException($"Firestore RPC Error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                throw new AppException(ex.Message);
-            }
+
+            await _unitOfWork.SaveAsync();
+            return true;
         }
+
     }
 }
