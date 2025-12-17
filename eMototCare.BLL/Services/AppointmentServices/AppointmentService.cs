@@ -557,6 +557,9 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     relatedStage.ActualImplementationDate = DateTime.UtcNow;
                                 }
 
+                                await _unitOfWork.VehicleStages.UpdateAsync(relatedStage); 
+                                await _unitOfWork.SaveAsync(); 
+
                                 _logger.LogInformation(
                                     "VehicleStage {StageId} -> COMPLETED (từ Appointment {Id})",
                                     relatedStage.Id,
@@ -675,6 +678,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
         {
             var stageDataList = await _firebase.GetVehicleStagesByVehicleIdAsync(vehicleDocId);
             var vehicleStages = new List<VehicleStage>();
+            var existingStages = (await _unitOfWork.VehicleStages.GetByVehicleIdAsync(vehicleId)).ToList();
 
             foreach (var sd in stageDataList)
             {
@@ -798,22 +802,39 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     ?? TryParseDate(sd, "expectedStartDate")
                     ?? DateTime.UtcNow;
 
-                var vs = new VehicleStage
-                {
-                    Id = Guid.NewGuid(),
-                    VehicleId = vehicleId,
-                    MaintenanceStageId = msEntity.Id,
-                    ActualMaintenanceMileage = 0,
-                    ActualMaintenanceUnit = MaintenanceUnit.KILOMETER,
-                    ExpectedStartDate = TryParseDate(sd, "expectedStartDate") ?? implDate,
-                    ExpectedEndDate = TryParseDate(sd, "expectedEndDate"),
-                    ExpectedImplementationDate = implDate,
-                    ActualImplementationDate = null,
-                    Status = vsStatus
-                };
+                var found = existingStages.FirstOrDefault(x => x.MaintenanceStageId == msEntity.Id);
 
-                await _unitOfWork.VehicleStages.CreateAsync(vs);
-                vehicleStages.Add(vs);
+                if (found != null)
+                {
+                    found.ExpectedStartDate = TryParseDate(sd, "expectedStartDate") ?? implDate;
+                    found.ExpectedEndDate = TryParseDate(sd, "expectedEndDate");
+                    found.ExpectedImplementationDate = implDate;
+                    found.Status = vsStatus;
+
+                    await _unitOfWork.VehicleStages.UpdateAsync(found);
+                    vehicleStages.Add(found);
+                }
+                else
+                {
+                    var vs = new VehicleStage
+                    {
+                        Id = Guid.NewGuid(),
+                        VehicleId = vehicleId,
+                        MaintenanceStageId = msEntity.Id,
+                        ActualMaintenanceMileage = 0,
+                        ActualMaintenanceUnit = MaintenanceUnit.KILOMETER,
+                        ExpectedStartDate = TryParseDate(sd, "expectedStartDate") ?? implDate,
+                        ExpectedEndDate = TryParseDate(sd, "expectedEndDate"),
+                        ExpectedImplementationDate = implDate,
+                        ActualImplementationDate = null,
+                        Status = vsStatus
+                    };
+
+                    await _unitOfWork.VehicleStages.CreateAsync(vs);
+                    existingStages.Add(vs);
+                    vehicleStages.Add(vs);
+                }
+
             }
 
             return vehicleStages;
@@ -854,10 +875,11 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         await _unitOfWork.Vehicles.UpdateAsync(localVehicle);
 
                         var oldStages = await _unitOfWork.VehicleStages.GetByVehicleIdAsync(localVehicle.Id);
-                        foreach (var s in oldStages)
-                            await _unitOfWork.VehicleStages.DeleteAsync(s);
-
                         stages = await SyncVehicleStagesFromOemAsync(localVehicle.Id, vehicleDocId);
+                        if (!stages.Any() && _firebase.IsFirestoreConfigured())
+                        {
+                            stages = await SyncVehicleStagesFromOemAsync(localVehicle.Id, vehicleDocId);
+                        }
                     }
                     else
                     {

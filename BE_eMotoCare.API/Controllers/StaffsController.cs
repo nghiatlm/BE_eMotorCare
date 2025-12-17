@@ -71,7 +71,7 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER")]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_STAFF,ROLE_MANAGER,ROLE_TECHNICIAN,ROLE_STOREKEEPER,ROLE_CUSTOMER")]
         public async Task<IActionResult> Update(Guid id, [FromBody] StaffRequest request)
         {
             await _staffService.UpdateAsync(id, request);
