@@ -337,6 +337,12 @@ namespace eMototCare.BLL.Services.CustomerServices
                     if (!syncModel) throw new AppException("Sync model thất bại");
                     var syncVehicle = await _firebase.GetVehicleByCustomerId(customerExist.Id);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
+                    //var syncPartItem = await _firebase.GetPartItemAsync();
+                    //if (!syncPartItem) throw new AppException("Sync part item thất bại");
+                    //var syncVehiclePartItem = await _firebase.GetVehiclePartitemAsync();
+                    //if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
+                    var syncVehicleStage = await _firebase.GetVehicleStageAsync();
+                    if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
                     await _unitOfWork.SaveAsync();
 
                 } else
@@ -358,10 +364,10 @@ namespace eMototCare.BLL.Services.CustomerServices
                     if (!syncModel) throw new AppException("Sync model thất bại");                   
                     var syncVehicle = await _firebase.GetVehicleByCustomerId(customer.Id);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
-                    var syncPartItem = await _firebase.GetPartItemAsync();
-                    if (!syncPartItem) throw new AppException("Sync part item thất bại");
-                    var syncVehiclePartItem = await _firebase.GetVehiclePartitemAsync();
-                    if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
+                    //var syncPartItem = await _firebase.GetPartItemAsync();
+                    //if (!syncPartItem) throw new AppException("Sync part item thất bại");
+                    //var syncVehiclePartItem = await _firebase.GetVehiclePartitemAsync();
+                    //if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
                     var syncVehicleStage = await _firebase.GetVehicleStageAsync();
                     if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
 
