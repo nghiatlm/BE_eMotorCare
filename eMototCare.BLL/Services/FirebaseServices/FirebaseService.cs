@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
+using Newtonsoft.Json.Linq;
 using System.Text.Json;
 
 namespace eMototCare.BLL.Services.FirebaseServices
@@ -618,7 +619,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Type = data.ContainsKey("name") ? Enum.Parse<ProgramType>(data["name"].ToString() ?? throw new AppException("Type trong Firebase đang trống")) : throw new AppException("Type trong Firebase đang trống"),
                             Title = data.ContainsKey("title") ? data["title"].ToString() ?? "" : "",
                             StartDate = data.ContainsKey("start_date") ? Convert.ToDateTime(data["start_date"]) : DateTime.UtcNow,
-                            EndDate = data.ContainsKey("end_date") ? (DateTime?)Convert.ToDateTime(data["end_date"]) : null,
+                            EndDate = data.ContainsKey("end_date") ? (DateTime?)Convert.ToDateTime(data["end_date"]) ?? null : null,
                             AttachmentUrl = data.ContainsKey("attachment_url") ? data["attachment_url"].ToString() ?? "" : "",
                             CreatedBy = data.ContainsKey("created_by") ? (Guid?)Guid.Parse(data["created_by"].ToString() ?? null) : null,
                             UpdatedBy = data.ContainsKey("updated_by") ? (Guid?)Guid.Parse(data["updated_by"].ToString() ?? null) : null,
@@ -953,8 +954,8 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Price = data.ContainsKey("price") ? Decimal.Parse(data["price"].ToString() ?? "0") : 0,
                             Status = data.ContainsKey("status") ? Enum.Parse<PartItemStatus>(data["status"].ToString() ?? "ACTIVE") : PartItemStatus.INSTALLED,
                             WarrantyPeriod = data.ContainsKey("warranty_period") ? int.Parse(data["warranty_period"].ToString() ?? null) : null,
-                            WarantyStartDate = data.ContainsKey("waranty_start_date") ? (DateTime?)Convert.ToDateTime(data["waranty_start_date"]) : null,
-                            WarantyEndDate = data.ContainsKey("waranty_end_date") ? (DateTime?)Convert.ToDateTime(data["waranty_end_date"]) : null,
+                            WarantyStartDate = data.ContainsKey("waranty_start_date") ? (DateTime?)Convert.ToDateTime(data["waranty_start_date"]) ?? null : null,
+                            WarantyEndDate = data.ContainsKey("waranty_end_date") ? (DateTime?)Convert.ToDateTime(data["waranty_end_date"]) ?? null : null,
                             ServiceCenterInventoryId = data.ContainsKey("service_center_inventory_id") ? Guid.Parse(data["service_center_inventory_id"].ToString() ?? throw new AppException("service_center_inventory_id trong firebase đang trống")) : throw new AppException("service_center_inventory_id không tồn tại trong Firebase"),
                             IsManufacturerWarranty = data.TryGetValue("is_manufacturer_warranty", out var v)
                                                     && v?.ToString() switch
@@ -1010,17 +1011,33 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var vehicleStage = new VehicleStage
                         {
                             Id = Guid.Parse(docId),
-                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? throw new AppException("actual_maintenance_mileage đang null")) : throw new AppException("actual_maintenance_mileage đang null"),
+                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? "0") : 0,
                             MaintenanceStageId = data.ContainsKey("maintenancestageId") ? Guid.Parse(data["maintenancestageId"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase"),
                             ActualMaintenanceUnit = data.ContainsKey("actualMaintenanceUnit") ? Enum.Parse<MaintenanceUnit>(data["actualMaintenanceUnit"].ToString() ?? throw new AppException("actual_maintenance_unit trong firebase đang trống")) : throw new AppException("actual_maintenance_unit không tồn tại trong Firebase"),
                             Status = data.ContainsKey("status") ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START") : VehicleStageStatus.NO_START,
                             VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
                             UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
-                            ActualImplementationDate = data.ContainsKey("actualImplementationDate") ? (DateTime?)Convert.ToDateTime(data["actualImplementationDate"]) : null,
+                            ActualImplementationDate = data.TryGetValue("actualImplementationDate", out var raw)
+                                                        && raw != null
+                                                        && DateTime.TryParse(raw.ToString(), out var dt)
+                                                            ? dt
+                                                            : null,
                             CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
-                            ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) : null,
-                            ExpectedImplementationDate = data.ContainsKey("expectedImplementationDate") ? (DateTime?)Convert.ToDateTime(data["expectedImplementationDate"]) : null,
-                            ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) : null,
+                            ExpectedEndDate = data.TryGetValue("expectedEndDate", out var expectedEndDate)
+                                                        && expectedEndDate != null
+                                                        && DateTime.TryParse(expectedEndDate.ToString(), out var eedt)
+                                                            ? eedt
+                                                            : null,
+                            ExpectedImplementationDate = data.TryGetValue("expectedImplementationDate", out var ab)
+                                                        && ab != null
+                                                        && DateTime.TryParse(ab.ToString(), out var aa)
+                                                            ? aa
+                                                            : null,
+                            ExpectedStartDate = data.TryGetValue("expectedStartDate", out var bb)
+                                                        && bb != null
+                                                        && DateTime.TryParse(bb.ToString(), out var bc)
+                                                            ? bc
+                                                            : null,
                         };
 
                         await _unitOfWork.VehicleStages.CreateAsync(vehicleStage);
@@ -1117,17 +1134,21 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var vehicleStage = new VehicleStage
                         {
                             Id = Guid.Parse(docId),
-                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? throw new AppException("actual_maintenance_mileage đang null")) : throw new AppException("actual_maintenance_mileage đang null"),
+                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? "0") : 0,
                             MaintenanceStageId = data.ContainsKey("maintenancestageId") ? Guid.Parse(data["maintenancestageId"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase"),
                             ActualMaintenanceUnit = data.ContainsKey("actualMaintenanceUnit") ? Enum.Parse<MaintenanceUnit>(data["actualMaintenanceUnit"].ToString() ?? throw new AppException("actual_maintenance_unit trong firebase đang trống")) : throw new AppException("actual_maintenance_unit không tồn tại trong Firebase"),
                             Status = data.ContainsKey("status") ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START") : VehicleStageStatus.NO_START,
                             VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
                             UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
-                            ActualImplementationDate = data.ContainsKey("actualImplementationDate") ? (DateTime?)Convert.ToDateTime(data["actualImplementationDate"]) : null,
+                            ActualImplementationDate = data.TryGetValue("actualImplementationDate", out var cc)
+                                                        && cc != null
+                                                        && DateTime.TryParse(cc.ToString(), out var ac)
+                                                            ? ac
+                                                            : null,
                             CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
-                            ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) : null,
-                            ExpectedImplementationDate = data.ContainsKey("expectedImplementationDate") ? (DateTime?)Convert.ToDateTime(data["expectedImplementationDate"]) : null,
-                            ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) : null,
+                            ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) ?? null : null,
+                            ExpectedImplementationDate = data.ContainsKey("expectedImplementationDate") ? (DateTime?)Convert.ToDateTime(data["expectedImplementationDate"]) ?? null : null,
+                            ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) ?? null : null,
                         };
                         await _unitOfWork.VehicleStages.CreateAsync(vehicleStage);
                     }
