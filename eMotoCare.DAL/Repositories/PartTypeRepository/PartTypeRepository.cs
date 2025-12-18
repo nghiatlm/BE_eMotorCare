@@ -24,7 +24,6 @@ namespace eMotoCare.DAL.Repositories.PartTypeRepository
             pageSize = Math.Clamp(pageSize, 1, 100);
 
             var q = _context.PartTypes
-                .AsNoTracking()
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(name))
@@ -43,7 +42,7 @@ namespace eMotoCare.DAL.Repositories.PartTypeRepository
 
             var total = await q.LongCountAsync();
 
-            var items = await q.OrderByDescending(x => x.CreatedAt)
+            var items = await q
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
