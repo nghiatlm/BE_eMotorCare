@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Text.RegularExpressions;
-using AutoMapper;
+﻿using AutoMapper;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -12,6 +10,9 @@ using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Ocsp;
+using System.Net;
+using System.Text.RegularExpressions;
+using static Grpc.Core.Metadata;
 
 namespace eMototCare.BLL.Services.EVCheckServices
 {
@@ -581,6 +582,14 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     await _unitOfWork.ExportNoteDetails.CreateAsync(exportNoteDetail);
                 }
             }
+
+            var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(evCheck.Id);
+
+            if (evCheckDetails.Count == 1 && evCheckDetails.First().Remedies == Remedies.WARRANTY)
+            {
+                evCheck.Status = EVCheckStatus.COMPLETED;
+            }
+
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
             await _unitOfWork.EVChecks.UpdateAsync(evCheck);
             await _unitOfWork.SaveAsync();
