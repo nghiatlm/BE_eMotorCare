@@ -1107,7 +1107,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 return false;
             }
         }
-        public async Task<bool> GetVehicleStageByVehicleId(
+        public async Task<bool> CreateVehicleStageByVehicleId(
             string vehicleId
         )
         {
@@ -1165,6 +1165,63 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 return false;
             }
         }
+
+        public async Task<bool> CreateVehicleByChassis(string chassisNumber)
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collection = _firestoreDb.Collection("vehicles");
+                var query = collection.WhereEqualTo("chassis_number", chassisNumber.ToString());
+                var snapshot = await query.GetSnapshotAsync();
+
+                if (snapshot.Count == 0)
+                    return false;
+                var dbPlans = await _unitOfWork.Vehicles.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    var docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+                        var vehicle = new Vehicle
+                        {
+                            Id = Guid.Parse(docId),
+                            Image = data.ContainsKey("image") ? (data["image"].ToString() ?? throw new AppException("image trong firebase đang trống")) : throw new AppException("image không tồn tại trong Firebase"),
+                            Color = data.ContainsKey("color") ? (data["color"].ToString() ?? throw new AppException("color trong firebase đang trống")) : throw new AppException("color không tồn tại trong Firebase"),
+                            ChassisNumber = data.ContainsKey("chassis_number") ? (data["chassis_number"].ToString() ?? throw new AppException("chassis_number trong firebase đang trống")) : throw new AppException("chassis_number không tồn tại trong Firebase"),
+                            EngineNumber = data.ContainsKey("engine_number") ? (data["engine_number"].ToString() ?? throw new AppException("engine_number trong firebase đang trống")) : throw new AppException("engine_number không tồn tại trong Firebase"),
+                            Status = data.ContainsKey("status") ? Enum.Parse<StatusEnum>(data["status"].ToString() ?? "ACTIVE") : StatusEnum.ACTIVE,
+                            ManufactureDate = data.ContainsKey("manufacture_date") ? Convert.ToDateTime(data["manufacture_date"]) : throw new AppException("manufacture_date không tồn tại trong Firebase"),
+                            PurchaseDate = data.ContainsKey("purchase_date") ? Convert.ToDateTime(data["purchase_date"]) : throw new AppException("purchase_date không tồn tại trong Firebase"),
+                            WarrantyExpiry = data.ContainsKey("warranty_expiry") ? Convert.ToDateTime(data["warranty_expiry"]) : throw new AppException("warranty_expiry không tồn tại trong Firebase"),
+                            ModelId = data.ContainsKey("modelId") ? Guid.Parse(data["modelId"].ToString() ?? throw new AppException("modelId trong firebase đang trống")) : throw new AppException("modelId không tồn tại trong Firebase"),
+                            CustomerId = data.ContainsKey("customerId") ? Guid.Parse(data["customerId"].ToString() ?? throw new AppException("customerId trong firebase đang trống")) : throw new AppException("customerId không tồn tại trong Firebase"),
+                            IsPrimary = data.ContainsKey("is_primary")
+                                        && bool.TryParse(data["is_primary"]?.ToString(), out var v)
+                                        ? v
+                                        : false,
+                        };
+                        await _unitOfWork.Vehicles.CreateAsync(vehicle);
+                    }
+
+                }
+
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                // có thể log để debug
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                return false;
+            }
+        }
+
 
 
     }
