@@ -88,10 +88,15 @@ namespace BE_eMotoCare.API.Controllers
         [Authorize(Roles = "ROLE_MANAGER,ROLE_STAFF,ROLE_CUSTOMER,ROLE_ADMIN")]
         public async Task<IActionResult> SyncCustomerData([FromBody] CustomerSyncRequest request)
         {
-            var result = await _customerService.SyncCustomerAsync(request.AccountId, request.CitizenId);
-            if (!result)
-                return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu khách hàng thất bại."));
-            return Ok(ApiResponse<string>.SuccessResponse(null, "Đồng bộ dữ liệu khách hàng thành công."));
+            var result = await _customerService.SyncCustomerAsync(request.AccountId, request.CitizenId, request.ChassisNumber);
+            if (result != null)
+            {
+                return Ok(ApiResponse<SyncCustomerResponse>.SuccessResponse(result, "Đồng bộ dữ liệu khách hàng thành công."));
+            } else
+            {
+                return BadRequest(ApiResponse<string>.BadRequest("Đồng bộ dữ liệu khách hàng thành công."));
+            }
+                
         }
     }
 }
