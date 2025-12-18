@@ -438,6 +438,17 @@ namespace eMototCare.BLL.Services.EVCheckServices
                     }
                 }
 
+                if (req.Status == EVCheckStatus.CANCELLED)
+                {
+                    var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(entity.Id);
+
+                    foreach (var detail in evCheckDetails)
+                    {
+                        detail.Status = EVCheckDetailStatus.CANCELED;
+                        _unitOfWork.EVCheckDetails.Update(detail);
+                    }
+                }
+
                 if (req.Status == EVCheckStatus.REPAIR_COMPLETED)
                 {
                     if (appt != null)
