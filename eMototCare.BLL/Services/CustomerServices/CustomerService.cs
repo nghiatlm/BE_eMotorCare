@@ -293,7 +293,7 @@ namespace eMototCare.BLL.Services.CustomerServices
             return _mapper.Map<CustomerResponse>(customer);
         }
 
-        public async Task<bool> SyncCustomerAsync(Guid accountId, string citizenId)
+        public async Task<SyncCustomerResponse> SyncCustomerAsync(Guid accountId, string citizenId, string chassisNumber)
         {
             try
             {
@@ -318,7 +318,7 @@ namespace eMototCare.BLL.Services.CustomerServices
                         "Firestore not configured - cannot sync customer data for citizenId={CitizenId}",
                         citizenId
                     );
-                    return false;
+                    return null;
                 }
 
                 var customerExist = await _unitOfWork.Customers.GetByCitizenId(citizenId);
@@ -335,16 +335,27 @@ namespace eMototCare.BLL.Services.CustomerServices
                     if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
                     var syncModel = await _firebase.GetModelAsync();
                     if (!syncModel) throw new AppException("Sync model thất bại");
-                    var syncVehicle = await _firebase.GetVehicleByCustomerId(customerExist.Id);
+                    var syncVehicle = await _firebase.CreateVehicleByChassis(chassisNumber);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
                     //var syncPartItem = await _firebase.GetPartItemAsync();
                     //if (!syncPartItem) throw new AppException("Sync part item thất bại");
-                    var syncVehiclePartItem = await _firebase.GetVehiclePartitemAsync();
+                    var vehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
+                    var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
-                    var syncVehicleStage = await _firebase.GetVehicleStageAsync();
+                    var syncVehicleStage = await _firebase.CreateVehicleStageByVehicleId(vehicle.Id.ToString());
                     if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
-                    await _unitOfWork.SaveAsync();
 
+                    var vehicleResponse = _mapper.Map<VehicleResponse>(vehicle);
+                    var response = new SyncCustomerResponse
+                    {
+                        FirstName = customerExist.FirstName,
+                        LastName = customerExist.LastName,
+                        CitizenId = customerExist.CitizenId,
+                        Gender = customerExist.Gender,
+                        VehicleResponse = vehicleResponse
+                    };
+                    await _unitOfWork.SaveAsync();
+                    return response;
                 } else
                 {
                     var resultCustomer = await _firebase.GetCustomerByCitizenIdAsync(citizenId, accountId);
@@ -361,22 +372,33 @@ namespace eMototCare.BLL.Services.CustomerServices
                     var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
                     if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
                     var syncModel = await _firebase.GetModelAsync();
-                    if (!syncModel) throw new AppException("Sync model thất bại");                   
-                    var syncVehicle = await _firebase.GetVehicleByCustomerId(customer.Id);
+                    if (!syncModel) throw new AppException("Sync model thất bại");
+                    var syncVehicle = await _firebase.CreateVehicleByChassis(chassisNumber);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
                     //var syncPartItem = await _firebase.GetPartItemAsync();
                     //if (!syncPartItem) throw new AppException("Sync part item thất bại");
-                    var syncVehiclePartItem = await _firebase.GetVehiclePartitemAsync();
+                    var vehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
+                    var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
-                    var syncVehicleStage = await _firebase.GetVehicleStageAsync();
+                    var syncVehicleStage = await _firebase.CreateVehicleStageByVehicleId(vehicle.Id.ToString());
                     if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
 
+                    var vehicleResponse = _mapper.Map<VehicleResponse>(vehicle);
+                    var response = new SyncCustomerResponse
+                    {
+                        FirstName = customer.FirstName,
+                        LastName = customer.LastName,
+                        CitizenId = customer.CitizenId,
+                        Gender = customer.Gender,
+                        VehicleResponse = vehicleResponse,
+                    };
+                    await _unitOfWork.SaveAsync();
+                    return response;
                 }
      
                 
                 
-                await _unitOfWork.SaveAsync();
-                return true;
+                
             }
             catch (AppException)
             {

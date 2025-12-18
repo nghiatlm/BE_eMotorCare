@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Client;
+using Newtonsoft.Json.Linq;
 using System.Text.Json;
 
 namespace eMototCare.BLL.Services.FirebaseServices
@@ -618,7 +619,11 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Type = data.ContainsKey("name") ? Enum.Parse<ProgramType>(data["name"].ToString() ?? throw new AppException("Type trong Firebase đang trống")) : throw new AppException("Type trong Firebase đang trống"),
                             Title = data.ContainsKey("title") ? data["title"].ToString() ?? "" : "",
                             StartDate = data.ContainsKey("start_date") ? Convert.ToDateTime(data["start_date"]) : DateTime.UtcNow,
-                            EndDate = data.ContainsKey("end_date") ? (DateTime?)Convert.ToDateTime(data["end_date"]) : null,
+                            EndDate = data.TryGetValue("end_date", out var hh)
+                                                        && hh != null
+                                                        && DateTime.TryParse(hh.ToString(), out var kk)
+                                                            ? kk
+                                                            : null,
                             AttachmentUrl = data.ContainsKey("attachment_url") ? data["attachment_url"].ToString() ?? "" : "",
                             CreatedBy = data.ContainsKey("created_by") ? (Guid?)Guid.Parse(data["created_by"].ToString() ?? null) : null,
                             UpdatedBy = data.ContainsKey("updated_by") ? (Guid?)Guid.Parse(data["updated_by"].ToString() ?? null) : null,
@@ -956,8 +961,16 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Price = data.ContainsKey("price") ? Decimal.Parse(data["price"].ToString() ?? "0") : 0,
                             Status = data.ContainsKey("status") ? Enum.Parse<PartItemStatus>(data["status"].ToString() ?? "ACTIVE") : PartItemStatus.INSTALLED,
                             WarrantyPeriod = data.ContainsKey("warranty_period") ? int.Parse(data["warranty_period"].ToString() ?? null) : null,
-                            WarantyStartDate = data.ContainsKey("waranty_start_date") ? (DateTime?)Convert.ToDateTime(data["waranty_start_date"]) : null,
-                            WarantyEndDate = data.ContainsKey("waranty_end_date") ? (DateTime?)Convert.ToDateTime(data["waranty_end_date"]) : null,
+                            WarantyStartDate = data.TryGetValue("waranty_start_date", out var hh)
+                                                        && hh != null
+                                                        && DateTime.TryParse(hh.ToString(), out var kk)
+                                                            ? kk
+                                                            : null,
+                            WarantyEndDate = data.TryGetValue("waranty_end_date", out var we)
+                                                        && we != null
+                                                        && DateTime.TryParse(we.ToString(), out var wa)
+                                                            ? wa
+                                                            : null,
                             ServiceCenterInventoryId = data.ContainsKey("service_center_inventory_id") ? Guid.Parse(data["service_center_inventory_id"].ToString() ?? throw new AppException("service_center_inventory_id trong firebase đang trống")) : throw new AppException("service_center_inventory_id không tồn tại trong Firebase"),
                             IsManufacturerWarranty = data.TryGetValue("is_manufacturer_warranty", out var v)
                                                     && v?.ToString() switch
@@ -989,55 +1002,254 @@ namespace eMototCare.BLL.Services.FirebaseServices
 
         public async Task<bool> GetVehicleStageAsync()
         {
-            if (_firestoreDb == null) throw new AppException("Firestore chưa được cấu hình");
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
 
-            var snapshot = await _firestoreDb.Collection("vehiclestage").GetSnapshotAsync();
-
-            var dbIds = (await _unitOfWork.VehicleStages.FindAllAsync())
-                .Select(x => x.Id.ToString()).ToHashSet();
-
-            foreach (var doc in snapshot.Documents)
+            try
             {
-                if (dbIds.Contains(doc.Id)) continue;
-                var data = doc.ToDictionary();
-                if (!data.TryGetValue("vehicleId", out var vObj) || !Guid.TryParse(vObj?.ToString(), out var vehicleId))
-                    continue;
+                var collectionRef = _firestoreDb.Collection("vehiclestage");
+                var snapshot = await collectionRef.GetSnapshotAsync();
 
-                if (!data.TryGetValue("maintenancestageId", out var sObj) || !Guid.TryParse(sObj?.ToString(), out var stageId))
-                    continue;
-                if (await _unitOfWork.Vehicles.GetByIdAsync(vehicleId) == null) continue;
-                if (await _unitOfWork.MaintenanceStages.GetByIdAsync(stageId) == null) continue;
-                int actualMileage = 0;
-                if (data.TryGetValue("actualMaintenanceMileage", out var mObj))
-                    int.TryParse(mObj?.ToString(), out actualMileage);
-                var actualUnit = MaintenanceUnit.KILOMETER;
-                if (data.TryGetValue("actualMaintenanceUnit", out var uObj)
-                    && Enum.TryParse<MaintenanceUnit>(uObj?.ToString(), true, out var u))
-                    actualUnit = u;
 
-                var entity = new VehicleStage
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn của vehiclestage đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.VehicleStages.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
                 {
-                    Id = Guid.Parse(doc.Id),
-                    VehicleId = vehicleId,
-                    MaintenanceStageId = stageId,
-                    ActualMaintenanceMileage = actualMileage,
-                    ActualMaintenanceUnit = actualUnit,
-                    Status = data.ContainsKey("status")
-                        ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START")
-                        : VehicleStageStatus.NO_START,
-                    CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
-                    UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
-                    ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) : null,
-                    ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) : null,
-                    ActualImplementationDate = data.ContainsKey("actualImplementationDate") ? (DateTime?)Convert.ToDateTime(data["actualImplementationDate"]) : null,
-                };
+                    string docId = doc.Id;
 
-                await _unitOfWork.VehicleStages.CreateAsync(entity);
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+
+                        var vehicleStage = new VehicleStage
+                        {
+                            Id = Guid.Parse(docId),
+                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? "0") : 0,
+                            MaintenanceStageId = data.ContainsKey("maintenancestageId") ? Guid.Parse(data["maintenancestageId"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase"),
+                            ActualMaintenanceUnit = data.ContainsKey("actualMaintenanceUnit") ? Enum.Parse<MaintenanceUnit>(data["actualMaintenanceUnit"].ToString() ?? throw new AppException("actual_maintenance_unit trong firebase đang trống")) : throw new AppException("actual_maintenance_unit không tồn tại trong Firebase"),
+                            Status = data.ContainsKey("status") ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START") : VehicleStageStatus.NO_START,
+                            VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
+                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
+                            ActualImplementationDate = data.TryGetValue("actualImplementationDate", out var raw)
+                                                        && raw != null
+                                                        && DateTime.TryParse(raw.ToString(), out var dt)
+                                                            ? dt
+                                                            : null,
+                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
+                            ExpectedEndDate = data.TryGetValue("expectedEndDate", out var expectedEndDate)
+                                                        && expectedEndDate != null
+                                                        && DateTime.TryParse(expectedEndDate.ToString(), out var eedt)
+                                                            ? eedt
+                                                            : null,
+                            ExpectedImplementationDate = data.TryGetValue("expectedImplementationDate", out var ab)
+                                                        && ab != null
+                                                        && DateTime.TryParse(ab.ToString(), out var aa)
+                                                            ? aa
+                                                            : null,
+                            ExpectedStartDate = data.TryGetValue("expectedStartDate", out var bb)
+                                                        && bb != null
+                                                        && DateTime.TryParse(bb.ToString(), out var bc)
+                                                            ? bc
+                                                            : null,
+                        };
+
+                        await _unitOfWork.VehicleStages.CreateAsync(vehicleStage);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
             }
-
-            await _unitOfWork.SaveAsync();
-            return true;
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
         }
+
+        public async Task<bool> CreateVehiclePartItemsByVehicleIdAsync(
+            string vehicleId
+        )
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collection = _firestoreDb.Collection("vehiclepartitem");
+                var query = collection.WhereEqualTo("vehicleId", vehicleId.ToString());
+                var snapshot = await query.GetSnapshotAsync();
+
+                if (snapshot.Count == 0)
+                    return false;
+                var dbPlans = await _unitOfWork.VehiclePartItems.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    var docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+                        var vehiclePartItem = new VehiclePartItem
+                        {
+                            Id = Guid.Parse(docId),
+                            InstallDate = data.ContainsKey("installDate") ? Convert.ToDateTime(data["installDate"]) : throw new AppException("Install Date đang trống"),
+                            VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
+                            PartItemId = data.ContainsKey("partItemId") ? Guid.Parse(data["partItemId"].ToString() ?? throw new AppException("part_item_id trong firebase đang trống")) : throw new AppException("part_item_id không tồn tại trong Firebase"),
+                            ReplaceForId = data.ContainsKey("replaceForId") ? (Guid?)Guid.Parse(data["replaceForId"].ToString() ?? null) : null,
+                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
+                        };
+                        await _unitOfWork.VehiclePartItems.CreateAsync(vehiclePartItem);
+                    }
+
+                }
+
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                // có thể log để debug
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                return false;
+            }
+        }
+        public async Task<bool> CreateVehicleStageByVehicleId(
+            string vehicleId
+        )
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collection = _firestoreDb.Collection("vehiclestage");
+                var query = collection.WhereEqualTo("vehicleId", vehicleId.ToString());
+                var snapshot = await query.GetSnapshotAsync();
+
+                if (snapshot.Count == 0)
+                    return false;
+                var dbPlans = await _unitOfWork.VehicleStages.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    var docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+                        var vehicleStage = new VehicleStage
+                        {
+                            Id = Guid.Parse(docId),
+                            ActualMaintenanceMileage = data.ContainsKey("actualMaintenanceMileage") ? int.Parse(data["actualMaintenanceMileage"].ToString() ?? "0") : 0,
+                            MaintenanceStageId = data.ContainsKey("maintenancestageId") ? Guid.Parse(data["maintenancestageId"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase"),
+                            ActualMaintenanceUnit = data.ContainsKey("actualMaintenanceUnit") ? Enum.Parse<MaintenanceUnit>(data["actualMaintenanceUnit"].ToString() ?? throw new AppException("actual_maintenance_unit trong firebase đang trống")) : throw new AppException("actual_maintenance_unit không tồn tại trong Firebase"),
+                            Status = data.ContainsKey("status") ? Enum.Parse<VehicleStageStatus>(data["status"].ToString() ?? "NO_START") : VehicleStageStatus.NO_START,
+                            VehicleId = data.ContainsKey("vehicleId") ? Guid.Parse(data["vehicleId"].ToString() ?? throw new AppException("vehicle_id trong firebase đang trống")) : throw new AppException("vehicle_id không tồn tại trong Firebase"),
+                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
+                            ActualImplementationDate = data.TryGetValue("actualImplementationDate", out var cc)
+                                                        && cc != null
+                                                        && DateTime.TryParse(cc.ToString(), out var ac)
+                                                            ? ac
+                                                            : null,
+                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
+                            ExpectedEndDate = data.TryGetValue("expectedEndDate", out var ss)
+                                                        && ss != null
+                                                        && DateTime.TryParse(ss.ToString(), out var dd)
+                                                            ? dd
+                                                            : null,
+                            ExpectedImplementationDate = data.TryGetValue("expectedImplementationDate", out var hh)
+                                                        && hh != null
+                                                        && DateTime.TryParse(hh.ToString(), out var kk)
+                                                            ? kk
+                                                            : null,
+                            ExpectedStartDate = data.TryGetValue("expectedStartDate", out var qe)
+                                                        && qe != null
+                                                        && DateTime.TryParse(qe.ToString(), out var qs)
+                                                            ? qs
+                                                            : null,
+                        };
+                        await _unitOfWork.VehicleStages.CreateAsync(vehicleStage);
+                    }
+
+                }
+
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                // có thể log để debug
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> CreateVehicleByChassis(string chassisNumber)
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collection = _firestoreDb.Collection("vehicles");
+                var query = collection.WhereEqualTo("chassis_number", chassisNumber.ToString());
+                var snapshot = await query.GetSnapshotAsync();
+
+                if (snapshot.Count == 0)
+                    return false;
+                var dbPlans = await _unitOfWork.Vehicles.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    var docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+                        var vehicle = new Vehicle
+                        {
+                            Id = Guid.Parse(docId),
+                            Image = data.ContainsKey("image") ? (data["image"].ToString() ?? throw new AppException("image trong firebase đang trống")) : throw new AppException("image không tồn tại trong Firebase"),
+                            Color = data.ContainsKey("color") ? (data["color"].ToString() ?? throw new AppException("color trong firebase đang trống")) : throw new AppException("color không tồn tại trong Firebase"),
+                            ChassisNumber = data.ContainsKey("chassis_number") ? (data["chassis_number"].ToString() ?? throw new AppException("chassis_number trong firebase đang trống")) : throw new AppException("chassis_number không tồn tại trong Firebase"),
+                            EngineNumber = data.ContainsKey("engine_number") ? (data["engine_number"].ToString() ?? throw new AppException("engine_number trong firebase đang trống")) : throw new AppException("engine_number không tồn tại trong Firebase"),
+                            Status = data.ContainsKey("status") ? Enum.Parse<StatusEnum>(data["status"].ToString() ?? "ACTIVE") : StatusEnum.ACTIVE,
+                            ManufactureDate = data.ContainsKey("manufacture_date") ? Convert.ToDateTime(data["manufacture_date"]) : throw new AppException("manufacture_date không tồn tại trong Firebase"),
+                            PurchaseDate = data.ContainsKey("purchase_date") ? Convert.ToDateTime(data["purchase_date"]) : throw new AppException("purchase_date không tồn tại trong Firebase"),
+                            WarrantyExpiry = data.ContainsKey("warranty_expiry") ? Convert.ToDateTime(data["warranty_expiry"]) : throw new AppException("warranty_expiry không tồn tại trong Firebase"),
+                            ModelId = data.ContainsKey("modelId") ? Guid.Parse(data["modelId"].ToString() ?? throw new AppException("modelId trong firebase đang trống")) : throw new AppException("modelId không tồn tại trong Firebase"),
+                            CustomerId = data.ContainsKey("customerId") ? Guid.Parse(data["customerId"].ToString() ?? throw new AppException("customerId trong firebase đang trống")) : throw new AppException("customerId không tồn tại trong Firebase"),
+                            IsPrimary = data.ContainsKey("is_primary")
+                                        && bool.TryParse(data["is_primary"]?.ToString(), out var v)
+                                        ? v
+                                        : false,
+                        };
+                        await _unitOfWork.Vehicles.CreateAsync(vehicle);
+                    }
+
+                }
+
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                // có thể log để debug
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                return false;
+            }
+        }
+
+
 
     }
 }
