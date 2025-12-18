@@ -418,7 +418,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         }
                     }
                 }
-                if (req.Status == EVCheckStatus.WAITING_FOR_QUOTE)
+                if (req.Status == EVCheckStatus.INSPECTION_COMPLETED)
                 {
                     var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(entity.Id);
 
