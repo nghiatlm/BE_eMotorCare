@@ -377,20 +377,22 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             var diff = entity.Odometer - (int)closestStage.Mileage;
                             if (diff > 5000)
                             {
-                                maintenanceStageId = closestStage.Id;
-                            } else
-                            {
                                 maintenanceStageId = nextStage.Id;
                             }
-                        } else
-                        {
-                            if (nextStage == null)
+                            else
                             {
                                 maintenanceStageId = closestStage.Id;
-                            } else
-                            {
-                                maintenanceStageId = nextStage.Id;
-                            }    
+                            }
+                        }
+                        else if (nextStage == null)
+                        {
+                            maintenanceStageId = closestStage.Id;
+                        }
+                        else
+                        {
+
+                            maintenanceStageId = nextStage.Id;
+
                         }
 
 
