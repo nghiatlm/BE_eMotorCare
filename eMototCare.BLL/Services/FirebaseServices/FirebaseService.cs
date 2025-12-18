@@ -619,7 +619,11 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Type = data.ContainsKey("name") ? Enum.Parse<ProgramType>(data["name"].ToString() ?? throw new AppException("Type trong Firebase đang trống")) : throw new AppException("Type trong Firebase đang trống"),
                             Title = data.ContainsKey("title") ? data["title"].ToString() ?? "" : "",
                             StartDate = data.ContainsKey("start_date") ? Convert.ToDateTime(data["start_date"]) : DateTime.UtcNow,
-                            EndDate = data.ContainsKey("end_date") ? (DateTime?)Convert.ToDateTime(data["end_date"]) ?? null : null,
+                            EndDate = data.TryGetValue("end_date", out var hh)
+                                                        && hh != null
+                                                        && DateTime.TryParse(hh.ToString(), out var kk)
+                                                            ? kk
+                                                            : null,
                             AttachmentUrl = data.ContainsKey("attachment_url") ? data["attachment_url"].ToString() ?? "" : "",
                             CreatedBy = data.ContainsKey("created_by") ? (Guid?)Guid.Parse(data["created_by"].ToString() ?? null) : null,
                             UpdatedBy = data.ContainsKey("updated_by") ? (Guid?)Guid.Parse(data["updated_by"].ToString() ?? null) : null,
@@ -954,8 +958,16 @@ namespace eMototCare.BLL.Services.FirebaseServices
                             Price = data.ContainsKey("price") ? Decimal.Parse(data["price"].ToString() ?? "0") : 0,
                             Status = data.ContainsKey("status") ? Enum.Parse<PartItemStatus>(data["status"].ToString() ?? "ACTIVE") : PartItemStatus.INSTALLED,
                             WarrantyPeriod = data.ContainsKey("warranty_period") ? int.Parse(data["warranty_period"].ToString() ?? null) : null,
-                            WarantyStartDate = data.ContainsKey("waranty_start_date") ? (DateTime?)Convert.ToDateTime(data["waranty_start_date"]) ?? null : null,
-                            WarantyEndDate = data.ContainsKey("waranty_end_date") ? (DateTime?)Convert.ToDateTime(data["waranty_end_date"]) ?? null : null,
+                            WarantyStartDate = data.TryGetValue("waranty_start_date", out var hh)
+                                                        && hh != null
+                                                        && DateTime.TryParse(hh.ToString(), out var kk)
+                                                            ? kk
+                                                            : null,
+                            WarantyEndDate = data.TryGetValue("waranty_end_date", out var we)
+                                                        && we != null
+                                                        && DateTime.TryParse(we.ToString(), out var wa)
+                                                            ? wa
+                                                            : null,
                             ServiceCenterInventoryId = data.ContainsKey("service_center_inventory_id") ? Guid.Parse(data["service_center_inventory_id"].ToString() ?? throw new AppException("service_center_inventory_id trong firebase đang trống")) : throw new AppException("service_center_inventory_id không tồn tại trong Firebase"),
                             IsManufacturerWarranty = data.TryGetValue("is_manufacturer_warranty", out var v)
                                                     && v?.ToString() switch
@@ -1146,9 +1158,21 @@ namespace eMototCare.BLL.Services.FirebaseServices
                                                             ? ac
                                                             : null,
                             CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
-                            ExpectedEndDate = data.ContainsKey("expectedEndDate") ? (DateTime?)Convert.ToDateTime(data["expectedEndDate"]) ?? null : null,
-                            ExpectedImplementationDate = data.ContainsKey("expectedImplementationDate") ? (DateTime?)Convert.ToDateTime(data["expectedImplementationDate"]) ?? null : null,
-                            ExpectedStartDate = data.ContainsKey("expectedStartDate") ? (DateTime?)Convert.ToDateTime(data["expectedStartDate"]) ?? null : null,
+                            ExpectedEndDate = data.TryGetValue("expectedEndDate", out var ss)
+                                                        && ss != null
+                                                        && DateTime.TryParse(ss.ToString(), out var dd)
+                                                            ? dd
+                                                            : null,
+                            ExpectedImplementationDate = data.TryGetValue("expectedImplementationDate", out var hh)
+                                                        && hh != null
+                                                        && DateTime.TryParse(hh.ToString(), out var kk)
+                                                            ? kk
+                                                            : null,
+                            ExpectedStartDate = data.TryGetValue("expectedStartDate", out var qe)
+                                                        && qe != null
+                                                        && DateTime.TryParse(qe.ToString(), out var qs)
+                                                            ? qs
+                                                            : null,
                         };
                         await _unitOfWork.VehicleStages.CreateAsync(vehicleStage);
                     }
