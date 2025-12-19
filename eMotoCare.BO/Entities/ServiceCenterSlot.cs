@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Common;
 using eMotoCare.BO.Enums;
 
 namespace eMotoCare.BO.Entities
 {
     [Table("service_center_slot")]
-    public class ServiceCenterSlot
+    public class ServiceCenterSlot : BaseEntity
     {
         [Key]
         [Column("service_center_slot_id")]

@@ -14,5 +14,6 @@ namespace eMotoCare.BO.DTO.Responses
         public int Warranty { get; set; }
         public int Campaign { get; set; }
         public int Recall { get; set; }
+        public decimal Revenue { get; set; }
     }
 }
