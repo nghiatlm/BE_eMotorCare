@@ -204,7 +204,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
         int year
 )
         {
-            var q = _context.Appointments.AsNoTracking()
+            var q = _context.Appointments.AsNoTracking().Include(a => a.EVCheck)
                 .Where(a => a.AppointmentDate.Year == year);
 
             if (serviceCenterId.HasValue)
@@ -224,6 +224,8 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                     Warranty = g.Count(x => x.Type == ServiceType.WARRANTY_TYPE),
                     Campaign = g.Count(x => x.Type == ServiceType.CAMPAIGN_TYPE),
                     Recall = g.Count(x => x.Type == ServiceType.RECALL_TYPE),
+                    Revenue = g.Where(x => x.Status == AppointmentStatus.COMPLETED).Sum(x => x.EVCheck == null ? 0m : (x.EVCheck.TotalAmout ?? 0m))
+
                 })
                 .ToListAsync();
             var dict = grouped.ToDictionary(x => x.Month, x => x);
@@ -234,7 +236,7 @@ namespace eMotoCare.DAL.Repositories.AppointmentRepository
                 if (dict.TryGetValue(m, out var item))
                     result.Add(item);
                 else
-                    result.Add(new AppointmentDashboardMonthItem { Month = m });
+                    result.Add(new AppointmentDashboardMonthItem { Month = m, Revenue = 0m });
             }
 
             return result;
