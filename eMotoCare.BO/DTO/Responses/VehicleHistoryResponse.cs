@@ -7,5 +7,6 @@
         public List<AppointmentResponse> RepairHistory { get; set; } = new();
         public List<AppointmentResponse> WarrantyHistory { get; set; } = new();
         public List<CampaignResponse> CampaignHistory { get; set; } = new();
+        public List<VehiclePartItemHistoryResponse> ReplacedParts { get; set; } = new();
     }
 }

@@ -397,6 +397,17 @@ namespace eMototCare.BLL.Services.VehicleServices
 
             // var campaignDtos = _mapper.Map<List<CampaignResponse>>(campaignEntities);
 
+            var vehiclePartItems = await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(vehicleId);
+            var replacedParts = vehiclePartItems
+                .OrderByDescending(x => x.InstallDate)
+                .Select(x => new VehiclePartItemHistoryResponse
+                {
+                    Id = x.Id,
+                    InstallDate = x.InstallDate,
+                    NewPartItem = _mapper.Map<PartItemResponse>(x.PartItem),
+                    ReplacedForPartItem = x.ReplaceFor != null ? _mapper.Map<PartItemResponse>(x.ReplaceFor) : null,
+                })
+                .ToList();
             var response = new VehicleHistoryResponse
             {
                 Vehicle = _mapper.Map<VehicleResponse>(vehicle),
@@ -404,6 +415,7 @@ namespace eMototCare.BLL.Services.VehicleServices
                 RepairHistory = repairHistory,
                 WarrantyHistory = warrantyHistory,
                 // CampaignHistory = campaignDtos,
+                ReplacedParts = replacedParts
             };
 
             return response;
