@@ -4,7 +4,9 @@ using AutoMapper;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
+using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -22,6 +24,37 @@ namespace eMototCare.BLL.Services.NotificationServices
             _unitOfWork = unitOfWork;
             _logger = logger;
             _mapper = mapper;
+        }
+
+        public async Task<PageResult<NotificationResponse>> GetPagedAsync(
+
+            Guid? receiverId,
+            NotificationEnum? notificationType,
+            int page,
+            int pageSize
+        )
+        {
+            try
+            {
+                var (items, total) = await _unitOfWork.Notifications.GetPagedAsync(
+                    receiverId,
+                    notificationType,
+                    page,
+                    pageSize
+                );
+                var rows = _mapper.Map<List<NotificationResponse>>(items);
+                return new PageResult<NotificationResponse>(rows, pageSize, page, (int)total);
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GetPaged Notification failed: {Message}", ex.Message);
+                //throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+                throw new AppException(ex.Message);
+            }
         }
 
         public async Task<Guid> CreateAsync(NotificationRequest req)
