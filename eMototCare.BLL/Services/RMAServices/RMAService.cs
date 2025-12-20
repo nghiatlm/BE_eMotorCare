@@ -89,7 +89,10 @@ namespace eMototCare.BLL.Services.RMAServices
 
                 await _unitOfWork.RMAs.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
+                
+                
 
+                
                 _logger.LogInformation("Created RMA");
                 return entity.Id;
 
