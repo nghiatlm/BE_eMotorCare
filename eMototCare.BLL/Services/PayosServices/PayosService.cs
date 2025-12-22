@@ -188,7 +188,6 @@ namespace eMototCare.BLL.Services.PayosServices
                                     HttpStatusCode.BadRequest
                                 );
 
-                            //appointment.EVCheck.Status = EVCheckStatus.REPAIR_COMPLETED;
                             appointment.Status = AppointmentStatus.WAITING_FOR_PAYMENT;
 
                             await _unitOfWork.Appointments.UpdateAsync(appointment);
@@ -248,21 +247,10 @@ namespace eMototCare.BLL.Services.PayosServices
                     _logger.LogWarning("No payment found for orderCode {OrderCode}", orderCode);
                     return true;
                 }
-
-                // Prefer the Appointment instance that came with the payment query (if present)
-                // to avoid loading a second instance with the same key into the DbContext.
                 var appointmentId = payment.AppointmentId;
                 VehicleStage vehicleStage = null;
-                // if (appointment == null && payment.AppointmentId != Guid.Empty)
-                // {
-                //     appointment = await _unitOfWork.Appointments.GetByIdAsync(
-                //         payment.AppointmentId
-                //     );
-                // }
                 if (appointmentId == null) throw new AppException("Payment không có AppointmentId.", HttpStatusCode.BadRequest);
                 var appointment = await _unitOfWork.Appointments.GetByIdAsync(appointmentId);
-
-                // Load vehicleStage only if appointment exists and has a valid stage
                 if (appointment != null)
                 {
                     vehicleStage = appointment.VehicleStage;
@@ -278,7 +266,6 @@ namespace eMototCare.BLL.Services.PayosServices
                         {
                             appointment.EVCheck.Status = EVCheckStatus.COMPLETED;
                         }
-                        // Only update vehicleStage if it was successfully loaded
                         if (vehicleStage != null && vehicleStage.Id != Guid.Empty)
                         {
                             vehicleStage.Status = VehicleStageStatus.COMPLETED;
@@ -291,10 +278,6 @@ namespace eMototCare.BLL.Services.PayosServices
                     if (appointment != null)
                         appointment.Status = AppointmentStatus.PAYMENT_FAILED;
                 }
-
-                // If payment.Appointment is a different instance than the tracked appointment
-                // returned by FindByIdAsync, clear the navigation to avoid EF Core trying to
-                // attach two instances with the same key.
                 if (
                     payment.Appointment != null
                     && appointment != null
@@ -303,8 +286,6 @@ namespace eMototCare.BLL.Services.PayosServices
                 {
                     payment.Appointment = null;
                 }
-
-                // Only update vehicleStage if it was successfully loaded and has valid ID
                 if (vehicleStage != null && vehicleStage.Id != Guid.Empty)
                 {
                     await _unitOfWork.VehicleStages.UpdateAsync(vehicleStage);

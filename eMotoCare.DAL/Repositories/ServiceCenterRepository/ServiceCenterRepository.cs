@@ -176,7 +176,6 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
                 {
                     Id = x.ServiceCenterInventory.Id,
                     ServiceCenterInventoryName = x.ServiceCenterInventory.ServiceCenterInventoryName,
-                    Status = x.ServiceCenterInventory.Status,
                 },
                     ServiceCenterSlots = _context
                         .ServiceCenterSlots.AsNoTracking()

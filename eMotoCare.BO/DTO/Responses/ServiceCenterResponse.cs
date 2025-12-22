@@ -22,6 +22,5 @@ namespace eMotoCare.BO.DTO.Responses
         public ServiceCenterInventoryResponse? ServiceCenterInventory { get; set; }
         public StatusEnum Status { get; set; }
         public List<StaffResponse> Staffs { get; set; } = new();
-
     }
 }
