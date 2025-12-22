@@ -312,6 +312,15 @@ namespace eMototCare.BLL.Services.CustomerServices
                     );
                 }
 
+                 var vehicleExist = await _firebase.GetVehicleByChassisNumberAsync(chassisNumber);
+                if (vehicleExist == null)
+                {
+                    throw new AppException(
+                        "Không tìm thấy xe trong hệ thống",
+                        HttpStatusCode.NotFound
+                    );
+                }
+
                     if (!_firebase.IsFirestoreConfigured())
                 {
                     _logger.LogWarning(
