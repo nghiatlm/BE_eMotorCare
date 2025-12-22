@@ -188,8 +188,8 @@ namespace eMototCare.BLL.Services.PayosServices
                                     HttpStatusCode.BadRequest
                                 );
 
-                            appointment.EVCheck.Status = EVCheckStatus.PENDING;
-                            appointment.Status = AppointmentStatus.PENDING;
+                            //appointment.EVCheck.Status = EVCheckStatus.REPAIR_COMPLETED;
+                            appointment.Status = AppointmentStatus.WAITING_FOR_PAYMENT;
 
                             await _unitOfWork.Appointments.UpdateAsync(appointment);
                             await _unitOfWork.SaveAsync();
