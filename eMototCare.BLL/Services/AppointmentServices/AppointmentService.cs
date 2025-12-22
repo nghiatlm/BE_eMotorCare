@@ -361,6 +361,26 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         slotCfg.Id
                     );
                 }
+
+                var customer = await _unitOfWork.Customers.GetByIdAsync(req.CustomerId);
+                var serviceCenter = await _unitOfWork.ServiceCenters.GetByIdAsync(req.ServiceCenterId);
+                DateTime date = req.AppointmentDate;
+                string formatedDate = date.ToString("dd/MM/yyyy");
+                string time = date.ToString("HH:mm");
+                
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Thông báo lịch hẹn",
+                    Message = "Bạn có lịch hẹn vào ngày " + formatedDate + " lúc " + time + ", tại " + serviceCenter.Name + ".",
+                    ReceiverId = customer.AccountId.Value,
+                    Type = NotificationEnum.APPOINTMENT_REMINDER,
+                    IsRead = false,
+                    SentAt = DateTime.Now,
+                };
+                await _unitOfWork.Notifications.CreateAsync(notification);
+                await _unitOfWork.SaveAsync();
+
                 _logger.LogInformation("Created Appointment {Code} ({Id})", entity.Code, entity.Id);
                 return entity.Id;
             }

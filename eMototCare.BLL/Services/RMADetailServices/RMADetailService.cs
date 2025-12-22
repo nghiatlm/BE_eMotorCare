@@ -81,7 +81,19 @@ namespace eMototCare.BLL.Services.RMADetailServices
 
                 await _unitOfWork.RMADetails.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
-
+                var rmaDetail = await _unitOfWork.RMADetails.GetByIdAsync(entity.Id);
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Yêu cầu RMA đã được tạo",
+                    Message = "Yêu cầu bảo hành cho bộ phận: " + rmaDetail.EVCheckDetail.PartItem.Part.Name + " đã được khởi tạo. Chúng tôi sẽ cập nhật cho bạn sớm nhất có thể khi có kết quả được gửi về từ hãng.",
+                    ReceiverId = rmaDetail.EVCheckDetail.EVCheck.Appointment.Customer.AccountId.Value,
+                    Type = NotificationEnum.WARRANTY_STATUS,
+                    IsRead = false,
+                    SentAt = DateTime.Now,
+                };
+                await _unitOfWork.Notifications.CreateAsync(notification);
+                await _unitOfWork.SaveAsync();
                 _logger.LogInformation("Created RMA Detail");
                 return entity.Id;
 
@@ -196,7 +208,17 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     await _unitOfWork.PartItems.CreateAsync(partItem);
                     
                 }
-
+                var rmaDetail = await _unitOfWork.RMADetails.GetByIdAsync(id);
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "RMA của bạn đã được cập nhật",
+                    Message = "Yêu cầu bảo hành cho bộ phận " + rmaDetail.EVCheckDetail.PartItem.Part.Name + " vừa được cập nhật trạng thái. Vui lòng mở ứng dụng để biết thêm chi tiết.",
+                    ReceiverId = rmaDetail.EVCheckDetail.EVCheck.Appointment.Customer.AccountId.Value,
+                    Type = NotificationEnum.WARRANTY_STATUS,
+                    IsRead = false,
+                    SentAt = DateTime.Now,
+                };
                 await _unitOfWork.RMADetails.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
 

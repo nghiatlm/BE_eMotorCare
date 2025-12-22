@@ -2,6 +2,8 @@
 using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
+using eMotoCare.BO.Enums;
+using eMotoCare.BO.Pages;
 using eMototCare.BLL.Services.NotificationServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BE_eMotoCare.API.Controllers
 {
-    [Route("api/notifications")]
+    [Route("api/v1/notifications")]
     [ApiController]
     public class NotificationsController : ControllerBase
     {
@@ -20,6 +22,23 @@ namespace BE_eMotoCare.API.Controllers
         {
             _service = service;
             _notifier = notifier;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetByParams(
+            [FromQuery] Guid? receiverId,
+            [FromQuery] NotificationEnum? notificationType,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var data = await _service.GetPagedAsync(receiverId, notificationType, page, pageSize);
+            return Ok(
+                ApiResponse<PageResult<NotificationResponse>>.SuccessResponse(
+                    data,
+                    "Lấy danh sách Notification thành công"
+                )
+            );
         }
 
         [HttpPost]
