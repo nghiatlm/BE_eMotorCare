@@ -360,6 +360,8 @@ namespace eMototCare.BLL.Services.CustomerServices
                         FirstName = customerExist.FirstName,
                         LastName = customerExist.LastName,
                         CitizenId = customerExist.CitizenId,
+                        DateOfBirth = customerExist.DateOfBirth,
+                        Address = customerExist.Address,
                         Gender = customerExist.Gender,
                         VehicleResponse = vehicleResponse
                     };
@@ -398,6 +400,8 @@ namespace eMototCare.BLL.Services.CustomerServices
                         FirstName = customer.FirstName,
                         LastName = customer.LastName,
                         CitizenId = customer.CitizenId,
+                        DateOfBirth = customer.DateOfBirth,
+                        Address = customer.Address,
                         Gender = customer.Gender,
                         VehicleResponse = vehicleResponse,
                     };
