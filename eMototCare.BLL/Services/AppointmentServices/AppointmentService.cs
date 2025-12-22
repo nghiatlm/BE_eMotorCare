@@ -378,6 +378,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     IsRead = false,
                     SentAt = DateTime.Now,
                 };
+                await _unitOfWork.Notifications.CreateAsync(notification);
+                await _unitOfWork.SaveAsync();
 
                 _logger.LogInformation("Created Appointment {Code} ({Id})", entity.Code, entity.Id);
                 return entity.Id;

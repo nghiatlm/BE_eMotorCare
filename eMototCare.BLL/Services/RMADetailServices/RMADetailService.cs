@@ -92,6 +92,8 @@ namespace eMototCare.BLL.Services.RMADetailServices
                     IsRead = false,
                     SentAt = DateTime.Now,
                 };
+                await _unitOfWork.Notifications.CreateAsync(notification);
+                await _unitOfWork.SaveAsync();
                 _logger.LogInformation("Created RMA Detail");
                 return entity.Id;
 
