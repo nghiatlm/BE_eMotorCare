@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
@@ -15,10 +16,12 @@ namespace BE_eMotoCare.API.Controllers
     public class RMADetailsController : ControllerBase
     {
         private readonly IRMADetailService _service;
+        private readonly INotifierRMASerive _notifier;
 
-        public RMADetailsController(IRMADetailService service)
+        public RMADetailsController(IRMADetailService service, INotifierRMASerive notifier)
         {
             _service = service;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -80,6 +83,7 @@ namespace BE_eMotoCare.API.Controllers
         public async Task<IActionResult> Update(Guid id, [FromBody] RMADetailUpdateRequest request)
         {
             await _service.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync("RMA Detail", new { Id = id, RMADetailStatus = request.Status });
             return Ok(
                 ApiResponse<string>.SuccessResponse(null, "Cập nhật RMA Detail thành công")
             );

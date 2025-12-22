@@ -1,4 +1,5 @@
-﻿using eMotoCare.BO.DTO.ApiResponse;
+﻿using BE_eMotoCare.API.Realtime.Services;
+using eMotoCare.BO.DTO.ApiResponse;
 using eMotoCare.BO.DTO.Requests;
 using eMototCare.BLL.Services.ExportNoteDetailServices;
 using Microsoft.AspNetCore.Authorization;
@@ -11,10 +12,12 @@ namespace BE_eMotoCare.API.Controllers
     public class ExportNoteDetailsController : ControllerBase
     {
         private readonly IExportNoteDetailService _service;
+        private readonly INotifierExportNoteService _notifier;
 
-        public ExportNoteDetailsController(IExportNoteDetailService service)
+        public ExportNoteDetailsController(IExportNoteDetailService service, INotifierExportNoteService notifier)
         {
             _service = service;
+            _notifier = notifier;
         }
 
         [HttpPut("{id}")]
@@ -25,6 +28,7 @@ namespace BE_eMotoCare.API.Controllers
         )
         {
             await _service.UpdateAsync(id, request);
+            await _notifier.NotifyUpdateAsync("Export Note Detail", new { Id = id, Status = request.Status });
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật thành công"));
         }
 
