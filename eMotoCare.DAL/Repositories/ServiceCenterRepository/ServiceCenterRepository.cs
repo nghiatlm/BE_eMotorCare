@@ -19,6 +19,7 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
             return await _context
                 .ServiceCenters.Include(x => x.ServiceCenterInventory)
                 .FirstOrDefaultAsync(x => x.Id == id);
+
         }
 
         public async Task<(IReadOnlyList<ServiceCenter> Items, long Total)> GetPagedAsync(
@@ -90,7 +91,13 @@ namespace eMotoCare.DAL.Repositories.ServiceCenterRepository
                     Latitude = x.Latitude,
                     Longitude = x.Longitude,
                     Status = x.Status,
-
+                    ServiceCenterInventory = x.ServiceCenterInventory == null
+                ? null
+                : new ServiceCenterInventoryResponse
+                {
+                    Id = x.ServiceCenterInventory.Id,
+                    ServiceCenterInventoryName = x.ServiceCenterInventory.ServiceCenterInventoryName,
+                },
                     ServiceCenterSlots = _context
                         .ServiceCenterSlots.AsNoTracking()
                         .Where(s => s.ServiceCenterId == x.Id)
