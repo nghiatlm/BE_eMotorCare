@@ -331,6 +331,8 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         {
                             if (closestStage == null)
                                 break;
+                            if (vs.Status == VehicleStageStatus.COMPLETED)
+                                continue;
                             var stage = maintenanceStages.FirstOrDefault(ms =>
                                 ms.Id == vs.MaintenanceStageId
                             );
@@ -352,8 +354,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 if (vs.Status != VehicleStageStatus.COMPLETED)
                                     vs.Status = VehicleStageStatus.EXPIRED;
                             }
-                            if (vs.Status == VehicleStageStatus.COMPLETED)
-                                continue;
+                            
 
                             _unitOfWork.VehicleStages.Update(vs);
                         }
