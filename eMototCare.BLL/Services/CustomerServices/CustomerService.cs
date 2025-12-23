@@ -304,11 +304,14 @@ namespace eMototCare.BLL.Services.CustomerServices
                     throw new AppException("CitizenId không hợp lệ", HttpStatusCode.BadRequest);
 
                 var customerInfo = await _unitOfWork.Customers.GetByAccountIdAsync(accountId);
-                 if (customerInfo != null)
+                 
+
+                 var vehicleExist = await _firebase.GetVehicleByChassisNumberAsync(chassisNumber);
+                if (vehicleExist == null)
                 {
                     throw new AppException(
-                        "Tài khoản đã có hồ sơ khách hàng",
-                        HttpStatusCode.Conflict
+                        "Không tìm thấy xe trong hệ thống",
+                        HttpStatusCode.NotFound
                     );
                 }
 
@@ -351,6 +354,8 @@ namespace eMototCare.BLL.Services.CustomerServices
                         FirstName = customerExist.FirstName,
                         LastName = customerExist.LastName,
                         CitizenId = customerExist.CitizenId,
+                        DateOfBirth = customerExist.DateOfBirth,
+                        Address = customerExist.Address,
                         Gender = customerExist.Gender,
                         VehicleResponse = vehicleResponse
                     };
@@ -358,12 +363,16 @@ namespace eMototCare.BLL.Services.CustomerServices
                     return response;
                 } else
                 {
-                    var resultCustomer = await _firebase.GetCustomerByCitizenIdAsync(citizenId, accountId);
-                    if (resultCustomer == false)
-                        throw new AppException(
-                            "Không tìm thấy khách hàng trong hệ thống",
-                            HttpStatusCode.NotFound
-                        );
+                    if (customerInfo == null)
+                    {
+                        var resultCustomer = await _firebase.GetCustomerByCitizenIdAsync(citizenId, accountId);
+                        if (resultCustomer == false)
+                            throw new AppException(
+                                "Không tìm thấy khách hàng trong hệ thống",
+                                HttpStatusCode.NotFound
+                            );
+                    }
+                    
                     var customer = await _unitOfWork.Customers.GetByCitizenId(citizenId);
                     var syncPlan = await _firebase.GetMaintenancePlanAsync();
                     if (!syncPlan) throw new AppException("Sync plan thất bại");
@@ -389,6 +398,8 @@ namespace eMototCare.BLL.Services.CustomerServices
                         FirstName = customer.FirstName,
                         LastName = customer.LastName,
                         CitizenId = customer.CitizenId,
+                        DateOfBirth = customer.DateOfBirth,
+                        Address = customer.Address,
                         Gender = customer.Gender,
                         VehicleResponse = vehicleResponse,
                     };
