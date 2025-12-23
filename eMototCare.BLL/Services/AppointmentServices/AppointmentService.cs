@@ -285,13 +285,22 @@ namespace eMototCare.BLL.Services.AppointmentServices
                         );
                 }
 
-                var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync()).FirstOrDefault(
-                    s =>
-                        s.ServiceCenterId == req.ServiceCenterId
-                        //&& s.IsActive
-                        && (s.Date == dateOnly || (s.Date == default && s.DayOfWeek == dow))
-                        && s.SlotTime == req.SlotTime
+                var allSlots = await _unitOfWork.ServiceCenterSlot.FindAllAsync();
+                var slotCfg = allSlots.FirstOrDefault(s =>
+                    s.ServiceCenterId == req.ServiceCenterId
+                    && s.Date == dateOnly
+                    && s.SlotTime == req.SlotTime
                 );
+
+                if (slotCfg == null)
+                {
+                    slotCfg = allSlots.FirstOrDefault(s =>
+                        s.ServiceCenterId == req.ServiceCenterId
+                        && s.Date == default
+                        && s.DayOfWeek == dow
+                        && s.SlotTime == req.SlotTime
+                    );
+                }
                 if (slotCfg is null)
                     throw new AppException(
                         "Ngày này không có khung giờ đó.",
@@ -329,6 +338,23 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 entity.Code = code;
 
                 await _unitOfWork.Appointments.CreateAsync(entity);
+                if (slotCfg.Date == dateOnly)
+                {
+                    if (!slotCfg.IsActive || slotCfg.Capacity <= 0)
+                    {
+                        throw new AppException("Khung giờ này đã đầy.", HttpStatusCode.Conflict);
+                    }
+
+                    slotCfg.Capacity -= 1;
+
+                    if (slotCfg.Capacity <= 0)
+                    {
+                        slotCfg.Capacity = 0;
+                        slotCfg.IsActive = false;
+                    }
+
+                    await _unitOfWork.ServiceCenterSlot.UpdateAsync(slotCfg);
+                }
                 if (stage != null)
                 {
                     stage.ExpectedImplementationDate = req.AppointmentDate;
@@ -439,6 +465,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     entity.SlotTime = req.SlotTime.Value;
                 }
+
                 if (id == Guid.Empty)
                     throw new AppException("Id không hợp lệ", HttpStatusCode.BadRequest);
 
@@ -589,6 +616,32 @@ namespace eMototCare.BLL.Services.AppointmentServices
                             break;
                         default:
                             break;
+                        case AppointmentStatus.CANCELED:
+                            if (
+                                oldStatus == AppointmentStatus.PENDING
+                                || oldStatus == AppointmentStatus.APPROVED
+                                || oldStatus == AppointmentStatus.CHECKED_IN
+                            )
+                            {
+                                var dateOnly = DateOnly.FromDateTime(entity.AppointmentDate.Date);
+
+                                var slotCfg = (await _unitOfWork.ServiceCenterSlot.FindAllAsync())
+                                    .FirstOrDefault(s =>
+                                        s.ServiceCenterId == entity.ServiceCenterId
+                                        && s.Date == dateOnly
+                                        && s.SlotTime == entity.SlotTime
+                                    );
+
+                                if (slotCfg != null)
+                                {
+                                    slotCfg.Capacity += 1;
+                                    if (slotCfg.Capacity > 0)
+                                        slotCfg.IsActive = true;
+
+                                    await _unitOfWork.ServiceCenterSlot.UpdateAsync(slotCfg);
+                                }
+                            }
+                            break;
                     }
 
                     entity.Status = req.Status;
@@ -678,6 +731,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 ?? throw new AppException("Không tìm thấy lịch hẹn", HttpStatusCode.NotFound);
 
             entity.Status = status;
+
             await _unitOfWork.Appointments.UpdateAsync(entity);
             await _unitOfWork.SaveAsync();
         }
