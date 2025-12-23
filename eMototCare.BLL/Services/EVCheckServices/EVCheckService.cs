@@ -636,6 +636,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
             if (evCheckDetails.Count == 1 && evCheckDetails.First().Remedies == Remedies.WARRANTY)
             {
                 evCheck.Status = EVCheckStatus.COMPLETED;
+                evCheck.Appointment.Status = AppointmentStatus.COMPLETED;
             }
 
             evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
