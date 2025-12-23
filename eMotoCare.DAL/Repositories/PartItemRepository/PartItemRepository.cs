@@ -92,7 +92,7 @@ namespace eMotoCare.DAL.Repositories.PartItemRepository
                 .Where(p =>
                     p.PartId == partId
                     && p.ServiceCenterInventory.ServiceCenterId == serviceCenterId
-                    && p.Quantity == 1
+                    && p.Quantity != 0
                     && p.Status == PartItemStatus.IN_STOCK
                 )
                 .ToListAsync();
