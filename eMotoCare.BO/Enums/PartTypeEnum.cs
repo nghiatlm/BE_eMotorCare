@@ -19,6 +19,7 @@ namespace eMotoCare.BO.Enums
         BRK_CALI,
         ENG,
         BATT,
-        BRK_DSK
+        BRK_DSK,
+        FRONT_BRAKE_FLUID_HOSE
     }
 }
