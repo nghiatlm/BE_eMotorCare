@@ -73,7 +73,11 @@ namespace eMototCare.BLL.Services.RMADetailServices
 
             try
             {
-
+                var duplicate = await _unitOfWork.RMADetails.GetByEvCheckDetail(req.EVCheckDetailId);
+                if (duplicate != null)
+                {
+                    throw new AppException("Đã tồn tại yêu cầu RMA cho bộ phận này", HttpStatusCode.Conflict);
+                }
                 var entity = _mapper.Map<RMADetail>(req);
                 entity.Id = Guid.NewGuid();
                 entity.Status = RMADetailStatus.PENDING;
