@@ -135,11 +135,17 @@ namespace eMototCare.BLL.Services.StaffServices
 
             do
             {
-                code = $"ST{rnd.Next(100000, 999999)}"; 
+                code = $"ST{rnd.Next(100000, 999999)}";
                 exists = await _unitOfWork.Staffs.ExistsCodeAsync(code);
             } while (exists);
 
             return code;
+        }
+
+        public async Task<List<StaffResponse>?> GetAvailableTechnicianAsync(SlotTime slotTime, DateTime appointmentDate)
+        {
+            var technicians = await _unitOfWork.Staffs.GetAvailableTechnicianAsync(slotTime, appointmentDate);
+            return _mapper.Map<List<StaffResponse>>(technicians);
         }
     }
 }

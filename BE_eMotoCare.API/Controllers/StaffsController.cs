@@ -77,5 +77,19 @@ namespace BE_eMotoCare.API.Controllers
             await _staffService.UpdateAsync(id, request);
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật nhân viên thành công"));
         }
+
+        [HttpPost("get-available-technician")]
+        [Authorize(Roles = "ROLE_ADMIN,ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_STOREKEEPER")]
+        public async Task<IActionResult> GetAvailableTechnician([FromBody] GetAvailableTechnicianRequest request)
+        {
+            var data = await _staffService.GetAvailableTechnicianAsync(request.SlotTime, request.AppointmentDate);
+            return Ok(
+                ApiResponse<List<StaffResponse>>.SuccessResponse(
+                    data,
+                    "Lấy danh sách kỹ thuật viên có sẵn thành công"
+                )
+            );
+
+        }
     }
 }
