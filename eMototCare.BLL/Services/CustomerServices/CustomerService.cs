@@ -340,8 +340,8 @@ namespace eMototCare.BLL.Services.CustomerServices
                     if (!syncModel) throw new AppException("Sync model thất bại");
                     var syncVehicle = await _firebase.CreateVehicleByChassis(chassisNumber);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
-                    //var syncPartItem = await _firebase.GetPartItemAsync();
-                    //if (!syncPartItem) throw new AppException("Sync part item thất bại");
+                    var syncPartItem = await _firebase.GetPartItemAsync();
+                    if (!syncPartItem) throw new AppException("Sync part item thất bại");
                     var vehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
                     var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");

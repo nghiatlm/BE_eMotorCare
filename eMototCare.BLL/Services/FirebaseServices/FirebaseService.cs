@@ -552,7 +552,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var maintenanceStageId = data.ContainsKey("maintenance_stage_id") ? Guid.Parse(data["maintenance_stage_id"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase");
                         var maintenanceStage = await _unitOfWork.MaintenanceStages.GetByIdAsync(maintenanceStageId);
                         if (maintenanceStage == null)
-                            throw new AppException("Maintenance Stage chưa tồn tại trong database");
+                            throw new AppException("Maintenance Stage chưa tồn tại trong database " + maintenanceStageId);
 
                         var partId = data.ContainsKey("part_id") ? Guid.Parse(data["part_id"].ToString() ?? throw new AppException("part_id trong firebase đang trống")) : throw new AppException("part_id không tồn tại trong Firebase");
                         var part = await _unitOfWork.Parts.GetByIdAsync(partId);
@@ -983,6 +983,63 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         };
 
                         await _unitOfWork.PartItems.CreateAsync(partItem);
+
+                    }
+                }
+                await _unitOfWork.SaveAsync();
+                return true;
+            }
+            catch (Grpc.Core.RpcException ex)
+            {
+                Console.WriteLine($"Firestore RPC Error: {ex.Message}");
+                throw new AppException($"Firestore RPC Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                throw new AppException(ex.Message);
+            }
+        }
+
+        public async Task<bool> GetPartAsync()
+        {
+            if (_firestoreDb == null)
+                throw new AppException("Firestore chưa được cấu hình");
+
+            try
+            {
+                var collectionRef = _firestoreDb.Collection("part");
+                var snapshot = await collectionRef.GetSnapshotAsync();
+
+
+                if (snapshot.Count == 0)
+                    throw new AppException("Data nguồn của part đang trống hoặc không tìm thấy");
+                var dbPlans = await _unitOfWork.Parts.FindAllAsync();
+                var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
+                foreach (var doc in snapshot.Documents)
+                {
+                    string docId = doc.Id;
+
+                    if (!dbIds.Contains(docId))
+                    {
+                        var data = doc.ToDictionary();
+                        var partTypeId = data.ContainsKey("partTypeId") ? Guid.Parse(data["partTypeId"].ToString() ?? throw new AppException("part_type_id trong firebase đang trống")) : throw new AppException("part_type_id không tồn tại trong Firebase");
+                        var partType =  await _unitOfWork.PartTypes.GetByIdAsync(partTypeId);
+                        if (partType == null)
+                            throw new AppException("Part Type chưa tồn tại trong hệ thống");
+                        var part = new Part
+                        {
+                            Id = Guid.Parse(docId),
+                            Quantity = data.ContainsKey("quantity") ? int.Parse(data["quantity"].ToString() ?? throw new AppException("Quantity đang null")) : throw new AppException("Quantity đang null"),
+                            Code = data.ContainsKey("code") ? (data["code"].ToString() ?? throw new AppException("code trong firebase đang trống")) : throw new AppException("code không tồn tại trong Firebase"),
+                            Description = data.ContainsKey("description") ? (data["description"].ToString() ?? "") : "",
+                            Name = data.ContainsKey("name") ? (data["name"].ToString() ?? throw new AppException("name trong firebase đang trống")) : throw new AppException("name không tồn tại trong Firebase"),
+                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                            PartTypeId = data.ContainsKey("partTypeId") ? Guid.Parse(data["partTypeId"].ToString() ?? throw new AppException("part_type_id trong firebase đang trống")) : throw new AppException("part_type_id không tồn tại trong Firebase"),
+                            Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
+                        };
+
+                        await _unitOfWork.Parts.CreateAsync(part);
 
                     }
                 }
