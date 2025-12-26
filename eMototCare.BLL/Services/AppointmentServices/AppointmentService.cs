@@ -526,7 +526,17 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                     "Mã check-in không hợp lệ.",
                                     HttpStatusCode.BadRequest
                                 );
-
+                            var notification = new Notification
+                            {
+                                Id = Guid.NewGuid(),
+                                Title = "Lịch hẹn đã được xác nhận",
+                                Message = "Lịch hẹn " + entity.Code + " đã được xác nhận thành công.",
+                                ReceiverId = entity.Customer.AccountId.Value,
+                                Type = NotificationEnum.APPOINTMENT_REMINDER,
+                                IsRead = false,
+                                SentAt = DateTime.Now,
+                            };
+                            await _unitOfWork.Notifications.CreateAsync(notification);
                             entity.ApproveById = req.ApproveById.Value;
                             entity.CheckinQRCode = req.CheckinQRCode;
                             break;
