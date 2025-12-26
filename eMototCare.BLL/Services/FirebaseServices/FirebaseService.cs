@@ -1280,6 +1280,11 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     if (!dbIds.Contains(docId))
                     {
                         var data = doc.ToDictionary();
+                        var modelId = data.ContainsKey("modelId") ? Guid.Parse(data["modelId"].ToString() ?? throw new AppException("modelId trong firebase đang trống")) : throw new AppException("modelId không tồn tại trong Firebase");
+                        var model = await _unitOfWork.Models.GetByIdAsync(modelId);
+                        if (model == null)
+                            return false;
+
                         var vehicle = new Vehicle
                         {
                             Id = Guid.Parse(docId),
