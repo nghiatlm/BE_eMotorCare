@@ -1231,7 +1231,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                                                         && DateTime.TryParse(ss.ToString(), out var dd)
                                                             ? dd
                                                             : null,
-                            ExpectedImplementationDate = data.TryGetValue("expectedImplementationDate", out var hh)
+                            ExpectedImplementationDate = data.TryGetValue("expectedImplementDate", out var hh)
                                                         && hh != null
                                                         && DateTime.TryParse(hh.ToString(), out var kk)
                                                             ? kk
