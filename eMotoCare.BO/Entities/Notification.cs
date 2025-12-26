@@ -32,6 +32,7 @@ namespace eMotoCare.BO.Entities
         [Required]
         [Column("is_read")]
         public bool IsRead { get; set; }
-
+        [Column("reference_id")]
+        public Guid ReferenceId { get; set; }
     }
 }

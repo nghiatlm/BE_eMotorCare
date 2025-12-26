@@ -403,6 +403,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                     Type = NotificationEnum.APPOINTMENT_REMINDER,
                     IsRead = false,
                     SentAt = DateTime.Now,
+                    ReferenceId = entity.Id
                 };
                 await _unitOfWork.Notifications.CreateAsync(notification);
                 await _unitOfWork.SaveAsync();
@@ -539,6 +540,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
                                 Type = NotificationEnum.APPOINTMENT_REMINDER,
                                 IsRead = false,
                                 SentAt = DateTime.Now,
+                                ReferenceId = entity.Id
                             };
                             await _unitOfWork.Notifications.CreateAsync(notification);
                             entity.ApproveById = req.ApproveById.Value;
