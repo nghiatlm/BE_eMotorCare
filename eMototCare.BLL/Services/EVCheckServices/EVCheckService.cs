@@ -325,7 +325,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         .Where(ms => (int)ms.Mileage <= entity.Odometer)
                         .OrderByDescending(ms => (int)ms.Mileage)
                         .FirstOrDefault();
-                    if (req.Odometer < (int)appointment.VehicleStage.MaintenanceStage.Mileage)
+                    if (req.Odometer > (int)appointment.VehicleStage.MaintenanceStage.Mileage)
                     {
                         foreach (var vs in allVehicleStages)
                         {
@@ -347,6 +347,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                     vs.Status = VehicleStageStatus.EXPIRED;
                                 else
                                     vs.Status = VehicleStageStatus.UPCOMING;
+                                    vs.ActualMaintenanceMileage = req.Odometer.Value;
                             }
                             // Nếu là stage trước đó
                             else if (closestStage != null && stage.Mileage < closestStage.Mileage)
@@ -422,11 +423,15 @@ namespace eMototCare.BLL.Services.EVCheckServices
                                 await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
                             }
                         }
+
+                        
                     } else
                     {
                         if (appointment.Type == ServiceType.MAINTENANCE_TYPE)
                         {
                             var vehicleStages = appointment.VehicleStage;
+                            vehicleStages.ActualMaintenanceMileage = req.Odometer.Value;
+                            await _unitOfWork.VehicleStages.UpdateAsync(vehicleStages);
                             var vehicleDetail = await _unitOfWork.Vehicles.GetByIdAsync(
                                 vehicleStages.VehicleId
                             );
