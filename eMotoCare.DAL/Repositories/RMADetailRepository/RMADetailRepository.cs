@@ -88,5 +88,9 @@ namespace eMotoCare.DAL.Repositories.RMADetailRepository
         {
             return _context.RMADetails.Where(x => x.RMAId == id).ToListAsync();
         }
+
+        public Task<RMADetail?> GetByEvCheckDetail(Guid id) =>
+                        _context.RMADetails
+                        .FirstOrDefaultAsync(x => x.EVCheckDetailId == id);
     }
 }
