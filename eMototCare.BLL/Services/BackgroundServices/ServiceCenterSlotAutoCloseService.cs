@@ -32,19 +32,20 @@ namespace eMototCare.BLL.Services.BackgroundServices
                     using var scope = _scopeFactory.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                    var now = DateTime.Now;
+                    var now = DateTime.UtcNow.AddHours(7);
                     var today = DateOnly.FromDateTime(now.Date);
                     var timeNow = now.TimeOfDay;
 
-                    var slots = await db
+                    var activeTodaySlots = await db
                         .ServiceCenterSlots.Where(s => s.IsActive && s.Date == today)
                         .ToListAsync(stoppingToken);
 
                     int changed = 0;
-                    foreach (var s in slots)
+
+                    foreach (var s in activeTodaySlots)
                     {
-                        var endTime = GetEndTime(s.SlotTime);
-                        if (timeNow >= endTime && s.IsActive)
+                        var endTime = GetStartTime(s.SlotTime);
+                        if (timeNow >= endTime)
                         {
                             s.IsActive = false;
                             changed++;
@@ -57,9 +58,11 @@ namespace eMototCare.BLL.Services.BackgroundServices
                         _logger.LogInformation(
                             "Auto closed {Count} slots for {Date}",
                             changed,
-                            today
+                            today,
+                            timeNow
                         );
                     }
+
                 }
                 catch (Exception ex)
                 {
@@ -72,20 +75,20 @@ namespace eMototCare.BLL.Services.BackgroundServices
             _logger.LogInformation("ServiceCenterSlotAutoCloseService stopping");
         }
 
-        private TimeSpan GetEndTime(SlotTime slot)
+        private TimeSpan GetStartTime(SlotTime slot)
         {
             return slot switch
             {
-                SlotTime.H07_08 => new TimeSpan(8, 0, 0),
-                SlotTime.H08_09 => new TimeSpan(9, 0, 0),
-                SlotTime.H09_10 => new TimeSpan(10, 0, 0),
-                SlotTime.H10_11 => new TimeSpan(11, 0, 0),
-                SlotTime.H11_12 => new TimeSpan(12, 0, 0),
-                SlotTime.H13_14 => new TimeSpan(14, 0, 0),
-                SlotTime.H14_15 => new TimeSpan(15, 0, 0),
-                SlotTime.H15_16 => new TimeSpan(16, 0, 0),
-                SlotTime.H16_17 => new TimeSpan(17, 0, 0),
-                SlotTime.H17_18 => new TimeSpan(18, 0, 0),
+                SlotTime.H07_08 => new TimeSpan(7, 0, 0),
+                SlotTime.H08_09 => new TimeSpan(8, 0, 0),
+                SlotTime.H09_10 => new TimeSpan(9, 0, 0),
+                SlotTime.H10_11 => new TimeSpan(10, 0, 0),
+                SlotTime.H11_12 => new TimeSpan(11, 0, 0),
+                SlotTime.H13_14 => new TimeSpan(13, 0, 0),
+                SlotTime.H14_15 => new TimeSpan(14, 0, 0),
+                SlotTime.H15_16 => new TimeSpan(15, 0, 0),
+                SlotTime.H16_17 => new TimeSpan(16, 0, 0),
+                SlotTime.H17_18 => new TimeSpan(17, 0, 0),
                 _ => new TimeSpan(23, 59, 59),
             };
         }
