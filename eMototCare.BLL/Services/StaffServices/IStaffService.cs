@@ -19,6 +19,6 @@ namespace eMototCare.BLL.Services.StaffServices
         Task<StaffResponse?> GetByIdAsync(Guid id);
         Task<Guid> CreateAsync(StaffRequest req);
         Task UpdateAsync(Guid id, StaffRequest req);
-        Task<List<StaffResponse>?> GetAvailableTechnicianAsync(SlotTime slotTime, DateTime appointmentDate);
+        Task<List<StaffResponse>?> GetAvailableTechnicianAsync(int slotTime, DateTime appointmentDate);
     }
 }
