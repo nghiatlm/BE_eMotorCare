@@ -80,9 +80,9 @@ namespace BE_eMotoCare.API.Controllers
 
         [HttpGet("get-available-technician")]
         [Authorize(Roles = "ROLE_ADMIN,ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_STOREKEEPER")]
-        public async Task<IActionResult> GetAvailableTechnician()
+        public async Task<IActionResult> GetAvailableTechnician([FromQuery] Guid serviceCenterId)
         {
-            var data = await _staffService.GetAvailableTechnicianAsync();
+            var data = await _staffService.GetAvailableTechnicianAsync(serviceCenterId);
             return Ok(
                 ApiResponse<List<StaffResponse>>.SuccessResponse(
                     data,

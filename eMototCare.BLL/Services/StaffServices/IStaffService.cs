@@ -2,6 +2,7 @@
 using eMotoCare.BO.DTO.Responses;
 using eMotoCare.BO.Enums;
 using eMotoCare.BO.Pages;
+using Microsoft.AspNetCore.Mvc;
 
 namespace eMototCare.BLL.Services.StaffServices
 {
@@ -19,6 +20,6 @@ namespace eMototCare.BLL.Services.StaffServices
         Task<StaffResponse?> GetByIdAsync(Guid id);
         Task<Guid> CreateAsync(StaffRequest req);
         Task UpdateAsync(Guid id, StaffRequest req);
-        Task<List<StaffResponse>?> GetAvailableTechnicianAsync();
+        Task<List<StaffResponse>?> GetAvailableTechnicianAsync(Guid serviceCenterId);
     }
 }

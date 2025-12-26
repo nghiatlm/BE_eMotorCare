@@ -7,6 +7,7 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace eMototCare.BLL.Services.StaffServices
@@ -142,7 +143,7 @@ namespace eMototCare.BLL.Services.StaffServices
             return code;
         }
 
-        public async Task<List<StaffResponse>?> GetAvailableTechnicianAsync()
+        public async Task<List<StaffResponse>?> GetAvailableTechnicianAsync(Guid serviceCenterId)
         {
             var technicians = await _unitOfWork.Staffs.GetAvailableTechnicianAsync();
             return _mapper.Map<List<StaffResponse>>(technicians);
