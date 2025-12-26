@@ -355,11 +355,7 @@ namespace eMototCare.BLL.Services.AppointmentServices
 
                     await _unitOfWork.ServiceCenterSlot.UpdateAsync(slotCfg);
                 }
-                if (stage != null)
-                {
-                    stage.ExpectedImplementationDate = req.AppointmentDate;
-                    await _unitOfWork.VehicleStages.UpdateAsync(stage);
-                }
+                
                 await _unitOfWork.SaveAsync();
                 if (req.RmaId.HasValue)
                 {
