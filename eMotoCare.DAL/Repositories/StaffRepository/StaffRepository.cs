@@ -98,7 +98,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
 
             var busyStaffIds = await _context.Appointments
                             .Include(x => x.EVCheck)
-                            .Where(a => a.Status == AppointmentStatus.COMPLETED && a.ServiceCenterId == serviceCenterId)
+                            .Where(a => a.Status != AppointmentStatus.COMPLETED && a.ServiceCenterId == serviceCenterId)
                             .Select(a => a.EVCheck.TaskExecutorId)
                             .Distinct()
                             .ToListAsync();

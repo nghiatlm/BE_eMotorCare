@@ -145,7 +145,7 @@ namespace eMototCare.BLL.Services.StaffServices
 
         public async Task<List<StaffResponse>?> GetAvailableTechnicianAsync(Guid serviceCenterId)
         {
-            var technicians = await _unitOfWork.Staffs.GetAvailableTechnicianAsync();
+            var technicians = await _unitOfWork.Staffs.GetAvailableTechnicianAsync(serviceCenterId);
             return _mapper.Map<List<StaffResponse>>(technicians);
         }
     }
