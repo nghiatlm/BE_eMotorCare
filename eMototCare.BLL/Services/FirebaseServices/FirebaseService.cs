@@ -1211,6 +1211,10 @@ namespace eMototCare.BLL.Services.FirebaseServices
                     if (!dbIds.Contains(docId))
                     {
                         var data = doc.ToDictionary();
+                        var maintenanceStageId = data.ContainsKey("maintenancestageId") ? Guid.Parse(data["maintenancestageId"].ToString() ?? throw new AppException("maintenance_stage_id trong firebase đang trống")) : throw new AppException("maintenance_stage_id không tồn tại trong Firebase");
+                        var maintenanceStage = await _unitOfWork.MaintenanceStages.GetByIdAsync(maintenanceStageId);
+                        if (maintenanceStage == null)
+                            return false;
                         var vehicleStage = new VehicleStage
                         {
                             Id = Guid.Parse(docId),

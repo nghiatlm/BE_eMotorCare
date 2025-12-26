@@ -356,8 +356,17 @@ namespace eMototCare.BLL.Services.CustomerServices
                     var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
                     var syncVehicleStage = await _firebase.CreateVehicleStageByVehicleId(vehicle.Id.ToString());
-                    if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
-
+                    if (!syncVehicleStage)
+                    {
+                        var syncPlan = await _firebase.GetMaintenancePlanAsync();
+                        if (!syncPlan) throw new AppException("Sync plan thất bại");
+                        var syncStage = await _firebase.GetMaintenanceStageAsync();
+                        if (!syncStage) throw new AppException("syncStage thất bại");
+                        //var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
+                        //if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
+                        syncVehicleStage = await _firebase.CreateVehicleStageByVehicleId(vehicle.Id.ToString());
+                        if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
+                    }
                     var vehicleResponse = _mapper.Map<VehicleResponse>(vehicle);
                     var response = new SyncCustomerResponse
                     {
@@ -409,7 +418,17 @@ namespace eMototCare.BLL.Services.CustomerServices
                     var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
                     var syncVehicleStage = await _firebase.CreateVehicleStageByVehicleId(vehicle.Id.ToString());
-                    if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
+                    if (!syncVehicleStage)
+                    {
+                        var syncPlan = await _firebase.GetMaintenancePlanAsync();
+                        if (!syncPlan) throw new AppException("Sync plan thất bại");
+                        var syncStage = await _firebase.GetMaintenanceStageAsync();
+                        if (!syncStage) throw new AppException("syncStage thất bại");
+                        //var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
+                        //if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
+                        syncVehicleStage = await _firebase.CreateVehicleStageByVehicleId(vehicle.Id.ToString());
+                        if (!syncVehicleStage) throw new AppException("Sync vehicle stage thất bại");
+                    }
 
                     var vehicleResponse = _mapper.Map<VehicleResponse>(vehicle);
                     var response = new SyncCustomerResponse
