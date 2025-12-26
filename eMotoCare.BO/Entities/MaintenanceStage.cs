@@ -29,7 +29,7 @@ namespace eMotoCare.BO.Entities
         public string? Description { get; set; }
 
         [Required]
-        [Column("mileage", TypeName = "varchar(200)")]
+        [Column("mileage")]
         [EnumDataType(typeof(Mileage))]
         public Mileage Mileage { get; set; }
 

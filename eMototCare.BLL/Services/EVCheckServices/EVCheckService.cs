@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -192,6 +193,19 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         }
                     }
                 }
+
+                var technician = await _unitOfWork.Staffs.GetByIdAsync(req.TaskExecutorId);
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Đã gán kỹ thuật viên",
+                    Message = "Kỹ thuật viên: " + technician.LastName + " " + technician.FirstName + " đã được chỉ định phụ trách lịch hẹn của bạn.",
+                    ReceiverId = appointment.Customer.AccountId.Value,
+                    Type = NotificationEnum.APPOINTMENT_REMINDER,
+                    IsRead = false,
+                    SentAt = DateTime.Now,
+                    ReferenceId = appointment.Id
+                };
 
                 await _unitOfWork.SaveAsync();
 
@@ -490,6 +504,21 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             detail.Status = EVCheckDetailStatus.COMPLETED;
                         _unitOfWork.EVCheckDetails.Update(detail);
                     }
+                    var appointment = await _unitOfWork.Appointments.GetByIdAsync(
+                        entity.AppointmentId
+                    );
+                    var notification = new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Đã hoàn thành kiểm tra xe.",
+                        Message = "Đã hoàn tất quá trình kiểm tra xe và gửi báo giá. Vui lòng xác nhận qua ứng dụng.",
+                        ReceiverId = appointment.Customer.AccountId.Value,
+                        Type = NotificationEnum.APPOINTMENT_REMINDER,
+                        IsRead = false,
+                        SentAt = DateTime.Now,
+                        ReferenceId = appointment.Id
+                    };
+                    _unitOfWork.Notifications.CreateAsync(notification);
                 }
 
                 if (req.Status == EVCheckStatus.CANCELLED)
@@ -519,6 +548,21 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             AppointmentStatus.REPAIR_COMPLETED
                         );
                     }
+                    var appointment = await _unitOfWork.Appointments.GetByIdAsync(
+                        entity.AppointmentId
+                    );
+                    var notification = new Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Vui lòng thanh toán hoá đơn",
+                        Message = "Quá trình bảo dưỡng/sửa chữa đã hoàn thành. Vui lòng thanh toán tại quầy hoặc qua app.",
+                        ReceiverId = appointment.Customer.AccountId.Value,
+                        Type = NotificationEnum.APPOINTMENT_REMINDER,
+                        IsRead = false,
+                        SentAt = DateTime.Now,
+                        ReferenceId = appointment.Id
+                    };
+                    _unitOfWork.Notifications.CreateAsync(notification);
                 }
 
                 if (req.Status == EVCheckStatus.COMPLETED)
