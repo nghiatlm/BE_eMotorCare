@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using eMotoCare.BO.Common.src;
 using eMotoCare.BO.DTO.Requests;
 using eMotoCare.BO.DTO.Responses;
@@ -192,6 +193,19 @@ namespace eMototCare.BLL.Services.EVCheckServices
                         }
                     }
                 }
+
+                var technician = await _unitOfWork.Staffs.GetByIdAsync(req.TaskExecutorId);
+                var notification = new Notification
+                {
+                    Id = Guid.NewGuid(),
+                    Title = "Đã gán kỹ thuật viên",
+                    Message = "Kỹ thuật viên: " + technician.LastName + " " + technician.FirstName + " đã được chỉ định phụ trách lịch hẹn của bạn.",
+                    ReceiverId = appointment.Customer.AccountId.Value,
+                    Type = NotificationEnum.APPOINTMENT_REMINDER,
+                    IsRead = false,
+                    SentAt = DateTime.Now,
+                    ReferenceId = appointment.Id
+                };
 
                 await _unitOfWork.SaveAsync();
 
