@@ -388,8 +388,8 @@ namespace eMototCare.BLL.Services.AppointmentServices
                 var serviceCenter = await _unitOfWork.ServiceCenters.GetByIdAsync(req.ServiceCenterId);
                 DateTime date = req.AppointmentDate;
                 string formatedDate = date.ToString("dd/MM/yyyy");
-                string time = date.ToString("HH:mm");
-                
+                string time = req.SlotTime.ToString().ToString().Replace("H", "").Replace("_", ":");
+
                 var notification = new Notification
                 {
                     Id = Guid.NewGuid(),

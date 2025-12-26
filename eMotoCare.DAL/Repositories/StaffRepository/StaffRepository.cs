@@ -91,11 +91,11 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
         public Task<Staff?> GetByAccountIdAsync(Guid accountId) =>
             _context.Staffs.FirstOrDefaultAsync(x => x.AccountId == accountId);
 
-        public async Task<List<Staff>?> GetAvailableTechnicianAsync(SlotTime slotTime, DateTime appointmentDate)
+        public async Task<List<Staff>?> GetAvailableTechnicianAsync(int slotTime, DateTime appointmentDate)
         {
             var busyStaffIds = await _context.Appointments
                             .Include(x => x.EVCheck)
-                            .Where(a => a.SlotTime == slotTime && a.AppointmentDate == appointmentDate)
+                            .Where(a => (int)a.SlotTime == slotTime && a.AppointmentDate == appointmentDate)
                             .Select(a => a.EVCheck.TaskExecutorId)
                             .Distinct()
                             .ToListAsync();

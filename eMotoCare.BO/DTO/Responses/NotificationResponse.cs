@@ -12,7 +12,7 @@ namespace eMotoCare.BO.DTO.Responses
 
         public Guid Id { get; set; }
 
-        public Account? Receiver { get; set; }
+        public AccountResponse? Receiver { get; set; }
 
         public string Title { get; set; }
 

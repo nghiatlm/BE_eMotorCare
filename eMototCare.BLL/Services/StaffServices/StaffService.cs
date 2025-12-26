@@ -142,7 +142,7 @@ namespace eMototCare.BLL.Services.StaffServices
             return code;
         }
 
-        public async Task<List<StaffResponse>?> GetAvailableTechnicianAsync(SlotTime slotTime, DateTime appointmentDate)
+        public async Task<List<StaffResponse>?> GetAvailableTechnicianAsync(int slotTime, DateTime appointmentDate)
         {
             var technicians = await _unitOfWork.Staffs.GetAvailableTechnicianAsync(slotTime, appointmentDate);
             return _mapper.Map<List<StaffResponse>>(technicians);
