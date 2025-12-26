@@ -10,6 +10,7 @@ namespace eMotoCare.BO.Enums
         WARRANTY_STATUS,
         APPOINTMENT_REMINDER,
         CAMPAIGN_REMINDER,
-        RECALL_REMINDER
+        RECALL_REMINDER,
+        EVCHECK_RESULT
     }
 }
