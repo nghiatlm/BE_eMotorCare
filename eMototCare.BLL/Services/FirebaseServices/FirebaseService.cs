@@ -971,7 +971,11 @@ namespace eMototCare.BLL.Services.FirebaseServices
                                                         && DateTime.TryParse(we.ToString(), out var wa)
                                                             ? wa
                                                             : null,
-                            ServiceCenterInventoryId = data.ContainsKey("service_center_inventory_id") ? Guid.Parse(data["service_center_inventory_id"].ToString() ?? throw new AppException("service_center_inventory_id trong firebase đang trống")) : throw new AppException("service_center_inventory_id không tồn tại trong Firebase"),
+                            ServiceCenterInventoryId =
+                                                        data.TryGetValue("service_center_inventory_id", out var value)
+                                                        && Guid.TryParse(value?.ToString(), out var guid)
+                                                            ? guid
+                                                            : null,
                             IsManufacturerWarranty = data.TryGetValue("is_manufacturer_warranty", out var v)
                                                     && v?.ToString() switch
                                                     {
@@ -1029,12 +1033,16 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var part = new Part
                         {
                             Id = Guid.Parse(docId),
-                            Quantity = data.ContainsKey("quantity") ? int.Parse(data["quantity"].ToString() ?? throw new AppException("Quantity đang null")) : throw new AppException("Quantity đang null"),
+                            Quantity =
+                                        data.TryGetValue("quantity", out var value)
+                                        && int.TryParse(value?.ToString(), out var quantity)
+                                            ? quantity
+                                            : 0,
                             Code = data.ContainsKey("code") ? (data["code"].ToString() ?? throw new AppException("code trong firebase đang trống")) : throw new AppException("code không tồn tại trong Firebase"),
                             Description = data.ContainsKey("description") ? (data["description"].ToString() ?? "") : "",
                             Name = data.ContainsKey("name") ? (data["name"].ToString() ?? throw new AppException("name trong firebase đang trống")) : throw new AppException("name không tồn tại trong Firebase"),
-                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
-                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updated_at"]) : DateTime.UtcNow,
+                            CreatedAt = data.ContainsKey("createdAt") ? Convert.ToDateTime(data["createdAt"]) : DateTime.UtcNow,
+                            UpdatedAt = data.ContainsKey("updatedAt") ? Convert.ToDateTime(data["updatedAt"]) : DateTime.UtcNow,
                             PartTypeId = data.ContainsKey("partTypeId") ? Guid.Parse(data["partTypeId"].ToString() ?? throw new AppException("part_type_id trong firebase đang trống")) : throw new AppException("part_type_id không tồn tại trong Firebase"),
                             Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
                         };
@@ -1144,7 +1152,7 @@ namespace eMototCare.BLL.Services.FirebaseServices
                 var snapshot = await query.GetSnapshotAsync();
 
                 if (snapshot.Count == 0)
-                    return false;
+                    return true;
                 var dbPlans = await _unitOfWork.VehiclePartItems.FindAllAsync();
                 var dbIds = dbPlans.Select(x => x.Id.ToString()).ToHashSet();
                 foreach (var doc in snapshot.Documents)

@@ -78,11 +78,11 @@ namespace BE_eMotoCare.API.Controllers
             return Ok(ApiResponse<string>.SuccessResponse(null, "Cập nhật nhân viên thành công"));
         }
 
-        [HttpPost("get-available-technician")]
+        [HttpGet("get-available-technician")]
         [Authorize(Roles = "ROLE_ADMIN,ROLE_MANAGER,ROLE_STAFF,ROLE_TECHNICIAN,ROLE_STOREKEEPER")]
-        public async Task<IActionResult> GetAvailableTechnician([FromBody] GetAvailableTechnicianRequest request)
+        public async Task<IActionResult> GetAvailableTechnician([FromQuery] SlotTime slotTime, [FromQuery] DateTime appointmentDate)
         {
-            var data = await _staffService.GetAvailableTechnicianAsync(request.SlotTime, request.AppointmentDate);
+            var data = await _staffService.GetAvailableTechnicianAsync(slotTime, appointmentDate);
             return Ok(
                 ApiResponse<List<StaffResponse>>.SuccessResponse(
                     data,

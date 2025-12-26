@@ -330,18 +330,20 @@ namespace eMototCare.BLL.Services.CustomerServices
                     customerExist.AccountId = accountId;
 
                     _unitOfWork.Customers.Update(customerExist);
+                    var syncPart = await _firebase.GetPartAsync();
+                    if (!syncPart) throw new AppException("Sync part thất bại");
+                    var syncPartItem = await _firebase.GetPartItemAsync();
+                    if (!syncPartItem) throw new AppException("Sync part item thất bại");
                     var syncPlan = await _firebase.GetMaintenancePlanAsync();
                     if (!syncPlan) throw new AppException("Sync plan thất bại");
                     var syncStage = await _firebase.GetMaintenanceStageAsync();
                     if (!syncStage) throw new AppException("syncStage thất bại");
-                    var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
-                    if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
+                    //var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
+                    //if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
                     var syncModel = await _firebase.GetModelAsync();
                     if (!syncModel) throw new AppException("Sync model thất bại");
                     var syncVehicle = await _firebase.CreateVehicleByChassis(chassisNumber);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
-                    var syncPartItem = await _firebase.GetPartItemAsync();
-                    if (!syncPartItem) throw new AppException("Sync part item thất bại");
                     var vehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
                     var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
@@ -372,20 +374,21 @@ namespace eMototCare.BLL.Services.CustomerServices
                                 HttpStatusCode.NotFound
                             );
                     }
-                    
+                    var syncPart = await _firebase.GetPartAsync();
+                    if (!syncPart) throw new AppException("Sync part thất bại");
+                    var syncPartItem = await _firebase.GetPartItemAsync();
+                    if (!syncPartItem) throw new AppException("Sync part item thất bại");
                     var customer = await _unitOfWork.Customers.GetByCitizenId(citizenId);
                     var syncPlan = await _firebase.GetMaintenancePlanAsync();
                     if (!syncPlan) throw new AppException("Sync plan thất bại");
                     var syncStage = await _firebase.GetMaintenanceStageAsync();
                     if (!syncStage) throw new AppException("syncStage thất bại");
-                    var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
-                    if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
+                    //var syncStageDetail = await _firebase.GetMaintenanceStageDetailAsync();
+                    //if (!syncStageDetail) throw new AppException("syncStageDetail thất bại");
                     var syncModel = await _firebase.GetModelAsync();
                     if (!syncModel) throw new AppException("Sync model thất bại");
                     var syncVehicle = await _firebase.CreateVehicleByChassis(chassisNumber);
                     if (!syncVehicle) throw new AppException("Sync vehicle thất bại");
-                    //var syncPartItem = await _firebase.GetPartItemAsync();
-                    //if (!syncPartItem) throw new AppException("Sync part item thất bại");
                     var vehicle = await _unitOfWork.Vehicles.GetByChassisNumberAsync(chassisNumber);
                     var syncVehiclePartItem = await _firebase.CreateVehiclePartItemsByVehicleIdAsync(vehicle.Id.ToString());
                     if (!syncVehiclePartItem) throw new AppException("Sync vehicle part item thất bại");
