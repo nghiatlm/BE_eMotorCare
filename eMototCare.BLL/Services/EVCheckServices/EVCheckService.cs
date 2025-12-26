@@ -123,7 +123,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 //    }
                 //}
 
-                if (appointment.Note.Contains("RMA-"))
+                if (!string.IsNullOrEmpty(appointment.Note) && appointment.Note.Contains("RMA-"))
                 {
                     var rmaCode = Regex.Match(appointment.Note, @"RMA-\d+-\d+");
                     var rma = await _unitOfWork.RMAs.GetByCodeAsync(rmaCode.Value);
