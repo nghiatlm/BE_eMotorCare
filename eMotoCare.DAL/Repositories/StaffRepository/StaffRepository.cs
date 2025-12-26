@@ -1,4 +1,5 @@
 ﻿using eMotoCare.BO.Entities;
+using eMotoCare.BO.Enum;
 using eMotoCare.BO.Enums;
 using eMotoCare.DAL.Base;
 using eMotoCare.DAL.context;
@@ -91,11 +92,13 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
         public Task<Staff?> GetByAccountIdAsync(Guid accountId) =>
             _context.Staffs.FirstOrDefaultAsync(x => x.AccountId == accountId);
 
-        public async Task<List<Staff>?> GetAvailableTechnicianAsync(int slotTime, DateTime appointmentDate)
+        public async Task<List<Staff>?> GetAvailableTechnicianAsync()
         {
+            
+
             var busyStaffIds = await _context.Appointments
                             .Include(x => x.EVCheck)
-                            .Where(a => (int)a.SlotTime == slotTime && a.AppointmentDate == appointmentDate)
+                            .Where(a => a.Status == AppointmentStatus.COMPLETED)
                             .Select(a => a.EVCheck.TaskExecutorId)
                             .Distinct()
                             .ToListAsync();
