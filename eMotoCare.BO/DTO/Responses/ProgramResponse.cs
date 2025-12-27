@@ -10,7 +10,7 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid Id { get; set; }
 
         [EnumDataType(typeof(ProgramType))]
-        public ProgramType Type { get; set; }
+        public ProgramType ProgramType { get; set; }
 
         public string Name { get; set; } = string.Empty;
 

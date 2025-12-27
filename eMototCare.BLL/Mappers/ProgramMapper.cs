@@ -11,7 +11,7 @@ namespace eMototCare.BLL.Mappers
         {
             CreateMap<Program, ProgramDetailResponse>().ReverseMap();
             CreateMap<Program, ProgramResponse>().ReverseMap();
-            CreateMap<PageResult<Program>, PageResult<ProgramResponse>>();
+            // CreateMap<PageResult<Program>, PageResult<ProgramResponse>>();
         }
     }
 }
