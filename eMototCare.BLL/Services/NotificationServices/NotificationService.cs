@@ -114,5 +114,49 @@ namespace eMototCare.BLL.Services.NotificationServices
                 throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
             }
         }
+
+        public async Task MarkAsReadAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _unitOfWork.Notifications.GetByIdAsync(id);
+                if (entity is null)
+                    throw new AppException("Không tìm thấy Notification", HttpStatusCode.NotFound);
+                entity.IsRead = true;
+                await _unitOfWork.Notifications.UpdateAsync(entity);
+                await _unitOfWork.SaveAsync();
+                _logger.LogInformation("Marked Notification as read");
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MarkAsRead Notification failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            try
+            {
+                var entity = await _unitOfWork.Notifications.GetByIdAsync(id);
+                if (entity is null)
+                    throw new AppException("Không tìm thấy Notification", HttpStatusCode.NotFound);
+                await _unitOfWork.Notifications.DeleteAsync(entity);
+                await _unitOfWork.SaveAsync();
+            }
+            catch (AppException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Delete Notification failed: {Message}", ex.Message);
+                throw new AppException("Internal Server Error", HttpStatusCode.InternalServerError);
+            }
+        }
     }
 }

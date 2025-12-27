@@ -86,6 +86,7 @@ namespace eMototCare.BLL.Configuration
             services.AddHostedService<TimeoutService>();
             services.AddHostedService<ServiceCenterSlotAutoCloseService>();
             services.AddHostedService<CampaignBackgroundService>();
+            services.AddHostedService<MaintenanceScheduleNotification>();
             return services;
         }
     }
