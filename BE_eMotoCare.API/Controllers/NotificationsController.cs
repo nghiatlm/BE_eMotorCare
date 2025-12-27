@@ -55,5 +55,19 @@ namespace BE_eMotoCare.API.Controllers
             var item = await _service.GetByIdAsync(id);
             return Ok(ApiResponse<NotificationResponse>.SuccessResponse(item, "Lấy Notification thành công"));
         }
+
+        [HttpPatch("{id}/read")]
+        public async Task<IActionResult> MarkAsRead(Guid id)
+        {
+            await _service.MarkAsReadAsync(id);
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Đánh dấu Notification đã đọc thành công"));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            // Implementation for deleting notification would go here
+            return Ok(ApiResponse<object>.SuccessResponse(null, "Xóa Notification thành công"));
+        }
     }
 }

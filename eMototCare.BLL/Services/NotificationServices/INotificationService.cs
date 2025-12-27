@@ -12,5 +12,6 @@ namespace eMototCare.BLL.Services.NotificationServices
         Task<Guid> CreateAsync(NotificationRequest req);
         Task<NotificationResponse?> GetByIdAsync(Guid id);
         Task<PageResult<NotificationResponse>> GetPagedAsync(Guid? receiverId, NotificationEnum? notificationType, int page, int pageSize);
+        Task MarkAsReadAsync(Guid id);
     }
 }
