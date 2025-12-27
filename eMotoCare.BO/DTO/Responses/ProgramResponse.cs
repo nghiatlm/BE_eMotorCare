@@ -12,7 +12,7 @@ namespace eMotoCare.BO.DTO.Responses
         [EnumDataType(typeof(ProgramType))]
         public ProgramType Type { get; set; }
 
-        public string Title { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         public string? Description { get; set; }
 
