@@ -101,6 +101,7 @@ namespace eMotoCare.DAL.Repositories.StaffRepository
                             .Where(a => 
                                         a.EVCheck.Status != EVCheckStatus.REPAIR_COMPLETED
                                         && a.EVCheck.Status != EVCheckStatus.COMPLETED
+                                        && a.EVCheck.Status != EVCheckStatus.CANCELLED
                                         
                             && a.ServiceCenterId == serviceCenterId
                             && a.EVCheck.TaskExecutorId != null)
