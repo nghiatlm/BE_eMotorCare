@@ -123,6 +123,40 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 //    }
                 //}
 
+                if (appointment.Type == ServiceType.CAMPAIGN_TYPE)
+                {
+                    var campaign = await _unitOfWork.Programs.FindById(appointment.CampaignId.Value);
+                    var campaignDetails = campaign.ProgramDetails.ToList();
+                    foreach (var detail in campaignDetails)
+                    {
+                        var vehiclePartItems =
+                            await _unitOfWork.VehiclePartItems.GetListByVehicleIdAsync(
+                                appointment.VehicleId.Value
+                            );
+                        var latestVehiclePartItems = vehiclePartItems
+                            .GroupBy(vpi => vpi.PartItem.PartId)
+                            .Select(g => g.OrderByDescending(x => x.InstallDate).First())
+                            .ToList();
+                        var matchedVehiclePartItem = latestVehiclePartItems.FirstOrDefault(vpi =>
+                            vpi.PartItem.PartId == detail.RecallPartId
+                        );
+                        if (matchedVehiclePartItem == null)
+                        {
+                            throw new AppException("Không tìm thấy phụ tùng xe tương ứng với Campaign", HttpStatusCode.NotFound);
+                        }
+                        var evCheckDetail = new EVCheckDetail
+                        {
+                            Id = Guid.NewGuid(),
+                            EVCheckId = entity.Id,
+                            ProgramDetailId = detail.Id,
+                            Remedies = Remedies.NONE,
+                            PartItemId = matchedVehiclePartItem.PartItemId,
+                            Status = EVCheckDetailStatus.IN_PROGRESS,
+                        };
+                        await _unitOfWork.EVCheckDetails.CreateAsync(evCheckDetail);
+                    }
+                }
+
                 if (!string.IsNullOrEmpty(appointment.Note) && appointment.Note.Contains("RMA-"))
                 {
                     var rmaCode = Regex.Match(appointment.Note, @"RMA-\d+-\d+");
