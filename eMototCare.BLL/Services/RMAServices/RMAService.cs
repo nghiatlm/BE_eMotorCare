@@ -10,9 +10,11 @@ using eMotoCare.BO.Enums;
 using eMotoCare.BO.Exceptions;
 using eMotoCare.BO.Pages;
 using eMotoCare.DAL;
+using FirebaseAdmin.Messaging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace eMototCare.BLL.Services.RMAServices
 {
@@ -85,13 +87,28 @@ namespace eMototCare.BLL.Services.RMAServices
                 entity.RMADate = DateTime.Now;
                 entity.Code = $"RMA-{entity.RMADate:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
                 entity.Status = RMAStatus.PENDING;
-                
+                var match = Regex.Match(entity.Note, @"APPT-\d{8}-\d+");
+                var code = match.Success ? match.Value : null;
+                if (code != null)
+                {
+                    var appointment = await _unitOfWork.Appointments.GetByCodeAsync(code)
+                    ?? throw new AppException("Không tìm thấy cuộc hẹn", HttpStatusCode.NotFound);
+                    var notification = new eMotoCare.BO.Entities.Notification
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = "Yêu cầu RMA đã được tạo",
+                        Message = "Yêu cầu bảo hành hãng của bạn đã được tạo và đang chờ xét duyệt. Chúng tôi sẽ cập nhật cho bạn sớm nhất có thể khi có kết quả được gửi về từ hãng.",
+                        ReceiverId = appointment.Customer.AccountId.Value,
+                        Type = NotificationEnum.WARRANTY_STATUS,
+                        IsRead = false,
+                        SentAt = DateTime.Now,
+                        ReferenceId = entity.Id
+                    };
+                    await _unitOfWork.Notifications.CreateAsync(notification);
+                }
 
                 await _unitOfWork.RMAs.CreateAsync(entity);
                 await _unitOfWork.SaveAsync();
-                
-                
-
                 
                 _logger.LogInformation("Created RMA");
                 return entity.Id;
@@ -165,6 +182,9 @@ namespace eMototCare.BLL.Services.RMAServices
                 if (req.ReturnAddress != null)
                     entity.ReturnAddress = req.ReturnAddress;
 
+                if (req.Note != null)
+                    entity.Note = req.Note;
+
                 if (req.Status != null)
                 {
                     if (req.Status == RMAStatus.APPROVED)
@@ -176,11 +196,29 @@ namespace eMototCare.BLL.Services.RMAServices
                             await _unitOfWork.RMADetails.UpdateAsync(detail);
                         }
                     }
+                    var match = Regex.Match(entity.Note, @"APPT-\d{8}-\d+");
+                    var code = match.Success ? match.Value : null;
+                    if (code != null)
+                    {
+                        var appointment = await _unitOfWork.Appointments.GetByCodeAsync(code)
+                        ?? throw new AppException("Không tìm thấy cuộc hẹn", HttpStatusCode.NotFound);
+                        var notification = new eMotoCare.BO.Entities.Notification
+                        {
+                            Id = Guid.NewGuid(),
+                            Title = "Yêu cầu RMA đã được cập nhật trạng thái.",
+                            Message = "Yêu cầu bảo hành: " + entity.Code + " đã được cập nhật. Vui lòng mở app để xem thông tin chi tiết.",
+                            ReceiverId = appointment.Customer.AccountId.Value,
+                            Type = NotificationEnum.WARRANTY_STATUS,
+                            IsRead = false,
+                            SentAt = DateTime.Now,
+                            ReferenceId = entity.Id
+                        };
+                        await _unitOfWork.Notifications.CreateAsync(notification);
+                    }
                     entity.Status = req.Status.Value;
                 }
 
-                if (req.Note != null)
-                    entity.Note = req.Note;
+                
 
                 if (req.CreateById != null)
                     entity.CreateById = req.CreateById.Value;
