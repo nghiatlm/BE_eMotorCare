@@ -682,7 +682,10 @@ namespace eMototCare.BLL.Services.EVCheckServices
 
             var evCheckDetails = await _unitOfWork.EVCheckDetails.GetByEvCheckId(evCheck.Id);
 
-            if (evCheckDetails.Any() && evCheckDetails.All(d => d.Remedies == Remedies.WARRANTY))
+            if (evCheckDetails.Any() &&
+                                        evCheckDetails.All(d =>
+                                            d.Remedies == Remedies.WARRANTY ||
+                                            d.Remedies == Remedies.NONE))
             {
                 evCheck.Status = EVCheckStatus.COMPLETED;
                 evCheck.Appointment.Status = AppointmentStatus.COMPLETED;
