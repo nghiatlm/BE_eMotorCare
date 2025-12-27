@@ -616,16 +616,13 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         var program = new Program
                         {
                             Id = Guid.Parse(docId),
-                            Type = data.ContainsKey("name") ? Enum.Parse<ProgramType>(data["name"].ToString() ?? throw new AppException("Type trong Firebase đang trống")) : throw new AppException("Type trong Firebase đang trống"),
-                            Title = data.ContainsKey("title") ? data["title"].ToString() ?? "" : "",
+                            ProgramType = data.ContainsKey("name") ? Enum.Parse<ProgramType>(data["name"].ToString() ?? throw new AppException("Type trong Firebase đang trống")) : throw new AppException("Type trong Firebase đang trống"),
                             StartDate = data.ContainsKey("start_date") ? Convert.ToDateTime(data["start_date"]) : DateTime.UtcNow,
                             EndDate = data.TryGetValue("end_date", out var hh)
                                                         && hh != null
                                                         && DateTime.TryParse(hh.ToString(), out var kk)
                                                             ? kk
                                                             : null,
-                            AttachmentUrl = data.ContainsKey("attachment_url") ? data["attachment_url"].ToString() ?? "" : "",
-                            CreatedBy = data.ContainsKey("created_by") ? (Guid?)Guid.Parse(data["created_by"].ToString() ?? null) : null,
                             UpdatedBy = data.ContainsKey("updated_by") ? (Guid?)Guid.Parse(data["updated_by"].ToString() ?? null) : null,
                             Description = data.ContainsKey("description") ? data["description"].ToString() ?? "" : "",
                             Status = data.ContainsKey("status") ? Enum.Parse<Status>(data["status"].ToString() ?? "ACTIVE") : Status.ACTIVE,
@@ -686,11 +683,6 @@ namespace eMototCare.BLL.Services.FirebaseServices
                         {
                             Id = Guid.Parse(docId),
                             ProgramId = data.ContainsKey("program_id") ? Guid.Parse(data["program_id"].ToString() ?? throw new AppException("program_id trong firebase đang trống")) : throw new AppException("program_id không tồn tại trong Firebase"),
-                            RecallPartId = data.ContainsKey("part_id") ? (Guid?)Guid.Parse(data["part_id"].ToString() ?? null) : null,
-                            ServiceType = data.ContainsKey("service_type") ? data["service_type"].ToString() ?? "" : "",
-                            DiscountPercent = data.ContainsKey("discount_percent") ? (int?)Convert.ToInt32(data["discount_percent"]) : null,
-                            BonusAmount = data.ContainsKey("bonus_amount") ? (int?)Convert.ToInt32(data["bonus_amount"]) : null,
-                            RecallAction = data.ContainsKey("recall_action") ? data["recall_action"].ToString() ?? "" : "",
                             CreatedAt = data.ContainsKey("created_at") ? Convert.ToDateTime(data["created_at"]) : DateTime.UtcNow,
                         };
 

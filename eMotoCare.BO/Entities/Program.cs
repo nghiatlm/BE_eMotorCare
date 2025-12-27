@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using eMotoCare.BO.Common;
@@ -14,40 +13,36 @@ namespace eMotoCare.BO.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("program_id")]
         public Guid Id { get; set; }
-
+        [Required]
+        [Column("program_code", TypeName = "varchar(50)")]
+        public string Code { get; set; }
         [Required]
         [Column("name", TypeName = "varchar(100)")]
-        [EnumDataType(typeof(ProgramType))]
-        public ProgramType Type { get; set; }
-
-        [Required]
-        [Column("title", TypeName = "nvarchar(200)")]
-        public string Title { get; set; } = string.Empty;
-
+        public string Name { get; set; }
         [Column("description", TypeName = "longtext")]
         public string? Description { get; set; }
-
         [Required]
         [Column("start_date")]
         public DateTime StartDate { get; set; }
-
         [Column("end_date")]
         public DateTime? EndDate { get; set; }
-
         [Required]
         [Column("status", TypeName = "varchar(20)")]
         [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
-
-        [Column("attachment_url", TypeName = "nvarchar(500)")]
-        public string? AttachmentUrl { get; set; }
-
+        [Required]
+        [Column("program_type", TypeName = "varchar(20)")]
+        [EnumDataType(typeof(ProgramType))]
+        public ProgramType ProgramType { get; set; }
+        [Required]
+        [Column("severity_level", TypeName = "varchar(20)")]
+        [EnumDataType(typeof(SeverityLevel))]
+        public SeverityLevel SeverityLevel { get; set; }
+        [Required]
         [Column("created_by")]
-        public Guid? CreatedBy { get; set; }
+        public Guid CreatedBy { get; set; }
         [Column("updated_by")]
         public Guid? UpdatedBy { get; set; }
-
         public virtual ICollection<ProgramDetail>? ProgramDetails { get; set; }
-        public virtual ICollection<ProgramModel>? ProgramModels { get; set; }
     }
 }

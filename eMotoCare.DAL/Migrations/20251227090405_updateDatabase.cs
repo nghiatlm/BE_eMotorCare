@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace eMotoCare.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class initUpdate : Migration
+    public partial class updateDatabase : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -29,6 +29,9 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     role_name = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    fcm_token = table.Column<string>(type: "json", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    login_count = table.Column<int>(type: "int", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -74,6 +77,8 @@ namespace eMotoCare.DAL.Migrations
                     description = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    type = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
@@ -167,6 +172,32 @@ namespace eMotoCare.DAL.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "notification",
+                columns: table => new
+                {
+                    notification_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    receiver_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    title = table.Column<string>(type: "nvarchar(200)", nullable: false),
+                    message = table.Column<string>(type: "nvarchar(400)", nullable: false),
+                    type = table.Column<string>(type: "varchar(200)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    send_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    is_read = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    reference_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notification", x => x.notification_id);
+                    table.ForeignKey(
+                        name: "FK_notification_account_receiver_id",
+                        column: x => x.receiver_id,
+                        principalTable: "account",
+                        principalColumn: "account_id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "maintenance_stage",
                 columns: table => new
                 {
@@ -176,8 +207,7 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     description = table.Column<string>(type: "varchar(2000)", maxLength: 2000, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    mileage = table.Column<string>(type: "varchar(200)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    mileage = table.Column<int>(type: "int", nullable: false),
                     duration_month = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     estimated_time = table.Column<int>(type: "int", nullable: true),
@@ -324,7 +354,9 @@ namespace eMotoCare.DAL.Migrations
                     capacity = table.Column<int>(type: "int", nullable: false),
                     is_active = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     note = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -380,31 +412,6 @@ namespace eMotoCare.DAL.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "program_model",
-                columns: table => new
-                {
-                    program_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    vehicle_model_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_program_model", x => new { x.program_id, x.vehicle_model_id });
-                    table.ForeignKey(
-                        name: "FK_program_model_model_vehicle_model_id",
-                        column: x => x.vehicle_model_id,
-                        principalTable: "model",
-                        principalColumn: "model_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_program_model_program_program_id",
-                        column: x => x.program_id,
-                        principalTable: "program",
-                        principalColumn: "program_id",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
-
-            migrationBuilder.CreateTable(
                 name: "vehicle",
                 columns: table => new
                 {
@@ -421,6 +428,7 @@ namespace eMotoCare.DAL.Migrations
                     warranty_expiry = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     model_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     customer_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    is_primary = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -481,9 +489,7 @@ namespace eMotoCare.DAL.Migrations
                 {
                     model_part_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     model_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    part_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    status = table.Column<string>(type: "varchar(200)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    part_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci")
                 },
                 constraints: table =>
                 {
@@ -588,6 +594,7 @@ namespace eMotoCare.DAL.Migrations
                     service_center_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     export_note_status = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    total_exports = table.Column<int>(type: "int", nullable: true),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -680,9 +687,14 @@ namespace eMotoCare.DAL.Migrations
                     actual_maintenance_unit = table.Column<string>(type: "varchar(200)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     vehicle_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    date_of_implementation = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    expected_implementation_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    expected_start_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    expected_end_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    actual_implementation_date = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     status = table.Column<string>(type: "varchar(200)", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -743,11 +755,15 @@ namespace eMotoCare.DAL.Migrations
                 {
                     export_note_detail_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     export_note_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    part_item_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    part_item_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    proposed_replace_part_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     quantity = table.Column<int>(type: "int", nullable: false),
                     unit_price = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     total_price = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     note = table.Column<string>(type: "nvarchar(300)", nullable: true),
+                    export_index = table.Column<int>(type: "int", nullable: true),
+                    status = table.Column<string>(type: "varchar(200)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -764,8 +780,12 @@ namespace eMotoCare.DAL.Migrations
                         name: "FK_export_note_detail_part_item_part_item_id",
                         column: x => x.part_item_id,
                         principalTable: "part_item",
-                        principalColumn: "part_item_id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "part_item_id");
+                    table.ForeignKey(
+                        name: "FK_export_note_detail_part_proposed_replace_part_id",
+                        column: x => x.proposed_replace_part_id,
+                        principalTable: "part",
+                        principalColumn: "part_id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -826,6 +846,7 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     note = table.Column<string>(type: "varchar(500)", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    checked_in_at = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -940,7 +961,7 @@ namespace eMotoCare.DAL.Migrations
                     campaign_detail_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     part_item_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     ev_check_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    replace_part_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    proposed_replace_part_id = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     result = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     remedies = table.Column<string>(type: "varchar(200)", nullable: true)
@@ -975,8 +996,8 @@ namespace eMotoCare.DAL.Migrations
                         principalColumn: "part_item_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ev_check_detail_part_replace_part_id",
-                        column: x => x.replace_part_id,
+                        name: "FK_ev_check_detail_part_proposed_replace_part_id",
+                        column: x => x.proposed_replace_part_id,
                         principalTable: "part",
                         principalColumn: "part_id");
                     table.ForeignKey(
@@ -1010,8 +1031,18 @@ namespace eMotoCare.DAL.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     soh = table.Column<string>(type: "json", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    solution = table.Column<string>(type: "nvarchar(400)", nullable: true),
+                    solution = table.Column<string>(type: "nvarchar(3000)", nullable: true),
                     ev_check_detail_id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    energy_capability = table.Column<string>(type: "json", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    charge_discharge_efficiency = table.Column<string>(type: "json", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    degradation_status = table.Column<string>(type: "json", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    remaining_useful_life = table.Column<string>(type: "json", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    safety = table.Column<string>(type: "json", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
@@ -1152,9 +1183,9 @@ namespace eMotoCare.DAL.Migrations
                 column: "part_item_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ev_check_detail_replace_part_id",
+                name: "IX_ev_check_detail_proposed_replace_part_id",
                 table: "ev_check_detail",
-                column: "replace_part_id");
+                column: "proposed_replace_part_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_export_note_export_by_id",
@@ -1175,6 +1206,11 @@ namespace eMotoCare.DAL.Migrations
                 name: "IX_export_note_detail_part_item_id",
                 table: "export_note_detail",
                 column: "part_item_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_export_note_detail_proposed_replace_part_id",
+                table: "export_note_detail",
+                column: "proposed_replace_part_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_import_note_import_by_id",
@@ -1227,6 +1263,11 @@ namespace eMotoCare.DAL.Migrations
                 column: "part_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_notification_receiver_id",
+                table: "notification",
+                column: "receiver_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_part_part_type_id",
                 table: "part",
                 column: "part_type_id");
@@ -1260,11 +1301,6 @@ namespace eMotoCare.DAL.Migrations
                 name: "IX_program_detail_program_id",
                 table: "program_detail",
                 column: "program_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_program_model_vehicle_model_id",
-                table: "program_model",
-                column: "vehicle_model_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_rma_create_by_id",
@@ -1362,13 +1398,13 @@ namespace eMotoCare.DAL.Migrations
                 name: "model_part");
 
             migrationBuilder.DropTable(
+                name: "notification");
+
+            migrationBuilder.DropTable(
                 name: "payment");
 
             migrationBuilder.DropTable(
                 name: "price_service");
-
-            migrationBuilder.DropTable(
-                name: "program_model");
 
             migrationBuilder.DropTable(
                 name: "rma_detail");

@@ -41,7 +41,8 @@ namespace eMotoCare.BO.Entities
         public Staff? Staff { get; set; }
 
         [Column("fcm_token", TypeName = "json")]
-        public string[]? FcmToken { get; set; }
+        public string[]? FcmToken { get; set; } = new string[0];
+
         [Column("login_count")]
         public int LoginCount { get; set; } = 0;
         public virtual ICollection<Notification>? Notifications { get; set; }

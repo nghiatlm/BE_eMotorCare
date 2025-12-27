@@ -16,7 +16,6 @@ namespace eMotoCare.DAL.context
         public DbSet<BatteryCheck> BatteryChecks { get; set; }
         public DbSet<Program> programs { get; set; }
         public DbSet<ProgramDetail> ProgramDetails { get; set; }
-        public DbSet<ProgramModel> ProgramModels { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<EVCheck> EVChecks { get; set; }
         public DbSet<EVCheckDetail> EVCheckDetails { get; set; }
@@ -129,10 +128,6 @@ namespace eMotoCare.DAL.context
                 .IsUnique(false);
 
             modelBuilder.Entity<VehiclePartItem>().HasIndex(u => u.ReplaceForId).IsUnique(false);
-
-            modelBuilder
-                .Entity<ProgramModel>()
-                .HasKey(pm => new { pm.ProgramId, pm.VehicleModelId });
 
             modelBuilder.Entity<Customer>().HasIndex(u => u.CitizenId).IsUnique(true);
 

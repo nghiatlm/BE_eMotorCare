@@ -11,6 +11,6 @@ namespace eMototCare.BLL.Services.ProgramService
     {
         Task<bool> Create(ProgramRequest request);
         Task<ProgramDetailResponse?> GetById(Guid id);
-        Task<PageResult<ProgramResponse>> GetPaged(string? query, DateTime? startDate, DateTime? endDate, ProgramType? type, Status? status, Guid? modelId, int pageCurrent = 1, int pageSize = 10);
+        Task<PageResult<ProgramResponse>> GetPaged(string? query, DateTime? startDate, DateTime? endDate, ProgramType? type, Status? status, Guid? modelId = null, Guid? partId = null, ActionType? actionType = null, int? manufactureYear = null, int pageCurrent = 1, int pageSize = 10);
     }
 }

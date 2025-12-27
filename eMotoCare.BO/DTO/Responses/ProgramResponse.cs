@@ -10,9 +10,9 @@ namespace eMotoCare.BO.DTO.Responses
         public Guid Id { get; set; }
 
         [EnumDataType(typeof(ProgramType))]
-        public ProgramType Type { get; set; }
+        public ProgramType ProgramType { get; set; }
 
-        public string Title { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
         public string? Description { get; set; }
 
@@ -22,8 +22,6 @@ namespace eMotoCare.BO.DTO.Responses
 
         [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
-
-        public string? AttachmentUrl { get; set; }
 
         public Guid? CreatedBy { get; set; }
 

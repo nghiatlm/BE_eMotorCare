@@ -20,7 +20,6 @@ using eMotoCare.DAL.Repositories.PartTypeRepository;
 using eMotoCare.DAL.Repositories.PaymentRepository;
 using eMotoCare.DAL.Repositories.PriceServiceRepository;
 using eMotoCare.DAL.Repositories.ProgramDetailRepository;
-using eMotoCare.DAL.Repositories.ProgramModelRepository;
 using eMotoCare.DAL.Repositories.ProgramRepository;
 using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
@@ -41,7 +40,6 @@ namespace eMotoCare.DAL
         IBatteryCheckRepository BatteryChecks { get; }
         IProgramDetailRepository ProgramDetails { get; }
         IProgramRepository Programs { get; }
-        IProgramModelRepository ProgramModels { get; }
         ICustomerRepository Customers { get; }
         IEVCheckDetailRepository EVCheckDetails { get; }
         IEVCheckRepository EVChecks { get; }
