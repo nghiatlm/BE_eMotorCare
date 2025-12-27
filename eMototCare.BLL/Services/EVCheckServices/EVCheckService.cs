@@ -234,7 +234,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                 entity.Status = EVCheckStatus.CANCELLED;
                 entity.EVCheckDetails.ToList().ForEach(d =>
                 {
-                    d.Status = EVCheckDetailStatus.COMPLETED;
+                    d.Status = EVCheckDetailStatus.CANCELED;
                 });
                 await _unitOfWork.EVChecks.UpdateAsync(entity);
                 await _unitOfWork.SaveAsync();
