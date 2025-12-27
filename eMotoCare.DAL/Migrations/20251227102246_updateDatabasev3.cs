@@ -5,7 +5,7 @@
 namespace eMotoCare.DAL.Migrations
 {
     /// <inheritdoc />
-    public partial class updateDatabaseV4 : Migration
+    public partial class updateDatabasev3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

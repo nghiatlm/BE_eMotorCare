@@ -6,29 +6,24 @@ namespace eMotoCare.BO.DTO.Requests
 {
     public class ProgramRequest
     {
-        [Required(ErrorMessage = "Program type is required.")]
-        [EnumDataType(typeof(ProgramType))]
-        public ProgramType Type { get; set; }
-
-        [Required(ErrorMessage = "Title is required.")]
-        public string Title { get; set; } = string.Empty;
+        public string Name { get; set; }
 
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "Start date is required.")]
         public DateTime StartDate { get; set; }
 
         public DateTime? EndDate { get; set; }
 
-        public string? AttachmentUrl { get; set; }
+        [EnumDataType(typeof(ProgramType))]
+        public ProgramType ProgramType { get; set; }
 
-        [Required(ErrorMessage = "Status is required.")]
+        [EnumDataType(typeof(SeverityLevel))]
+        public SeverityLevel SeverityLevel { get; set; }
+
         public Guid CreatedBy { get; set; }
 
         public Guid? UpdatedBy { get; set; }
 
-        public List<VehicleModel>? VehicleModels { get; set; }
-
-        public List<ProgramDetailRequest>? ProgramDetails { get; set; }
+        public ProgramDetailRequest ProgramDetailRequest { get; set; }
     }
 }

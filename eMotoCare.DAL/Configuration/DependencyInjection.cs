@@ -21,7 +21,6 @@ using eMotoCare.DAL.Repositories.PartTypeRepository;
 using eMotoCare.DAL.Repositories.PaymentRepository;
 using eMotoCare.DAL.Repositories.PriceServiceRepository;
 using eMotoCare.DAL.Repositories.ProgramDetailRepository;
-using eMotoCare.DAL.Repositories.ProgramModelRepository;
 using eMotoCare.DAL.Repositories.ProgramRepository;
 using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
@@ -57,7 +56,6 @@ namespace eMotoCare.DAL.Configuration
                 MaintenanceStageDetailRepository
             >();
             services.AddScoped<IProgramRepository, ProgramRepository>();
-            services.AddScoped<IProgramModelRepository, ProgramModelRepository>();
             services.AddScoped<IProgramDetailRepository, ProgramDetailRepository>();
             services.AddScoped<IMaintenanceStageRepository, MaintenanceStageRepository>();
             services.AddScoped<IModelPartRepository, ModelPartRepository>();

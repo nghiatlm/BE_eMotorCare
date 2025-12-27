@@ -4,6 +4,9 @@
     { 
         INSPECTION,
         LUBRICATION,
-        NONE
+        NONE,
+        CHECK,
+        REPAIR,
+        REPLACE
     }
 }

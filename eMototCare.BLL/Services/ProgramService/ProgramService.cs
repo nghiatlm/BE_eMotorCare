@@ -30,54 +30,51 @@ namespace eMototCare.BLL.Services.ProgramService
         {
             try
             {
-                var existing = await _unitOfWork.Programs.ExistsTitleAsync(request.Title);
-                if (existing) throw new AppException("Program title already exists", HttpStatusCode.BadRequest);
-                if (request.StartDate.Date < DateTime.UtcNow.Date) throw new AppException("Start date must be today or a future date.", HttpStatusCode.BadRequest);
+                if (request.StartDate < DateTime.Now.Date)
+                {
+                    throw new AppException("Ngày bắt đầu phải ở hiện tại hoặc tương lai", HttpStatusCode.BadRequest);
+                }
+                if (request.EndDate == request.StartDate)
+                {
+                    throw new AppException("Ngày bắt đầu và kết thúc không được bằng nhau", HttpStatusCode.BadRequest);
+                }
+                string code = await _unitOfWork.Programs.GenerateProgramCodeAsync(request.ProgramType);
                 var program = new Program
                 {
-                    Id = Guid.NewGuid(),
-                    Type = request.Type,
-                    Title = request.Title,
+                    Code = code,
+                    Name = request.Name,
                     Description = request.Description,
                     StartDate = request.StartDate,
                     EndDate = request.EndDate,
-                    AttachmentUrl = request.AttachmentUrl,
+                    ProgramType = request.ProgramType,
+                    SeverityLevel = request.SeverityLevel,
                     CreatedBy = request.CreatedBy,
-                    UpdatedBy = request.UpdatedBy,
+                    UpdatedBy = request.UpdatedBy.HasValue ? request.UpdatedBy.Value : (Guid?)null,
                     Status = Status.ACTIVE
                 };
-                if (request.ProgramDetails != null && request.ProgramDetails.Any())
+                await _unitOfWork.Programs.CreateAsync(program);
+                var modelExisting = await _unitOfWork.Models.GetByIdAsync(request.ProgramDetailRequest.ModelId.Value);
+                if (modelExisting == null)
                 {
-                    program.ProgramDetails = request.ProgramDetails.Select(d => new ProgramDetail
-                    {
-                        Id = Guid.NewGuid(),
-                        RecallPartId = d.RecallPartId,
-                        ServiceType = d.ServiceType,
-                        DiscountPercent = d.DiscountPercent,
-                        BonusAmount = d.BonusAmount,
-                        RecallAction = d.RecallAction,
-                        CreatedAt = DateTime.UtcNow
-                    }).ToList();
+                    throw new AppException("Model không tồn tại", HttpStatusCode.NotFound);
                 }
-                if (request.VehicleModels != null && request.VehicleModels.Any())
+                var partExisting = await _unitOfWork.Parts.GetByIdAsync(request.ProgramDetailRequest.PartId.Value);
+                if (partExisting == null)
                 {
-                    var modelIds = request.VehicleModels.Select(vm => vm.VehicleModelId).Distinct().ToList();
-                    var missing = new List<Guid>();
-                    foreach (var id in modelIds)
-                    {
-                        var model = await _unitOfWork.Models.GetByIdAsync(id);
-                        if (model == null) missing.Add(id);
-                    }
-                    if (missing.Any()) throw new AppException($"Vehicle model(s) not found: {string.Join(", ", missing)}", HttpStatusCode.BadRequest);
-                    program.ProgramModels = modelIds.Select(id => new ProgramModel
-                    {
-                        ProgramId = program.Id,
-                        VehicleModelId = id
-                    }).ToList();
+                    throw new AppException("Part không tồn tại", HttpStatusCode.NotFound);
                 }
-                _unitOfWork.Programs.Create(program);
-                await _unitOfWork.SaveAsync();
-                return true;
+                var programDetail = new ProgramDetail
+                {
+                    ProgramId = program.Id,
+                    ModelId = request.ProgramDetailRequest.ModelId,
+                    PartId = request.ProgramDetailRequest.PartId,
+                    ActionType = request.ProgramDetailRequest.ActionType.Value,
+                    Description = request.ProgramDetailRequest.Description,
+                    ManufactureYear = request.ProgramDetailRequest.ManufactureYear
+                };
+                await _unitOfWork.ProgramDetails.CreateAsync(programDetail);
+                var result = await _unitOfWork.SaveAsync();
+                return result > 0 ? true : false;
             }
             catch (AppException)
             {
@@ -109,13 +106,12 @@ namespace eMototCare.BLL.Services.ProgramService
             }
         }
 
-        public async Task<PageResult<ProgramResponse>> GetPaged(string? query, DateTime? startDate, DateTime? endDate, ProgramType? type, Status? status, Guid? modelId, int pageCurrent = 1, int pageSize = 10)
+        public async Task<PageResult<ProgramResponse>> GetPaged(string? query, DateTime? startDate, DateTime? endDate, ProgramType? type, Status? status, Guid? modelId = null, Guid? partId = null, ActionType? actionType = null, int? manufactureYear = null, int pageCurrent = 1, int pageSize = 10)
         {
             try
             {
-                var pagedResult = await _unitOfWork.Programs.FindParams(query, startDate, endDate, type, status, modelId, pageCurrent, pageSize);
-                var mappedItems = _mapper.Map<List<ProgramResponse>>(pagedResult.RowDatas ?? new List<Program>());
-                return new PageResult<ProgramResponse>(mappedItems, pagedResult.PageSize, pagedResult.PageCurrent, pagedResult.Total);
+                var result = await _unitOfWork.Programs.FindParams(query, startDate, endDate, type, status, modelId, partId, actionType, manufactureYear, pageCurrent, pageSize);
+                return _mapper.Map<PageResult<ProgramResponse>>(result);
             }
             catch (AppException)
             {

@@ -1,16 +1,17 @@
 
+using System.ComponentModel.DataAnnotations;
+using eMotoCare.BO.Enum;
+
 namespace eMotoCare.BO.DTO.Requests
 {
     public class ProgramDetailRequest
     {
-        public Guid? RecallPartId { get; set; }
+        public Guid? PartId { get; set; }
 
-        public string? ServiceType { get; set; }
-
-        public int? DiscountPercent { get; set; }
-
-        public int? BonusAmount { get; set; }
-
-        public string? RecallAction { get; set; }
+        [EnumDataType(typeof(ActionType))]
+        public ActionType? ActionType { get; set; }
+        public string? Description { get; set; }
+        public int? ManufactureYear { get; set; }
+        public Guid? ModelId { get; set; }
     }
 }

@@ -1,11 +1,13 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using eMotoCare.BO.Common;
+using eMotoCare.BO.Enum;
 
 namespace eMotoCare.BO.Entities
 {
     [Table("program_detail")]
-    public class ProgramDetail
+    public class ProgramDetail : BaseEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -17,26 +19,29 @@ namespace eMotoCare.BO.Entities
         public Guid ProgramId { get; set; }
 
         [ForeignKey(nameof(ProgramId))]
-        public virtual Program? Program { get; set; }
+        public virtual Program Program { get; set; } = null!;
 
         [Column("part_id")]
-        public Guid? RecallPartId { get; set; }
+        public Guid? PartId { get; set; }
 
-        [ForeignKey(nameof(RecallPartId))]
-        public virtual Part? RecallPart { get; set; }
-        [Column("service_type", TypeName = "varchar(100)")]
-        public string? ServiceType { get; set; }
+        [ForeignKey(nameof(PartId))]
+        public virtual Part? Part { get; set; }
 
-        [Column("discount_percent")]
-        public int? DiscountPercent { get; set; }
+        [Required]
+        [Column("action_type", TypeName = "varchar(20)")]
+        [EnumDataType(typeof(ActionType))]
+        public ActionType ActionType { get; set; }
 
-        [Column("bonus_amount")]
-        public int? BonusAmount { get; set; }
+        [Column("description", TypeName = "longtext")]
+        public string? Description { get; set; }
 
-        [Column("recall_action", TypeName = "longtext")]
-        public string? RecallAction { get; set; }
+        [Column("manufacture_year")]
+        public int? ManufactureYear { get; set; }
 
-        [Column("created_at")]
-        public DateTime CreatedAt { get; set; }
+        [Column("model_id")]
+        public Guid? ModelId { get; set; }
+
+        [ForeignKey(nameof(ModelId))]
+        public virtual Model? Model { get; set; }
     }
 }

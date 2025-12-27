@@ -9,8 +9,8 @@ namespace eMotoCare.DAL.Repositories.ProgramRepository
 {
     public interface IProgramRepository : IGenericRepository<Program>
     {
-        Task<bool> ExistsTitleAsync(string title);
         Task<Program?> FindById(Guid id);
-        Task<PageResult<Program>> FindParams(string? query, DateTime? startDate, DateTime? enđate, ProgramType? type, Status? status, Guid? modelId, int pageCurrent = 1, int pageSize = 10);
+        Task<string> GenerateProgramCodeAsync(ProgramType type);
+        Task<PageResult<Program>> FindParams(string? query, DateTime? startDate, DateTime? enđate, ProgramType? type, Status? status, Guid? modelId = null, Guid? partId = null, ActionType? actionType = null, int? manufactureYear = null, int pageCurrent = 1, int pageSize = 10);
     }
 }

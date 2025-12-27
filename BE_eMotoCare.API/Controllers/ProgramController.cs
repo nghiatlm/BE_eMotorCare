@@ -46,12 +46,21 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProgramsPaged([FromQuery] string? query, [FromQuery] DateTime? startDate,
-                                                          [FromQuery] DateTime? endDate, [FromQuery] ProgramType? type,
-                                                          [FromQuery] Status? status, [FromQuery] Guid? modelId,
-                                                          [FromQuery] int pageCurrent = 1, [FromQuery] int pageSize = 10)
+        [ProducesResponseType(typeof(ApiResponse<PageResult<ProgramResponse>>), 200)]
+        public async Task<IActionResult> GetProgramsPaged(
+            [FromQuery] string? query,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] ProgramType? type,
+            [FromQuery] Status? status,
+            [FromQuery] Guid? modelId,
+            [FromQuery] Guid? partId,
+            [FromQuery] ActionType? actionType,
+            [FromQuery] int? manufactureYear,
+            [FromQuery] int pageCurrent = 1,
+            [FromQuery] int pageSize = 10)
         {
-            var result = await _programService.GetPaged(query, startDate, endDate, type, status, modelId, pageCurrent, pageSize);
+            var result = await _programService.GetPaged(query, startDate, endDate, type, status, modelId, partId, actionType, manufactureYear, pageCurrent, pageSize);
             return Ok(ApiResponse<PageResult<ProgramResponse>>.SuccessResponse(result, "Programs retrieved successfully"));
         }
 

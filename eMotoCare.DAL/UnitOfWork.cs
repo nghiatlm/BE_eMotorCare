@@ -21,7 +21,6 @@ using eMotoCare.DAL.Repositories.PartTypeRepository;
 using eMotoCare.DAL.Repositories.PaymentRepository;
 using eMotoCare.DAL.Repositories.PriceServiceRepository;
 using eMotoCare.DAL.Repositories.ProgramDetailRepository;
-using eMotoCare.DAL.Repositories.ProgramModelRepository;
 using eMotoCare.DAL.Repositories.ProgramRepository;
 using eMotoCare.DAL.Repositories.RMADetailRepository;
 using eMotoCare.DAL.Repositories.RMARepository;
@@ -49,7 +48,6 @@ namespace eMotoCare.DAL
         private IBatteryCheckRepository? _batteryCheckRepository;
         private IProgramDetailRepository? _programDetailRepository;
         private IProgramRepository? _programRepository;
-        private IProgramModelRepository? _programModelRepository;
         private ICustomerRepository? _customerRepository;
         private IEVCheckDetailRepository? _evCheckDetailRepository;
         private IEVCheckRepository? _evCheckRepository;
@@ -170,9 +168,6 @@ namespace eMotoCare.DAL
 
         public IProgramRepository Programs =>
             _programRepository ??= new ProgramRepository(_unitOfWorkContext);
-
-        public IProgramModelRepository ProgramModels =>
-            _programModelRepository ??= new ProgramModelRepository(_unitOfWorkContext);
 
         public void RemoveRange(List<EVCheckDetail> olds)
         {
