@@ -92,7 +92,7 @@ namespace eMototCare.BLL.Services.ProgramService
             try
             {
                 var existing = await _unitOfWork.Programs.FindById(id);
-                if (existing == null) throw new AppException("Program not found", HttpStatusCode.NotFound);
+                if (existing == null) throw new AppException("Không tìm thấy", HttpStatusCode.NotFound);
                 return _mapper.Map<ProgramDetailResponse>(existing);
             }
             catch (AppException)
@@ -111,7 +111,8 @@ namespace eMototCare.BLL.Services.ProgramService
             try
             {
                 var result = await _unitOfWork.Programs.FindParams(query, startDate, endDate, type, status, modelId, partId, actionType, manufactureYear, pageCurrent, pageSize);
-                return _mapper.Map<PageResult<ProgramResponse>>(result);
+                var item = _mapper.Map<List<ProgramResponse>>(result.RowDatas);
+                return new PageResult<ProgramResponse>(item, result.PageCurrent, result.PageSize, result.Total);
             }
             catch (AppException)
             {

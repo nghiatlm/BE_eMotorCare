@@ -23,8 +23,6 @@ namespace eMotoCare.BO.DTO.Responses
         [EnumDataType(typeof(Status))]
         public Status Status { get; set; }
 
-        public string? AttachmentUrl { get; set; }
-
         public Guid? CreatedBy { get; set; }
 
         public Guid? UpdatedBy { get; set; }

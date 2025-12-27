@@ -46,7 +46,6 @@ namespace BE_eMotoCare.API.Controllers
         }
 
         [HttpGet]
-        [ProducesResponseType(typeof(ApiResponse<PageResult<ProgramResponse>>), 200)]
         public async Task<IActionResult> GetProgramsPaged(
             [FromQuery] string? query,
             [FromQuery] DateTime? startDate,
@@ -61,7 +60,7 @@ namespace BE_eMotoCare.API.Controllers
             [FromQuery] int pageSize = 10)
         {
             var result = await _programService.GetPaged(query, startDate, endDate, type, status, modelId, partId, actionType, manufactureYear, pageCurrent, pageSize);
-            return Ok(ApiResponse<PageResult<ProgramResponse>>.SuccessResponse(result, "Programs retrieved successfully"));
+            return Ok(ApiResponse<PageResult<ProgramResponse>>.SuccessResponse(result, "Lấy danh sách chương trình thành công"));
         }
 
         [HttpPost("sync-data")]
