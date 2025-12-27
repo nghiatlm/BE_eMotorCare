@@ -138,7 +138,7 @@ namespace eMototCare.BLL.Services.EVCheckServices
                             .Select(g => g.OrderByDescending(x => x.InstallDate).First())
                             .ToList();
                         var matchedVehiclePartItem = latestVehiclePartItems.FirstOrDefault(vpi =>
-                            vpi.PartItem.PartId == detail.RecallPartId
+                            vpi.PartItem.PartId == detail.PartId
                         );
                         if (matchedVehiclePartItem == null)
                         {
