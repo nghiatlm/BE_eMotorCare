@@ -33,8 +33,9 @@ namespace eMototCare.BLL.Services.BackgroundServices
                 {
                     var now = DateTime.UtcNow.AddHours(7);
 
-                    
+
                     if (now.Hour == 8 && now.Minute < 2)
+                    //if (now.Hour >= 22)
                     {
                         using var scope = _scopeFactory.CreateScope();
                         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -48,7 +49,9 @@ namespace eMototCare.BLL.Services.BackgroundServices
                                 v.ExpectedStartDate != null &&
                                 v.ExpectedEndDate != null &&
                                 v.ExpectedStartDate.Value.Date <= today &&
-                                v.ExpectedEndDate.Value.Date >= today
+                                v.ExpectedEndDate.Value.Date >= today &&
+                                v.Status == VehicleStageStatus.UPCOMING
+                                
                             )
                             .ToListAsync(stoppingToken);
 
