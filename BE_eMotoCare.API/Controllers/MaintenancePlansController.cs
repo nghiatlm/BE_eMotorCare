@@ -126,13 +126,13 @@ namespace BE_eMotoCare.API.Controllers
                         "Đồng bộ dữ liệu các giai đoạn bảo dưỡng không thành công."
                     )
                 );
-            var maintenanceStageDetail = await _firebaseService.GetMaintenanceStageDetailAsync();
-            if (!maintenanceStageDetail)
-                return BadRequest(
-                    ApiResponse<string>.BadRequest(
-                        "Đồng bộ dữ liệu chi tiết các giai đoạn bảo dưỡng không thành công."
-                    )
-                );
+            //var maintenanceStageDetail = await _firebaseService.GetMaintenanceStageDetailAsync();
+            //if (!maintenanceStageDetail)
+            //    return BadRequest(
+            //        ApiResponse<string>.BadRequest(
+            //            "Đồng bộ dữ liệu chi tiết các giai đoạn bảo dưỡng không thành công."
+            //        )
+            //    );
 
             return Ok(
                 ApiResponse<string>.SuccessResponse(
