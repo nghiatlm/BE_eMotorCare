@@ -35,7 +35,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckRepository
                 .ThenInclude(ms => ms.MaintenanceStageDetail)
                 .ThenInclude(m => m.Part)
                 .Include(x => x.EVCheckDetails)
-                .ThenInclude(ms => ms.CampaignDetail)
+                .ThenInclude(ms => ms.ProgramDetail)
                 .Include(x => x.EVCheckDetails)
                 .ThenInclude(ms => ms.PartItem)
                 .Include(x => x.EVCheckDetails)

@@ -35,7 +35,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
 
             var q = _context
                 .EVCheckDetails.Include(x => x.MaintenanceStageDetail)
-                .Include(x => x.CampaignDetail)
+                .Include(x => x.ProgramDetail)
                 .Include(x => x.PartItem)
                 .ThenInclude(p => p.Part)
                 .Include(x => x.EVCheck)
@@ -110,7 +110,7 @@ namespace eMotoCare.DAL.Repositories.EVCheckDetailRepository
         public Task<EVCheckDetail?> GetByIdAsync(Guid id) =>
             _context
                 .EVCheckDetails.Include(x => x.MaintenanceStageDetail)
-                .Include(x => x.CampaignDetail)
+                .Include(x => x.ProgramDetail)
                 .Include(x => x.PartItem)
                 .ThenInclude(p => p.Part)
                 .Include(x => x.EVCheck)
