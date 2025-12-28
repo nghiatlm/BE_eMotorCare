@@ -22,7 +22,7 @@ namespace eMotoCare.BO.Entities
         public Guid? ProgramDetailId { get; set; }
 
         [ForeignKey(nameof(ProgramDetailId))]
-        public virtual ProgramDetail? CampaignDetail { get; set; }
+        public virtual ProgramDetail? ProgramDetail { get; set; }
 
         [Required]
         [Column("part_item_id")]
