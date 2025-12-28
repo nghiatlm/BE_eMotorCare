@@ -723,9 +723,13 @@ namespace eMototCare.BLL.Services.EVCheckServices
             {
                 evCheck.Status = EVCheckStatus.COMPLETED;
                 evCheck.Appointment.Status = AppointmentStatus.COMPLETED;
+            } else
+            {
+                evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
             }
 
-            evCheck.Appointment.Status = AppointmentStatus.QUOTE_APPROVED;
+
+                
             await _unitOfWork.EVChecks.UpdateAsync(evCheck);
             await _unitOfWork.SaveAsync();
             return true;
